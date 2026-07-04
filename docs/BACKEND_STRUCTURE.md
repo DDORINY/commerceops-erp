@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.6`
+기준 버전: `v0.2.7`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -28,6 +28,7 @@ com.commerceops.erp
 │   ├── inquiry
 │   ├── inventory
 │   ├── media
+│   ├── notification
 │   ├── order
 │   ├── payment
 │   ├── product
@@ -59,6 +60,7 @@ com.commerceops.erp
 | inquiry | `InquiryController`, `AdminInquiryController` | `InquiryService` | `InquiryRepository` | `Inquiry` |
 | inventory | `AdminInventoryController` | `InventoryService` | `InventoryLogRepository` | `InventoryLog` |
 | media | `AdminMediaController` | `MediaStorageService` | `MediaFileRepository` | `MediaFile` |
+| notification | `NotificationController`, `AdminNotificationController` | `NotificationService` | `NotificationRepository` | `Notification` |
 | order | `OrderController`, `AdminOrderController` | `OrderService`, `OrderCancellationService` | `OrderRepository`, `OrderItemRepository` | `Order`, `OrderItem` |
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
 | product | `ProductController`, `AdminProductController` | `ProductService` | `ProductRepository` | `Product` |
@@ -82,6 +84,7 @@ com.commerceops.erp
 - `MediaWebConfig`: `COMMERCEOPS_MEDIA_UPLOAD_DIR` 기준 로컬 업로드 디렉터리를 `/uploads/**` 정적 리소스로 제공.
 - Flyway: `backend/src/main/resources/db/migration`의 SQL을 운영/로컬 스키마 기준으로 사용한다. 테스트 프로파일은 기존 H2 `create-drop` 회귀 테스트를 유지하기 위해 Flyway를 비활성화한다.
 - `CorsConfig`: `COMMERCEOPS_CORS_ALLOWED_ORIGINS` 또는 `commerceops.cors.allowed-origins` 설정으로 허용 origin을 분리한다.
+- 관리자 권한: `MANAGER`는 운영 조회 중심 GET API에 접근하고, 데이터 변경/권한/회계/쿠폰/리뷰 운영/감사 로그는 `ADMIN`, `SUPER_ADMIN`으로 제한한다.
 
 ## 환경 프로파일
 

@@ -3,6 +3,7 @@ package com.commerceops.erp.domain.returns.service;
 import com.commerceops.erp.domain.accounting.service.AccountingService;
 import com.commerceops.erp.domain.inventory.entity.InventoryLog;
 import com.commerceops.erp.domain.inventory.repository.InventoryLogRepository;
+import com.commerceops.erp.domain.notification.service.NotificationService;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.entity.OrderItem;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
@@ -45,6 +46,7 @@ class ReturnServiceTest {
     @Mock private InventoryLogRepository inventoryLogRepository;
     @Mock private AccountingService accountingService;
     @Mock private WarehouseFulfillmentService warehouseFulfillmentService;
+    @Mock private NotificationService notificationService;
 
     @InjectMocks
     private ReturnService returnService;

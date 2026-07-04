@@ -1,11 +1,12 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.2.5`
+기준 버전: `v0.2.7`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 - 초기 마이그레이션: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
+- 알림 마이그레이션: `backend/src/main/resources/db/migration/V2__add_notifications.sql`
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
 - 기존 개발 DB에 `flyway_schema_history`가 없는 경우 `baseline-on-migrate=true`, `baseline-version=0` 기준으로 시작한다.
@@ -26,6 +27,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `status`, `created_at` |
 | `audit_logs` | `AuditLog` | `actor_id`, `actor_email`, `actor_name`, `action_type`, `target_type`, `target_id`, `before_status`, `after_status`, `summary`, `created_at` |
+| `notifications` | `Notification` | `user_id`, `type`, `title`, `message`, `target_type`, `target_id`, `read_at`, `created_at` |
 | `inquiries` | `Inquiry` | `user_id`, nullable `product_id`, `type`, `subject`, `content`, `answer`, `status`, timestamps |
 | `wishlists` | `Wishlist` | `user_id`, `product_id`, `created_at`; 사용자-상품 unique |
 | `coupons` | `Coupon` | `code`, `discount_type`, `discount_value`, `min_order_amount`, `max_usage`, `used_count`, `expires_at`, `active`, `created_at` |
@@ -45,16 +47,11 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `ProductStatus` | `ON_SALE`, `SOLD_OUT`, `HIDDEN`, `DELETED` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
 | `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE` |
+| `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
 | `ShipmentStatus` | `READY`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
-
-## 주요 인덱스/제약 기준
-
-- 유니크: `users.email`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
-- 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 창고 이동 테이블에 상태/일시 인덱스를 둔다.
-- FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
 | `ReturnReason` | `CHANGE_OF_MIND`, `DEFECTIVE`, `WRONG_DELIVERY` |
 | `ReturnStatus` | `REQUESTED`, `APPROVED`, `REJECTED` |
 | `InquiryType` | `PRODUCT`, `ORDER`, `OTHER` |
@@ -65,9 +62,16 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `StockReservationStatus` | `RESERVED`, `RELEASED`, `SHIPPED`, `RETURNED` |
 | `StockTransferStatus` | `PENDING`, `COMPLETED` |
 
+## 주요 인덱스/제약 기준
+
+- 유니크: `users.email`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
+- 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다.
+- 알림 조회 인덱스: `notifications(user_id, read_at, created_at)`, `notifications(type, created_at)`, `notifications(target_type, target_id)`.
+- FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
+
 ## 관계 요약
 
-- `User` 1:N `Cart`, `Order`, `Inquiry`, `Review`, `Wishlist`, `ReturnRequest`.
+- `User` 1:N `Cart`, `Order`, `Inquiry`, `Review`, `Wishlist`, `ReturnRequest`, `Notification`.
 - `AuditLog`는 v0.2.4 기준 리뷰 운영 작업 이력을 저장하며 FK 없이 actor/target 스냅샷 값을 보관한다.
 - `Category` 1:N `Product`.
 - `Product` 1:N `Cart`, `OrderItem`, `Review`, `Inquiry`, `Wishlist`, `InventoryLog`, `WarehouseStock`, `StockTransfer`.

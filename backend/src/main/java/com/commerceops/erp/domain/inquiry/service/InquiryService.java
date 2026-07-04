@@ -6,6 +6,8 @@ import com.commerceops.erp.domain.inquiry.dto.InquiryResponse;
 import com.commerceops.erp.domain.inquiry.entity.Inquiry;
 import com.commerceops.erp.domain.inquiry.enums.InquiryStatus;
 import com.commerceops.erp.domain.inquiry.repository.InquiryRepository;
+import com.commerceops.erp.domain.notification.enums.NotificationType;
+import com.commerceops.erp.domain.notification.service.NotificationService;
 import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.user.entity.User;
@@ -28,6 +30,7 @@ public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
     private final ProductRepository productRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public InquiryResponse createInquiry(Long productId, User user, InquiryCreateRequest request) {
@@ -72,6 +75,14 @@ public class InquiryService {
             throw new BusinessException(ErrorCode.INQUIRY_ALREADY_ANSWERED);
         }
         inquiry.answer(request.answer());
+        notificationService.notifyUser(
+                inquiry.getUser(),
+                NotificationType.INQUIRY_ANSWERED,
+                "Inquiry answered",
+                "Your inquiry has been answered: " + inquiry.getSubject(),
+                "INQUIRY",
+                inquiry.getId()
+        );
         return InquiryResponse.from(inquiry);
     }
 

@@ -10,6 +10,8 @@ import com.commerceops.erp.domain.order.entity.OrderItem;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.order.repository.OrderItemRepository;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
+import com.commerceops.erp.domain.notification.enums.NotificationType;
+import com.commerceops.erp.domain.notification.service.NotificationService;
 import com.commerceops.erp.domain.payment.entity.Payment;
 import com.commerceops.erp.domain.payment.enums.PaymentStatus;
 import com.commerceops.erp.domain.payment.repository.PaymentRepository;
@@ -48,6 +50,7 @@ public class OrderService {
     private final WarehouseFulfillmentService warehouseFulfillmentService;
     private final OrderCancellationService orderCancellationService;
     private final CouponRepository couponRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public OrderCreateResponse createOrder(User user, OrderCreateRequest request) {
@@ -158,11 +161,13 @@ public class OrderService {
         validateStatusTransition(order.getStatus(), request.status());
         if (request.status() == OrderStatus.CANCELLED) {
             orderCancellationService.cancel(order);
+            notifyOrderStatus(order);
             return new OrderStatusUpdateResponse(order.getId(), order.getStatus().name());
         }
         order.updateStatus(request.status());
 
         syncShipmentStatus(order, request.status());
+        notifyOrderStatus(order);
 
         return new OrderStatusUpdateResponse(order.getId(), order.getStatus().name());
     }
@@ -176,6 +181,7 @@ public class OrderService {
         }
         validateStatusTransition(order.getStatus(), OrderStatus.CANCELLED);
         orderCancellationService.cancel(order);
+        notifyOrderStatus(order);
         return new OrderStatusUpdateResponse(order.getId(), order.getStatus().name());
     }
 
@@ -243,5 +249,16 @@ public class OrderService {
         if (!valid) {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
+    }
+
+    private void notifyOrderStatus(Order order) {
+        notificationService.notifyUser(
+                order.getUser(),
+                NotificationType.ORDER_STATUS,
+                "Order status updated",
+                "Order " + order.getOrderNumber() + " status is now " + order.getStatus().name() + ".",
+                "ORDER",
+                order.getId()
+        );
     }
 }

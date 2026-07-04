@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.2.5`
+기준 버전: `v0.2.7`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -28,8 +28,9 @@
 | `/api/admin/inquiries/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/reviews/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/audit-logs/**` | `ADMIN`, `SUPER_ADMIN` |
-| `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
-| `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
+| `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/notifications/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
+| 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
+| 변경성 `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/uploads/**` | 공개 정적 파일 |
 | 기타 인증 API | 로그인 사용자 |
 
@@ -92,6 +93,11 @@
 | Review Admin | PATCH | `/api/admin/reviews/{reviewId}/show` | - | `null` | 관리자 |
 | Review Admin | DELETE | `/api/admin/reviews/{reviewId}` | - | `null` | 관리자 |
 | Audit Admin | GET | `/api/admin/audit-logs` | `targetType`, `page`, `size` | `PageResponse<AuditLogResponse>` | 관리자 |
+| Notification | GET | `/api/notifications` | `page`, `size` | `PageResponse<NotificationResponse>` | 인증 |
+| Notification | GET | `/api/notifications/unread-count` | - | `UnreadNotificationCountResponse` | 인증 |
+| Notification | PATCH | `/api/notifications/{notificationId}/read` | - | `NotificationResponse` | 인증 |
+| Notification | PATCH | `/api/notifications/read-all` | - | `UnreadNotificationCountResponse` | 인증 |
+| Notification Admin | GET | `/api/admin/notifications` | `page`, `size` | `PageResponse<NotificationResponse>` | 관리자/매니저 |
 | Wishlist | POST | `/api/wishlist/{productId}` | - | `WishlistToggleResponse` | 인증 |
 | Wishlist | GET | `/api/wishlist` | - | `List<WishlistItemResponse>` | 인증 |
 | Wishlist | GET | `/api/wishlist/{productId}/status` | - | `WishlistToggleResponse` | 인증 |
@@ -125,6 +131,8 @@
 - `MediaFileResponse`: `id`, `originalFilename`, `storedFilename`, `url`, `contentType`, `size`, `mediaType`, `createdAt`.
 - `ReviewResponse`: `reviewId`, `productId`, `productName`, `userName`, `orderItemId`, `rating`, `content`, `status`, `createdAt`.
 - `AuditLogResponse`: `id`, `actorId`, `actorEmail`, `actorName`, `actionType`, `targetType`, `targetId`, `beforeStatus`, `afterStatus`, `summary`, `createdAt`.
+- `NotificationResponse`: `id`, `userId`, `type`, `title`, `message`, `targetType`, `targetId`, `read`, `readAt`, `createdAt`.
+- `UnreadNotificationCountResponse`: `unreadCount`.
 - `LoginResponse`: `accessToken`, `refreshToken`, `tokenType`, `user`.
 - `RefreshTokenRequest`: `refreshToken`.
 - `RefreshTokenResponse`: `accessToken`, `refreshToken`, `tokenType`.
@@ -145,6 +153,7 @@
 | `ProductStatus` | `ON_SALE`, `SOLD_OUT`, `HIDDEN`, `DELETED` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
 | `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE` |
+| `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |

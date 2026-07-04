@@ -5,6 +5,7 @@ import com.commerceops.erp.domain.inquiry.entity.Inquiry;
 import com.commerceops.erp.domain.inquiry.enums.InquiryStatus;
 import com.commerceops.erp.domain.inquiry.enums.InquiryType;
 import com.commerceops.erp.domain.inquiry.repository.InquiryRepository;
+import com.commerceops.erp.domain.notification.service.NotificationService;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.domain.user.enums.UserRole;
@@ -25,6 +26,7 @@ class InquiryServiceTest {
 
     @Mock private InquiryRepository inquiryRepository;
     @Mock private ProductRepository productRepository;
+    @Mock private NotificationService notificationService;
 
     @InjectMocks
     private InquiryService inquiryService;

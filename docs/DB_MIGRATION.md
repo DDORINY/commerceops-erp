@@ -26,6 +26,11 @@ V2__add_notification_tables.sql
 V3__add_audit_log_indexes.sql
 ```
 
+현재 적용 파일:
+
+- `V1__initial_schema.sql`
+- `V2__add_notifications.sql`
+
 ## 운영 원칙
 
 - 이미 배포된 migration 파일은 수정하지 않는다.

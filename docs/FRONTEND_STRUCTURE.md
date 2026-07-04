@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.2.4`
+기준 버전: `v0.2.7`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -64,6 +64,7 @@
 | `inquiryService.ts` | 사용자/상품 문의, 관리자 문의 답변/종료 |
 | `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/숨김/해제/삭제 |
 | `auditService.ts` | 관리자 작업 이력 조회 |
+| `notificationService.ts` | 사용자 알림 목록/읽음 처리, 관리자 최근 알림 조회 |
 | `returnService.ts` | 반품 요청/목록, 관리자 승인/거절 |
 | `shipmentService.ts` | 사용자 배송 조회, 관리자 배송 처리 |
 | `couponService.ts` | 쿠폰 검증, 관리자 쿠폰 CRUD 일부 |

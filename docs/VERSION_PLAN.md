@@ -266,6 +266,24 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [x] `v0.2.6` 태그 생성 및 push
 
+## v0.2.7 체크리스트
+
+목적: 알림 기초와 관리자 권한 세분화.
+
+- [x] 기존 알림/이메일 코드 존재 여부 확인
+- [x] `notifications` 도메인과 DDL 추가
+- [x] 사용자 알림 목록/읽음/미읽음 수 API 추가
+- [x] 관리자 최근 알림 조회 API 추가
+- [x] 주문 상태 변경 알림 기록
+- [x] 문의 답변 알림 기록
+- [x] 반품 승인/거절 알림 기록
+- [x] `MANAGER` 조회 권한 정책 정리
+- [x] 관련 API/DB/구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.7` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

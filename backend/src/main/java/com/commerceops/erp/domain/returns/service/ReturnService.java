@@ -4,6 +4,8 @@ import com.commerceops.erp.domain.accounting.service.AccountingService;
 import com.commerceops.erp.domain.inventory.entity.InventoryLog;
 import com.commerceops.erp.domain.inventory.enums.InventoryLogType;
 import com.commerceops.erp.domain.inventory.repository.InventoryLogRepository;
+import com.commerceops.erp.domain.notification.enums.NotificationType;
+import com.commerceops.erp.domain.notification.service.NotificationService;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.entity.OrderItem;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
@@ -43,6 +45,7 @@ public class ReturnService {
     private final InventoryLogRepository inventoryLogRepository;
     private final AccountingService accountingService;
     private final WarehouseFulfillmentService warehouseFulfillmentService;
+    private final NotificationService notificationService;
 
     @Transactional
     public ReturnResponse createReturn(Long orderId, User user, ReturnCreateRequest request) {
@@ -115,6 +118,7 @@ public class ReturnService {
         order.updateStatus(OrderStatus.REFUNDED);
 
         accountingService.recordRefund(order.getOrderNumber(), order.getTotalPrice());
+        notifyReturnProcessed(returnRequest);
 
         return ReturnResponse.from(returnRequest);
     }
@@ -126,7 +130,20 @@ public class ReturnService {
             throw new BusinessException(ErrorCode.RETURN_ALREADY_PROCESSED);
         }
         returnRequest.reject(request.adminNote());
+        notifyReturnProcessed(returnRequest);
         return ReturnResponse.from(returnRequest);
+    }
+
+    private void notifyReturnProcessed(ReturnRequest returnRequest) {
+        notificationService.notifyUser(
+                returnRequest.getUser(),
+                NotificationType.RETURN_PROCESSED,
+                "Return request processed",
+                "Your return request for order " + returnRequest.getOrder().getOrderNumber()
+                        + " is " + returnRequest.getStatus().name() + ".",
+                "RETURN",
+                returnRequest.getId()
+        );
     }
 
     private ReturnRequest findReturn(Long returnId) {
