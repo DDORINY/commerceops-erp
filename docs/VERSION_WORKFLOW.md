@@ -152,3 +152,228 @@ git push -u origin v0.1.0-version-plan
 - `.agents/`, `.claude/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` 등 AI 도구별 개인 작업 파일을 커밋하지 않는다.
 - 검증 없이 버전 태그를 만들지 않는다.
 - 한 브랜치에서 여러 버전 범위를 섞지 않는다.
+
+## 버전 작업 및 Hotfix 진행 규칙
+
+### 1. 기본 버전 작업 규칙
+
+CommerceOps ERP의 기능 개발 및 정리 작업은 버전 브랜치 단위로 진행한다.
+
+브랜치명은 아래 형식을 따른다.
+
+```text
+v0.1.x-작업명
+```
+
+예시:
+
+```text
+v0.1.9-release-verification
+v0.2.0-payment-integration
+```
+
+각 버전 작업은 다음 흐름으로 진행한다.
+
+```text
+main 최신화
+→ 버전 브랜치 생성
+→ 작업 수행
+→ 체크리스트 문서 생성/갱신
+→ lint/build/test 검증
+→ 커밋
+→ 원격 브랜치 push
+→ main 병합
+→ 버전 태그 생성
+→ 태그 push
+```
+
+버전 작업이 main에 병합되고 태그까지 생성된 경우, 해당 버전은 완료된 릴리스로 간주한다.
+
+완료된 버전 브랜치나 태그는 원칙적으로 수정하지 않는다.
+
+---
+
+### 2. 검증 중 발견된 버그 처리 규칙
+
+아직 해당 버전 브랜치가 main에 병합되기 전이라면, 검증 중 발견된 작은 버그는 현재 버전 브랜치 안에서 수정한다.
+
+예시:
+
+```text
+v0.1.9-release-verification 진행 중
+→ /login hydration 오류 발견
+→ 같은 v0.1.9 브랜치에서 최소 수정
+→ 체크리스트에 “검증 중 발견된 버그 수정”으로 기록
+→ lint/build/test 재검증
+→ main 병합
+→ v0.1.9 태그 생성
+```
+
+이 경우 별도 hotfix 브랜치를 만들지 않는다.
+
+---
+
+### 3. 릴리스 이후 발견된 버그 처리 규칙
+
+버전 브랜치가 이미 main에 병합되고 태그까지 생성된 뒤 발견된 오류는 hotfix로 처리한다.
+
+완료된 버전 태그는 수정하거나 재생성하지 않는다.
+
+hotfix 브랜치명은 아래 형식을 따른다.
+
+```text
+hotfix/문제-요약
+```
+
+예시:
+
+```text
+hotfix/login-hydration
+hotfix/admin-dashboard-loading
+hotfix/cart-quantity-error
+```
+
+hotfix 작업은 다음 흐름으로 진행한다.
+
+```text
+main 최신화
+→ hotfix 브랜치 생성
+→ 최소 수정
+→ hotfix 체크리스트 작성
+→ 관련 화면 수동 확인
+→ lint/build/test 검증
+→ 커밋
+→ 원격 브랜치 push
+→ main 병합
+→ patch 태그 생성
+→ 태그 push
+```
+
+patch 태그는 기존 릴리스 버전에 한 단계 덧붙인다.
+
+예시:
+
+```text
+v0.1.9
+→ v0.1.9.1
+```
+
+---
+
+### 4. Hotfix 범위 제한
+
+hotfix는 릴리스 이후 발견된 명확한 오류만 최소 수정한다.
+
+hotfix에서 하면 안 되는 작업:
+
+```text
+신규 기능 추가
+화면 구조 대규모 변경
+API 계약 변경
+DB 구조 변경
+대형 리팩토링
+미구현 기능 선반영
+```
+
+hotfix에서 허용되는 작업:
+
+```text
+hydration 오류 수정
+무한 로딩 방어
+명확한 401/403 처리 오류 수정
+화면 깨짐 수정
+잘못된 토큰 키 사용 수정
+잘못된 API 경로 수정
+빌드/런타임 오류 수정
+```
+
+---
+
+### 5. Hotfix 문서화 규칙
+
+hotfix 작업 시 아래 문서 중 하나 이상을 갱신한다.
+
+```text
+docs/checklists/hotfix-문제명.md
+docs/CURRENT_STATE.md
+```
+
+hotfix 체크리스트에는 다음 내용을 포함한다.
+
+```text
+기준 버전
+패치 태그
+브랜치명
+문제 증상
+원인
+수정 내용
+검증 결과
+남은 이슈
+릴리스 여부
+```
+
+---
+
+### 6. 검증 명령 규칙
+
+프론트 변경이 포함된 경우 다음을 실행한다.
+
+```powershell
+npm.cmd run lint
+npm.cmd run build
+```
+
+백엔드 변경이 포함된 경우 다음을 실행한다.
+
+```powershell
+.\gradlew.bat test
+```
+
+Windows 환경에서 `.next` EPERM 오류가 발생하면 별도 빌드 디렉터리를 지정해 검증한다.
+
+예시:
+
+```powershell
+$env:NEXT_DIST_DIR=".next-build-check-hotfix"
+npm.cmd run build
+Remove-Item -Recurse -Force .next-build-check-hotfix
+```
+
+임시 빌드 산출물은 커밋하지 않는다.
+
+---
+
+### 7. 민감 파일 커밋 금지
+
+아래 파일과 디렉터리는 버전 작업과 hotfix 작업 모두에서 커밋하지 않는다.
+
+```text
+.env
+.env.local
+application-local.yml
+AGENTS.md
+CLAUDE.md
+.codex/
+.next/
+.next-build-check-*/
+node_modules/
+build/
+```
+
+---
+
+### 8. 작업 판정 기준
+
+작업 완료는 단순 코드 수정이 아니라 아래 조건을 만족해야 한다.
+
+```text
+기능 또는 오류 수정 완료
+관련 화면 수동 확인
+lint/build/test 검증
+체크리스트 기록
+main 병합
+태그 생성
+태그 push
+```
+
+위 조건 중 일부를 수행하지 못한 경우 체크리스트에 미수행 사유를 기록한다.
