@@ -229,7 +229,7 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] frontend `npm.cmd run lint` 통과
 - [x] frontend `npm.cmd run build` 통과
 - [x] backend `.\gradlew.bat test` 통과
-- [ ] `v0.2.4` 태그 생성 및 push
+- [x] `v0.2.4` 태그 생성 및 push
 
 ## v0.2 우선순위
 
