@@ -9,12 +9,14 @@ import { productService, type ApiProductItem } from '@/lib/services/productServi
 import {
   warehouseService,
   type ApiStockTransfer,
+  type ApiStockTransferStatus,
   type ApiWarehouse,
   type ApiWarehouseStock,
 } from '@/lib/services/warehouseService';
 import { formatDateTime } from '@/lib/format';
 
 type Tab = 'warehouses' | 'stocks' | 'transfers';
+type TransferStatusFilter = 'ALL' | ApiStockTransferStatus;
 const PAGE_SIZE = 15;
 
 export default function AdminWarehousesPage() {
@@ -28,10 +30,15 @@ export default function AdminWarehousesPage() {
   const [transferPage, setTransferPage] = useState(1);
   const [transferPages, setTransferPages] = useState(1);
   const [stockWarehouseFilter, setStockWarehouseFilter] = useState('');
-  const [transferStatus, setTransferStatus] = useState('ALL');
+  const [stockKeyword, setStockKeyword] = useState('');
+  const [transferStatus, setTransferStatus] = useState<TransferStatusFilter>('ALL');
   const [loadingStocks, setLoadingStocks] = useState(true);
   const [loadingTransfers, setLoadingTransfers] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [warehouseError, setWarehouseError] = useState<string | null>(null);
+  const [productError, setProductError] = useState<string | null>(null);
+  const [stockError, setStockError] = useState<string | null>(null);
+  const [transferError, setTransferError] = useState<string | null>(null);
 
   const [warehouseForm, setWarehouseForm] = useState({ code: '', name: '', address: '' });
   const [allocationForm, setAllocationForm] = useState({ warehouseId: '', productId: '', quantity: '' });
@@ -40,19 +47,38 @@ export default function AdminWarehousesPage() {
   });
 
   const fetchWarehouses = useCallback(() => {
-    warehouseService.getWarehouses().then(setWarehouses).catch(() => setWarehouses([]));
+    warehouseService
+      .getWarehouses()
+      .then((data) => {
+        setWarehouses(data);
+        setWarehouseError(null);
+      })
+      .catch((error) => {
+        setWarehouses([]);
+        setWarehouseError(error instanceof Error ? error.message : '창고 목록을 불러오지 못했습니다.');
+      });
   }, []);
 
   const fetchStocks = useCallback(() => {
     warehouseService
-      .getStocks(stockWarehouseFilter ? Number(stockWarehouseFilter) : undefined, undefined, stockPage - 1, PAGE_SIZE)
+      .getStocks(
+        stockWarehouseFilter ? Number(stockWarehouseFilter) : undefined,
+        stockKeyword.trim() || undefined,
+        stockPage - 1,
+        PAGE_SIZE
+      )
       .then((response) => {
         setStocks(response.content);
         setStockPages(response.totalPages || 1);
+        setStockError(null);
       })
-      .catch(() => setStocks([]))
+      .catch((error) => {
+        setStocks([]);
+        setStockPages(1);
+        setStockError(error instanceof Error ? error.message : '창고별 재고를 불러오지 못했습니다.');
+      })
       .finally(() => setLoadingStocks(false));
-  }, [stockWarehouseFilter, stockPage]);
+  }, [stockKeyword, stockWarehouseFilter, stockPage]);
 
   const fetchTransfers = useCallback(() => {
     warehouseService
@@ -60,14 +86,28 @@ export default function AdminWarehousesPage() {
       .then((response) => {
         setTransfers(response.content);
         setTransferPages(response.totalPages || 1);
+        setTransferError(null);
       })
-      .catch(() => setTransfers([]))
+      .catch((error) => {
+        setTransfers([]);
+        setTransferPages(1);
+        setTransferError(error instanceof Error ? error.message : '재고 이동 목록을 불러오지 못했습니다.');
+      })
       .finally(() => setLoadingTransfers(false));
   }, [transferStatus, transferPage]);
 
   useEffect(() => {
     fetchWarehouses();
-    productService.getProducts({ size: 100 }).then((response) => setProducts(response.content)).catch(() => {});
+    productService
+      .getProducts({ size: 100 })
+      .then((response) => {
+        setProducts(response.content);
+        setProductError(null);
+      })
+      .catch((error) => {
+        setProducts([]);
+        setProductError(error instanceof Error ? error.message : '상품 목록을 불러오지 못했습니다.');
+      });
   }, [fetchWarehouses]);
 
   useEffect(() => {
@@ -111,6 +151,7 @@ export default function AdminWarehousesPage() {
       setSubmitting(true);
       await warehouseService.allocateStock(warehouseId, productId, quantity);
       setAllocationForm({ warehouseId: '', productId: '', quantity: '' });
+      setLoadingStocks(true);
       fetchStocks();
     } catch (error) {
       alert(error instanceof Error ? error.message : '재고 배치에 실패했습니다.');
@@ -137,6 +178,7 @@ export default function AdminWarehousesPage() {
       setSubmitting(true);
       await warehouseService.createTransfer(fromWarehouseId, toWarehouseId, productId, quantity);
       setTransferForm({ fromWarehouseId: '', toWarehouseId: '', productId: '', quantity: '' });
+      setLoadingTransfers(true);
       fetchTransfers();
     } catch (error) {
       alert(error instanceof Error ? error.message : '재고 이동 요청에 실패했습니다.');
@@ -149,6 +191,8 @@ export default function AdminWarehousesPage() {
     if (!confirm('이 재고 이동을 완료 처리하시겠습니까?')) return;
     try {
       await warehouseService.completeTransfer(transferId);
+      setLoadingTransfers(true);
+      setLoadingStocks(true);
       fetchTransfers();
       fetchStocks();
     } catch (error) {
@@ -158,6 +202,7 @@ export default function AdminWarehousesPage() {
 
   const selectClass = 'border border-[#dfe3ed] bg-white px-3 py-2 text-sm outline-none focus:border-[#1a1f2e]';
   const inputClass = 'border border-[#dfe3ed] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e]';
+  const errorClass = 'border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600';
 
   return (
     <AdminLayout title="창고 관리">
@@ -176,6 +221,12 @@ export default function AdminWarehousesPage() {
           </button>
         ))}
       </div>
+
+      {(warehouseError || productError) && (
+        <div className={`${errorClass} mb-4`}>
+          {[warehouseError, productError].filter(Boolean).join(' ')}
+        </div>
+      )}
 
       {tab === 'warehouses' && (
         <div className="space-y-6">
@@ -231,9 +282,21 @@ export default function AdminWarehousesPage() {
             </div>
           </form>
 
-          <div className="flex justify-end">
+          <div className="bg-white border border-[#e8eaf0] p-4 text-xs text-[#667085]">
+            주문 결제 시 창고별 가용 재고가 예약 수량으로 이동하고, 배송 완료 시 실재고와 예약 수량이 함께 차감됩니다. 주문 취소는 예약을 해제하고 반품 승인은 원창고 재고를 복구합니다.
+          </div>
+
+          {stockError && <div className={errorClass}>{stockError}</div>}
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <input
+              className={inputClass}
+              placeholder="상품명 검색"
+              value={stockKeyword}
+              onChange={(e) => { setStockKeyword(e.target.value); setStockPage(1); setLoadingStocks(true); }}
+            />
             <select className={selectClass} value={stockWarehouseFilter}
-              onChange={(e) => { setStockWarehouseFilter(e.target.value); setStockPage(1); }}>
+              onChange={(e) => { setStockWarehouseFilter(e.target.value); setStockPage(1); setLoadingStocks(true); }}>
               <option value="">전체 창고</option>
               {warehouses.map((warehouse) => <option key={warehouse.warehouseId} value={warehouse.warehouseId}>{warehouse.name}</option>)}
             </select>
@@ -254,7 +317,7 @@ export default function AdminWarehousesPage() {
               ]}
             />
           )}
-          <Pagination currentPage={stockPage} totalPages={stockPages} onPageChange={setStockPage} />
+          <Pagination currentPage={stockPage} totalPages={stockPages} onPageChange={(nextPage) => { setStockPage(nextPage); setLoadingStocks(true); }} />
         </div>
       )}
 
@@ -284,9 +347,11 @@ export default function AdminWarehousesPage() {
             </div>
           </form>
 
+          {transferError && <div className={errorClass}>{transferError}</div>}
+
           <div className="flex justify-end">
             <select className={selectClass} value={transferStatus}
-              onChange={(e) => { setTransferStatus(e.target.value); setTransferPage(1); }}>
+              onChange={(e) => { setTransferStatus(e.target.value as TransferStatusFilter); setTransferPage(1); setLoadingTransfers(true); }}>
               <option value="ALL">전체 상태</option>
               <option value="PENDING">이동 대기</option>
               <option value="COMPLETED">이동 완료</option>
@@ -315,7 +380,7 @@ export default function AdminWarehousesPage() {
               ]}
             />
           )}
-          <Pagination currentPage={transferPage} totalPages={transferPages} onPageChange={setTransferPage} />
+          <Pagination currentPage={transferPage} totalPages={transferPages} onPageChange={(nextPage) => { setTransferPage(nextPage); setLoadingTransfers(true); }} />
         </div>
       )}
     </AdminLayout>
