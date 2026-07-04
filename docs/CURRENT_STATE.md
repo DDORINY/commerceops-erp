@@ -86,3 +86,15 @@
 - CSV 다운로드는 현재 화면에 조회된 회계 내역 페이지 기준으로 클라이언트에서 생성한다.
 - `/api/admin/accounting/**`는 `ADMIN`, `SUPER_ADMIN` 권한으로 제한되어 있다.
 - 정식 복식부기, 계정과목, 마감, 정산 보고서는 v0.2 이후 고도화 범위로 유지한다.
+
+---
+
+## v0.1.4 업데이트 기록
+
+- 관리자 매출 통계 화면 `/admin/sales`는 실제 관리자 대시보드 API를 사용한다.
+- 기간별 매출/주문 수는 `GET /api/admin/dashboard/sales`를 사용하며 `DAILY`, `MONTHLY` 기간 단위를 지원한다.
+- 전체 요약 지표는 `GET /api/admin/dashboard/summary`를 사용한다.
+- 인기 상품 TOP 10은 `GET /api/admin/dashboard/top-products`를 사용한다.
+- 최근 결제 완료 주문은 `GET /api/admin/orders?status=PAID`를 사용한다.
+- 화면에는 로딩, 부분 실패 에러, 데이터 없음 상태를 표시한다.
+- 상품별 지표 기간 필터와 고급 BI/차트 라이브러리 도입은 v0.2 이후 범위로 유지한다.

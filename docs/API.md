@@ -1044,8 +1044,10 @@ GET /api/admin/dashboard/sales
 | 이름        | 타입     | 필수 | 설명              |
 | --------- | ------ | -- | --------------- |
 | period    | String | N  | DAILY / MONTHLY |
-| startDate | String | N  | 시작일             |
-| endDate   | String | N  | 종료일             |
+| startDate | String | N  | 시작일, `yyyy-MM-dd` |
+| endDate   | String | N  | 종료일, `yyyy-MM-dd` |
+
+`period=DAILY`는 일별 `yyyy-MM-dd`, `period=MONTHLY`는 월별 `yyyy-MM` 라벨로 응답한다. `salesAmount`와 `orderCount`는 `payments.payment_status = PAID` 기준으로 집계한다.
 
 ### Response
 
@@ -1121,6 +1123,8 @@ GET /api/admin/dashboard/top-products
   ]
 }
 ```
+
+현재 인기 상품 조회는 주문 상태가 `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`인 주문 상품을 기준으로 판매 수량과 판매 금액을 집계한다. 기간 조건은 아직 없으며, 기간별 상품 성과 분석은 v0.2 이후 고급 BI 범위에서 확장한다.
 
 ---
 

@@ -1,29 +1,134 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import StatCard from '@/components/admin/StatCard';
 import DataTable from '@/components/admin/DataTable';
-import { adminService, type ApiDashboardSummary, type ApiSalesData } from '@/lib/services/adminService';
+import {
+  adminService,
+  type ApiDashboardSummary,
+  type ApiSalesData,
+  type ApiSalesPeriod,
+  type ApiTopProduct,
+} from '@/lib/services/adminService';
 import { orderService, type ApiAdminOrder } from '@/lib/services/orderService';
-import { formatPrice, formatDate } from '@/lib/format';
+import { formatPrice, formatDate, ORDER_STATUS_LABEL } from '@/lib/format';
+
+type SalesPeriod = ApiSalesPeriod;
+
+const PERIOD_FILTERS: { value: SalesPeriod; label: string }[] = [
+  { value: 'DAILY', label: '일별' },
+  { value: 'MONTHLY', label: '월별' },
+];
+
+const toDateInput = (date: Date) => date.toISOString().slice(0, 10);
+
+const defaultStartDate = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - 5);
+  date.setDate(1);
+  return toDateInput(date);
+};
+
+const defaultEndDate = () => toDateInput(new Date());
 
 export default function AdminSalesPage() {
   const [summary, setSummary] = useState<ApiDashboardSummary | null>(null);
-  const [monthlySales, setMonthlySales] = useState<ApiSalesData[]>([]);
+  const [salesData, setSalesData] = useState<ApiSalesData[]>([]);
+  const [topProducts, setTopProducts] = useState<ApiTopProduct[]>([]);
   const [recentPaidOrders, setRecentPaidOrders] = useState<ApiAdminOrder[]>([]);
+  const [period, setPeriod] = useState<SalesPeriod>('MONTHLY');
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const fetchSales = useCallback(() => {
+    Promise.allSettled([
+      adminService.getDashboardSummary(),
+      adminService.getSales(period, startDate, endDate),
+      adminService.getTopProducts(10),
+      orderService.getAdminOrders('PAID', undefined, 0, 10),
+    ])
+      .then(([summaryResult, salesResult, productsResult, ordersResult]) => {
+        const errors: string[] = [];
+
+        if (summaryResult.status === 'fulfilled') {
+          setSummary(summaryResult.value);
+        } else {
+          setSummary(null);
+          errors.push('요약 지표');
+        }
+
+        if (salesResult.status === 'fulfilled') {
+          setSalesData(salesResult.value);
+        } else {
+          setSalesData([]);
+          errors.push('기간별 매출');
+        }
+
+        if (productsResult.status === 'fulfilled') {
+          setTopProducts(productsResult.value);
+        } else {
+          setTopProducts([]);
+          errors.push('인기 상품');
+        }
+
+        if (ordersResult.status === 'fulfilled') {
+          setRecentPaidOrders(ordersResult.value.content);
+        } else {
+          setRecentPaidOrders([]);
+          errors.push('최근 주문');
+        }
+
+        setErrorMessage(errors.length > 0 ? `${errors.join(', ')} 데이터를 불러오지 못했습니다.` : null);
+      })
+      .finally(() => setLoading(false));
+  }, [endDate, period, startDate]);
 
   useEffect(() => {
-    adminService.getDashboardSummary().then(setSummary).catch(() => {});
-    adminService.getSales('MONTHLY').then(setMonthlySales).catch(() => {});
-    orderService.getAdminOrders('PAID', undefined, 0, 20)
-      .then((res) => setRecentPaidOrders(res.content))
-      .catch(() => {});
-  }, []);
+    fetchSales();
+  }, [fetchSales]);
 
-  const maxRevenue = monthlySales.length > 0
-    ? Math.max(...monthlySales.map((m) => m.salesAmount))
+  const handlePeriodChange = (nextPeriod: SalesPeriod) => {
+    setPeriod(nextPeriod);
+    setLoading(true);
+    setErrorMessage(null);
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    setErrorMessage(null);
+    fetchSales();
+  };
+
+  const handleStartDateChange = (value: string) => {
+    setStartDate(value);
+    setLoading(true);
+    setErrorMessage(null);
+  };
+
+  const handleEndDateChange = (value: string) => {
+    setEndDate(value);
+    setLoading(true);
+    setErrorMessage(null);
+  };
+
+  const maxSales = salesData.length > 0
+    ? Math.max(...salesData.map((item) => item.salesAmount))
     : 1;
+
+  const selectedSalesAmount = useMemo(
+    () => salesData.reduce((sum, item) => sum + item.salesAmount, 0),
+    [salesData]
+  );
+  const selectedOrderCount = useMemo(
+    () => salesData.reduce((sum, item) => sum + item.orderCount, 0),
+    [salesData]
+  );
+  const selectedAvgOrderValue = selectedOrderCount > 0
+    ? Math.round(selectedSalesAmount / selectedOrderCount)
+    : 0;
 
   const totalSales = summary?.totalSales ?? 0;
   const totalOrders = summary?.totalOrders ?? 0;
@@ -67,90 +172,195 @@ export default function AdminSalesPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-white border border-[#e8eaf0] p-5">
-          <h2 className="text-sm font-bold text-[#1a1f2e] mb-5">월별 매출 추이</h2>
-          <div className="space-y-4">
-            {monthlySales.map((month) => {
-              const percent = maxRevenue > 0 ? Math.round((month.salesAmount / maxRevenue) * 100) : 0;
-              return (
-                <div key={month.date}>
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="text-[#777] w-16">{month.date}</span>
-                    <div className="flex-1 mx-3">
-                      <div className="h-5 bg-[#f0f1f5] rounded-sm overflow-hidden">
-                        <div
-                          className="h-full bg-[#1a1f2e] rounded-sm transition-all duration-500"
-                          style={{ width: `${percent}%` }}
-                        />
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          {PERIOD_FILTERS.map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => handlePeriodChange(filter.value)}
+              className={[
+                'px-4 py-2 text-xs font-medium border transition-colors',
+                period === filter.value
+                  ? 'border-[#1a1f2e] bg-[#1a1f2e] text-white'
+                  : 'border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white',
+              ].join(' ')}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+        <label className="text-xs font-medium text-[#777]">
+          시작일
+          <input
+            type="date"
+            value={startDate}
+            onChange={(event) => handleStartDateChange(event.target.value)}
+            className="block mt-1 border border-[#e8eaf0] px-3 py-2 text-xs text-[#333] bg-white"
+          />
+        </label>
+        <label className="text-xs font-medium text-[#777]">
+          종료일
+          <input
+            type="date"
+            value={endDate}
+            onChange={(event) => handleEndDateChange(event.target.value)}
+            className="block mt-1 border border-[#e8eaf0] px-3 py-2 text-xs text-[#333] bg-white"
+          />
+        </label>
+        <button
+          onClick={handleRefresh}
+          className="px-4 py-2 text-xs font-medium border border-[#1a1f2e] bg-white text-[#1a1f2e] hover:bg-[#1a1f2e] hover:text-white transition-colors"
+        >
+          조회
+        </button>
+      </div>
+
+      {errorMessage && (
+        <div className="mb-4 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {errorMessage}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="py-12 text-center text-[#bbb] text-sm">매출 데이터를 불러오는 중...</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <StatCard
+              title="조회 기간 매출"
+              value={formatPrice(selectedSalesAmount)}
+              subtitle={`${startDate} ~ ${endDate}`}
+              iconBgColor="bg-blue-50"
+              icon={<span className="text-sm font-bold text-blue-600">₩</span>}
+            />
+            <StatCard
+              title="조회 기간 주문 수"
+              value={`${selectedOrderCount}건`}
+              subtitle={period === 'MONTHLY' ? '월별 집계' : '일별 집계'}
+              iconBgColor="bg-purple-50"
+              icon={<span className="text-sm font-bold text-purple-600">#</span>}
+            />
+            <StatCard
+              title="조회 기간 평균 주문액"
+              value={formatPrice(selectedAvgOrderValue)}
+              subtitle="매출 / 주문 수"
+              iconBgColor="bg-green-50"
+              icon={<span className="text-xs font-bold text-green-600">AVG</span>}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="bg-white border border-[#e8eaf0] p-5">
+              <h2 className="text-sm font-bold text-[#1a1f2e] mb-5">
+                {period === 'MONTHLY' ? '월별' : '일별'} 매출 추이
+              </h2>
+              <div className="space-y-4">
+                {salesData.map((item) => {
+                  const percent = maxSales > 0 ? Math.round((item.salesAmount / maxSales) * 100) : 0;
+                  return (
+                    <div key={item.date}>
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-[#777] w-20">{item.date}</span>
+                        <div className="flex-1 mx-3">
+                          <div className="h-5 bg-[#f0f1f5] rounded-sm overflow-hidden">
+                            <div
+                              className="h-full bg-[#1a1f2e] rounded-sm transition-all duration-500"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+                        <span className="font-medium text-[#333] text-right w-24">
+                          {formatPrice(item.salesAmount)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#999] pl-20 pr-6 text-right">
+                        주문 {item.orderCount}건
                       </div>
                     </div>
-                    <span className="font-medium text-[#333] text-right w-24">
-                      {formatPrice(month.salesAmount)}
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-[#999] pl-16 pr-6 text-right">
-                    주문 {month.orderCount}건
-                  </div>
-                </div>
-              );
-            })}
-            {monthlySales.length === 0 && (
-              <p className="text-sm text-[#bbb] text-center py-4">매출 데이터가 없습니다.</p>
-            )}
+                  );
+                })}
+                {salesData.length === 0 && (
+                  <p className="text-sm text-[#bbb] text-center py-4">매출 데이터가 없습니다.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e8eaf0] p-5">
+              <h2 className="text-sm font-bold text-[#1a1f2e] mb-4">
+                {period === 'MONTHLY' ? '월별' : '일별'} 통계
+              </h2>
+              <DataTable<ApiSalesData>
+                keyField="date"
+                data={[...salesData].reverse()}
+                emptyMessage="매출 데이터가 없습니다."
+                columns={[
+                  { key: 'date', header: period === 'MONTHLY' ? '월' : '일자' },
+                  {
+                    key: 'salesAmount',
+                    header: '매출',
+                    render: (row) => formatPrice(row.salesAmount),
+                  },
+                  { key: 'orderCount', header: '주문 수', render: (row) => `${row.orderCount}건` },
+                  {
+                    key: 'salesAmount',
+                    header: '평균 주문액',
+                    render: (row) =>
+                      formatPrice(row.orderCount > 0 ? Math.round(row.salesAmount / row.orderCount) : 0),
+                  },
+                ]}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="bg-white border border-[#e8eaf0] p-5">
-          <h2 className="text-sm font-bold text-[#1a1f2e] mb-4">월별 통계</h2>
-          <DataTable<ApiSalesData>
-            keyField="date"
-            data={[...monthlySales].reverse()}
-            columns={[
-              { key: 'date', header: '월' },
-              {
-                key: 'salesAmount',
-                header: '매출',
-                render: (row) => formatPrice(row.salesAmount),
-              },
-              { key: 'orderCount', header: '주문 수', render: (row) => `${row.orderCount}건` },
-              {
-                key: 'salesAmount',
-                header: '평균 주문액',
-                render: (row) =>
-                  formatPrice(row.orderCount > 0 ? Math.round(row.salesAmount / row.orderCount) : 0),
-              },
-            ]}
-          />
-        </div>
-      </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+            <div className="bg-white border border-[#e8eaf0] p-5">
+              <h2 className="text-sm font-bold text-[#1a1f2e] mb-4">인기 상품 TOP 10</h2>
+              <DataTable<ApiTopProduct>
+                keyField="productId"
+                data={topProducts}
+                emptyMessage="상품별 판매 지표가 없습니다."
+                columns={[
+                  { key: 'productName', header: '상품명' },
+                  { key: 'orderCount', header: '판매 수량', render: (row) => `${row.orderCount}개` },
+                  {
+                    key: 'salesAmount',
+                    header: '매출',
+                    render: (row) => formatPrice(row.salesAmount),
+                  },
+                ]}
+              />
+            </div>
 
-      <div className="bg-white border border-[#e8eaf0] p-5 mt-6">
-        <h2 className="text-sm font-bold text-[#1a1f2e] mb-4">최근 결제 완료 주문</h2>
-        <DataTable<ApiAdminOrder>
-          keyField="orderId"
-          data={recentPaidOrders}
-          columns={[
-            { key: 'orderNumber', header: '주문번호' },
-            { key: 'userName', header: '고객명' },
-            {
-              key: 'totalPrice',
-              header: '결제금액',
-              render: (row) => formatPrice(row.totalPrice),
-            },
-            {
-              key: 'status',
-              header: '상태',
-              render: (row) => row.status,
-            },
-            {
-              key: 'createdAt',
-              header: '주문일',
-              render: (row) => formatDate(row.createdAt),
-            },
-          ]}
-        />
-      </div>
+            <div className="bg-white border border-[#e8eaf0] p-5">
+              <h2 className="text-sm font-bold text-[#1a1f2e] mb-4">최근 결제 완료 주문</h2>
+              <DataTable<ApiAdminOrder>
+                keyField="orderId"
+                data={recentPaidOrders}
+                emptyMessage="최근 결제 완료 주문이 없습니다."
+                columns={[
+                  { key: 'orderNumber', header: '주문번호' },
+                  { key: 'userName', header: '고객명' },
+                  {
+                    key: 'totalPrice',
+                    header: '결제금액',
+                    render: (row) => formatPrice(row.totalPrice),
+                  },
+                  {
+                    key: 'status',
+                    header: '상태',
+                    render: (row) => ORDER_STATUS_LABEL[row.status] ?? row.status,
+                  },
+                  {
+                    key: 'createdAt',
+                    header: '주문일',
+                    render: (row) => formatDate(row.createdAt),
+                  },
+                ]}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </AdminLayout>
   );
 }
