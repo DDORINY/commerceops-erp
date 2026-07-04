@@ -10,4 +10,5 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     boolean existsByCodeIgnoreCase(String code);
     Optional<Warehouse> findByCodeIgnoreCase(String code);
     List<Warehouse> findAllByOrderByNameAsc();
+    long countByActiveTrue();
 }

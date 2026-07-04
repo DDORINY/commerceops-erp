@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.2.7`
+기준 버전: `v0.2.8`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -28,7 +28,7 @@
 | `/api/admin/inquiries/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/reviews/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/audit-logs/**` | `ADMIN`, `SUPER_ADMIN` |
-| `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/notifications/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
+| `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/uploads/**` | 공개 정적 파일 |
@@ -98,6 +98,7 @@
 | Notification | PATCH | `/api/notifications/{notificationId}/read` | - | `NotificationResponse` | 인증 |
 | Notification | PATCH | `/api/notifications/read-all` | - | `UnreadNotificationCountResponse` | 인증 |
 | Notification Admin | GET | `/api/admin/notifications` | `page`, `size` | `PageResponse<NotificationResponse>` | 관리자/매니저 |
+| Ops Analytics Admin | GET | `/api/admin/ops-analytics/overview` | - | `OpsAnalyticsOverviewResponse` | 관리자/매니저 |
 | Wishlist | POST | `/api/wishlist/{productId}` | - | `WishlistToggleResponse` | 인증 |
 | Wishlist | GET | `/api/wishlist` | - | `List<WishlistItemResponse>` | 인증 |
 | Wishlist | GET | `/api/wishlist/{productId}/status` | - | `WishlistToggleResponse` | 인증 |
@@ -133,6 +134,10 @@
 - `AuditLogResponse`: `id`, `actorId`, `actorEmail`, `actorName`, `actionType`, `targetType`, `targetId`, `beforeStatus`, `afterStatus`, `summary`, `createdAt`.
 - `NotificationResponse`: `id`, `userId`, `type`, `title`, `message`, `targetType`, `targetId`, `read`, `readAt`, `createdAt`.
 - `UnreadNotificationCountResponse`: `unreadCount`.
+- `OpsAnalyticsOverviewResponse`: `accounting`, `sales`, `warehouse`, `notes`.
+- `OpsAnalyticsOverviewResponse.accounting`: `totalSales`, `totalRefunds`, `totalInboundAmount`, `netSales`, `entryCount`.
+- `OpsAnalyticsOverviewResponse.sales`: `totalOrders`, `paidOrders`, `cancelledOrders`, `refundedOrders`, `totalRevenue`, `averagePaidOrderAmount`, `orderStatusCounts`.
+- `OpsAnalyticsOverviewResponse.warehouse`: `totalWarehouses`, `activeWarehouses`, `inactiveWarehouses`, `totalStockQuantity`, `totalReservedQuantity`, `totalAvailableQuantity`, `reservationStatusCounts`.
 - `LoginResponse`: `accessToken`, `refreshToken`, `tokenType`, `user`.
 - `RefreshTokenRequest`: `refreshToken`.
 - `RefreshTokenResponse`: `accessToken`, `refreshToken`, `tokenType`.
@@ -171,5 +176,5 @@
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 결제 승인 API는 `MOCK_PROVIDER` 기반으로 동작한다.
 - 완전한 감사 로그 시스템. 현재는 리뷰 숨김/해제/삭제 작업 이력의 최소 기록만 제공한다.
-- 고급 BI, 복식부기, 정산 리포트 API.
+- 고급 BI, 복식부기, 정산 리포트 API는 미구현이다. v0.2.8 기준으로는 `/api/admin/ops-analytics/overview`에서 기초 운영 지표만 제공한다.
 - 피킹, 패킹, 출고 자동화 API.

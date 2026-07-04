@@ -1,12 +1,13 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.2.7`
+기준 버전: `v0.2.8`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 - 초기 마이그레이션: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
 - 알림 마이그레이션: `backend/src/main/resources/db/migration/V2__add_notifications.sql`
+- v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
 - 기존 개발 DB에 `flyway_schema_history`가 없는 경우 `baseline-on-migrate=true`, `baseline-version=0` 기준으로 시작한다.

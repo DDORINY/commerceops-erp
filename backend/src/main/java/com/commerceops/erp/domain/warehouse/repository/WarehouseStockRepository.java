@@ -14,6 +14,15 @@ import java.util.List;
 
 public interface WarehouseStockRepository extends JpaRepository<WarehouseStock, Long> {
 
+    @Query("SELECT COALESCE(SUM(s.quantity), 0) FROM WarehouseStock s")
+    long sumQuantity();
+
+    @Query("SELECT COALESCE(SUM(s.reservedQuantity), 0) FROM WarehouseStock s")
+    long sumReservedQuantity();
+
+    @Query("SELECT COALESCE(SUM(s.quantity - s.reservedQuantity), 0) FROM WarehouseStock s")
+    long sumAvailableQuantity();
+
     @Query("SELECT COALESCE(SUM(s.quantity), 0) FROM WarehouseStock s WHERE s.product.id = :productId")
     long sumQuantityByProductId(@Param("productId") Long productId);
 

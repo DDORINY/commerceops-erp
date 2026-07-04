@@ -284,6 +284,23 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [x] `v0.2.7` 태그 생성 및 push
 
+## v0.2.8 체크리스트
+
+목적: 운영 분석/회계/WMS 고도화의 최소 기반과 후속 이관 범위 정리.
+
+- [x] 기존 대시보드/회계/창고/주문/결제 구조 확인
+- [x] 회계 기초 지표 집계 기준 정리
+- [x] 매출/주문 기초 지표 집계 기준 정리
+- [x] 창고/WMS 기초 지표 집계 기준 정리
+- [x] 관리자 운영 분석 overview API 추가
+- [x] 프론트 운영 분석 service 타입 추가
+- [x] 신규 DB 테이블 없이 기존 테이블 읽기 전용 집계로 구현
+- [x] 관련 API/DB/구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.8` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

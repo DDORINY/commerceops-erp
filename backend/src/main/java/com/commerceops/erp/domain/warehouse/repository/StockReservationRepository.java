@@ -13,6 +13,8 @@ public interface StockReservationRepository extends JpaRepository<StockReservati
 
     boolean existsByOrder(Order order);
 
+    long countByStatus(StockReservationStatus status);
+
     @Query("SELECT r FROM StockReservation r JOIN FETCH r.warehouseStock s JOIN FETCH s.warehouse " +
             "WHERE r.order = :order AND r.status = :status ORDER BY r.id")
     List<StockReservation> findAllByOrderAndStatus(

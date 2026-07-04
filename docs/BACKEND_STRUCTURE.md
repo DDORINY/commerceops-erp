@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.7`
+기준 버전: `v0.2.8`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -29,6 +29,7 @@ com.commerceops.erp
 │   ├── inventory
 │   ├── media
 │   ├── notification
+│   ├── ops
 │   ├── order
 │   ├── payment
 │   ├── product
@@ -61,6 +62,7 @@ com.commerceops.erp
 | inventory | `AdminInventoryController` | `InventoryService` | `InventoryLogRepository` | `InventoryLog` |
 | media | `AdminMediaController` | `MediaStorageService` | `MediaFileRepository` | `MediaFile` |
 | notification | `NotificationController`, `AdminNotificationController` | `NotificationService` | `NotificationRepository` | `Notification` |
+| ops | `AdminOpsAnalyticsController` | `OpsAnalyticsService` | 회계/주문/결제/창고 repository 사용 | - |
 | order | `OrderController`, `AdminOrderController` | `OrderService`, `OrderCancellationService` | `OrderRepository`, `OrderItemRepository` | `Order`, `OrderItem` |
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
 | product | `ProductController`, `AdminProductController` | `ProductService` | `ProductRepository` | `Product` |
@@ -85,6 +87,7 @@ com.commerceops.erp
 - Flyway: `backend/src/main/resources/db/migration`의 SQL을 운영/로컬 스키마 기준으로 사용한다. 테스트 프로파일은 기존 H2 `create-drop` 회귀 테스트를 유지하기 위해 Flyway를 비활성화한다.
 - `CorsConfig`: `COMMERCEOPS_CORS_ALLOWED_ORIGINS` 또는 `commerceops.cors.allowed-origins` 설정으로 허용 origin을 분리한다.
 - 관리자 권한: `MANAGER`는 운영 조회 중심 GET API에 접근하고, 데이터 변경/권한/회계/쿠폰/리뷰 운영/감사 로그는 `ADMIN`, `SUPER_ADMIN`으로 제한한다.
+- 운영 분석: `OpsAnalyticsService`는 신규 테이블 없이 `AccountingEntry`, `Order`, `Payment`, `Warehouse`, `WarehouseStock`, `StockReservation` 데이터를 읽기 전용으로 집계한다.
 
 ## 환경 프로파일
 
@@ -109,3 +112,4 @@ com.commerceops.erp
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.
+- 대규모 BI/데이터 웨어하우스와 WMS 자동 피킹/패킹 최적화. v0.2.8에서는 기초 overview API와 문서 기준만 추가했다.

@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.2.7`
+기준 버전: `v0.2.8`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -65,6 +65,7 @@
 | `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/숨김/해제/삭제 |
 | `auditService.ts` | 관리자 작업 이력 조회 |
 | `notificationService.ts` | 사용자 알림 목록/읽음 처리, 관리자 최근 알림 조회 |
+| `opsAnalyticsService.ts` | 운영 분석 기초 overview 조회 |
 | `returnService.ts` | 반품 요청/목록, 관리자 승인/거절 |
 | `shipmentService.ts` | 사용자 배송 조회, 관리자 배송 처리 |
 | `couponService.ts` | 쿠폰 검증, 관리자 쿠폰 CRUD 일부 |
@@ -97,5 +98,5 @@
 - 실제 PG 결제 UI/승인 콜백. 현재 checkout은 `/api/payments/approve`를 호출하되 provider는 백엔드 `MOCK_PROVIDER` 기반이다.
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 전체 관리자 기능 감사 로그 UI. 현재는 관리자 리뷰 화면의 최근 리뷰 감사 로그만 표시한다.
-- 고급 차트/BI 라이브러리 기반 분석 화면.
+- 고급 차트/BI 라이브러리 기반 분석 화면. v0.2.8에서는 `opsAnalyticsService` 타입과 API 호출 기준만 추가했다.
 - 피킹/패킹/출고 자동화 화면.

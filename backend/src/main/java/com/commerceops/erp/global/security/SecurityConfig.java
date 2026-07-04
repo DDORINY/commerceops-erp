@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/admin/stock-transfers/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/admin/products/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/admin/notifications/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/ops-analytics/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
                         // ADMIN 전용 (고객 관리, 상품 등록/수정/삭제, 쿠폰, 회계)
                         .requestMatchers("/api/admin/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/admin/orders/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
