@@ -1453,7 +1453,26 @@ GET /api/admin/dashboard/top-products
 | GET | `/api/admin/accounting/summary` | ADMIN | 매출·환불·입고·순매출 요약 |
 | GET | `/api/admin/accounting/entries` | ADMIN | 유형별 기초 회계 기록 목록 |
 
-현재 유형은 `SALE`, `REFUND`, `INBOUND`이다. 이는 정식 복식부기 전표가 아니며 계정과목, 차변/대변 라인, 마감, 반제는 [v0.4 계획](./VERSION_PLAN.md#v04--회계정산-기반)에서 구현한다.
+`GET /api/admin/accounting/summary` 응답 `data`:
+
+| 필드 | 의미 |
+| --- | --- |
+| `totalSales` | `SALE` 합계 |
+| `totalRefunds` | `REFUND` 합계 |
+| `totalInbound` | `INBOUND` 합계 |
+| `netSales` | `totalSales - totalRefunds` |
+
+`GET /api/admin/accounting/entries` query:
+
+| 이름 | 필수 | 설명 |
+| --- | --- | --- |
+| `type` | 아니오 | `SALE`, `REFUND`, `INBOUND` 중 하나 |
+| `page` | 아니오 | 0부터 시작하는 페이지 번호 |
+| `size` | 아니오 | 페이지 크기 |
+
+응답 `content` 항목은 `entryId`, `type`, `amount`, `description`, `referenceId`, `createdAt`을 포함한다.
+
+현재 유형은 `SALE`, `REFUND`, `INBOUND`이다. 관리자 화면 CSV 다운로드는 별도 서버 API가 아니라 현재 조회된 회계 내역 페이지를 기준으로 `ID`, `구분`, `금액`, `설명`, `참조ID`, `일시` 컬럼을 클라이언트에서 생성한다. 이는 정식 복식부기 전표가 아니며 계정과목, 차변/대변 라인, 마감, 반제는 [v0.4 계획](./VERSION_PLAN.md#v04--회계정산-기반)에서 구현한다.
 
 ---
 

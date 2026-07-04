@@ -107,7 +107,7 @@ export const INQUIRY_TYPE_LABEL: Record<string, string> = {
 export const ACCOUNTING_TYPE_LABEL: Record<string, string> = {
   SALE: '매출',
   REFUND: '환불',
-  INBOUND: '매입',
+  INBOUND: '입고',
 };
 
 export const ACCOUNTING_TYPE_COLOR: Record<string, string> = {

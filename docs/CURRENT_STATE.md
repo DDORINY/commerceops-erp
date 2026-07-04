@@ -75,3 +75,14 @@
 - 관리자 리뷰 삭제는 `DELETE /api/admin/reviews/{reviewId}`를 사용한다.
 - `/api/admin/reviews/**`는 `ADMIN`, `SUPER_ADMIN` 권한으로 제한한다.
 - 리뷰 엔티티에 숨김 상태 컬럼은 없으므로 v0.1.2에서는 상태 변경 대신 삭제 흐름만 구현했다.
+
+---
+
+## v0.1.3 업데이트 기록
+
+- 관리자 회계 관리 화면 `/admin/accounting`은 기존 `GET /api/admin/accounting/summary`, `GET /api/admin/accounting/entries`를 사용한다.
+- 요약 카드는 실제 회계 기록 기준으로 총 매출, 총 환불, 총 입고 금액, 순매출을 표시한다.
+- 회계 내역 목록은 `SALE`, `REFUND`, `INBOUND` 유형 필터와 페이지네이션을 지원한다.
+- CSV 다운로드는 현재 화면에 조회된 회계 내역 페이지 기준으로 클라이언트에서 생성한다.
+- `/api/admin/accounting/**`는 `ADMIN`, `SUPER_ADMIN` 권한으로 제한되어 있다.
+- 정식 복식부기, 계정과목, 마감, 정산 보고서는 v0.2 이후 고도화 범위로 유지한다.
