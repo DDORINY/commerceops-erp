@@ -1,8 +1,9 @@
-# Local environment and secrets
+﻿# Local environment and secrets
 .env
 .env.*
 !.env.example
 !.env.*.example
+.envrc
 frontend/.env.local
 frontend/.env*.local
 backend/src/main/resources/application-local.yml
@@ -24,6 +25,7 @@ backend/src/main/resources/application-*.local.yaml
 .codex/
 .cursor/
 .windsurf/
+.abstra/
 AGENTS.md
 CLAUDE.md
 frontend/AGENTS.md
@@ -63,6 +65,32 @@ backend/**/build/
 !backend/**/src/test/**/build/
 backend/HELP.md
 
+# Python and general tooling cache
+__pycache__/
+*.py[codz]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+.pyre/
+.pytype/
+.ipynb_checkpoints/
+.pdm-python
+.pdm-build/
+.pixi/
+__pypackages__/
+
 # IDEs and OS files
 .idea/
 .vscode/
@@ -87,3 +115,4 @@ logs/
 tmp/
 temp/
 *.tmp
+tempCodeRunnerFile.py
