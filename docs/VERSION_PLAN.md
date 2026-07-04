@@ -193,6 +193,23 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [x] `v0.2.2` 태그 생성 및 push
 
+## v0.2.3 체크리스트
+
+목적: 상품 이미지 업로드와 미디어 파일 메타데이터 관리.
+
+- [x] 기존 상품 이미지 URL 구조 확인
+- [x] `POST /api/admin/media/product-images` 추가
+- [x] multipart 업로드, 파일명 충돌 방지, 확장자/MIME/용량 검증 구현
+- [x] `media_files` 메타데이터 엔티티/저장소 추가
+- [x] `/uploads/**` 정적 파일 공개 경로 추가
+- [x] 관리자 상품 등록/수정 화면 업로드 UI 연결
+- [x] 사용자 상품 목록/상세 이미지 fallback 처리
+- [x] 관련 API/DB/구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.3` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

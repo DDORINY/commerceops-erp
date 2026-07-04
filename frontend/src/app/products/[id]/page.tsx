@@ -48,7 +48,13 @@ export default function ProductDetailPage({
           const raw = localStorage.getItem('recent_products');
           const prev: { id: number; name: string; price: number; imageUrl: string; categoryName: string }[] = raw ? JSON.parse(raw) : [];
           const filtered = prev.filter((x) => x.id !== p.id);
-          const updated = [{ id: p.id, name: p.name, price: p.price, imageUrl: p.imageUrl, categoryName: p.categoryName }, ...filtered].slice(0, 10);
+          const updated = [{
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            imageUrl: p.imageUrl ?? 'https://placehold.co/600x750?text=No+Image',
+            categoryName: p.categoryName,
+          }, ...filtered].slice(0, 10);
           localStorage.setItem('recent_products', JSON.stringify(updated));
         } catch { /* ignore */ }
       })
@@ -174,6 +180,7 @@ export default function ProductDetailPage({
   }
 
   const isSoldOut = product.status === 'SOLD_OUT' || product.stockQuantity === 0;
+  const imageSrc = product.imageUrl || 'https://placehold.co/600x750?text=No+Image';
 
   return (
     <>
@@ -191,7 +198,7 @@ export default function ProductDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
           <div className="relative aspect-[4/5] bg-[#f7f7f7]">
             <Image
-              src={product.imageUrl}
+              src={imageSrc}
               alt={product.name}
               fill
               className="object-cover"

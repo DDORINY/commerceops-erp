@@ -116,3 +116,7 @@ tmp/
 temp/
 *.tmp
 tempCodeRunnerFile.py
+
+# Local uploaded media
+uploads/
+backend/uploads/

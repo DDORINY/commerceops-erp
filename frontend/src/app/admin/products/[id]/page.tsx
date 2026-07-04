@@ -4,6 +4,7 @@ import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ProductImageUpload from '@/components/admin/ProductImageUpload';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { productService, type ApiCategory, type ApiProductDetail, type ProductOptionGroup } from '@/lib/services/productService';
@@ -197,12 +198,9 @@ export default function AdminProductEditPage({
               />
             </div>
 
-            <Input
-              label="이미지 URL"
-              value={form.imageUrl}
-              onChange={(e) => set('imageUrl', e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              fullWidth
+            <ProductImageUpload
+              imageUrl={form.imageUrl}
+              onImageUrlChange={(url) => set('imageUrl', url)}
             />
 
             <div>

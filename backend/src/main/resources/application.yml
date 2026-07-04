@@ -6,9 +6,31 @@ spring:
 
   jpa:
     open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 server:
   servlet:
     encoding:
       charset: UTF-8
       force: true
+
+commerceops:
+  media:
+    upload-dir: ${COMMERCEOPS_MEDIA_UPLOAD_DIR:uploads}
+    public-base-url: ${COMMERCEOPS_MEDIA_PUBLIC_BASE_URL:http://localhost:8080}
+    public-path: /uploads
+    max-file-size: 5242880
+    allowed-content-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+      - image/gif
+    allowed-extensions:
+      - jpg
+      - jpeg
+      - png
+      - webp
+      - gif

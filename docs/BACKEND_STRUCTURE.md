@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.1`
+기준 버전: `v0.2.3`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -25,6 +25,7 @@ com.commerceops.erp
 │   ├── dashboard
 │   ├── inquiry
 │   ├── inventory
+│   ├── media
 │   ├── order
 │   ├── payment
 │   ├── product
@@ -54,6 +55,7 @@ com.commerceops.erp
 | dashboard | `AdminDashboardController` | `DashboardService` | 주문/결제/상품/회원 repository 사용 | - |
 | inquiry | `InquiryController`, `AdminInquiryController` | `InquiryService` | `InquiryRepository` | `Inquiry` |
 | inventory | `AdminInventoryController` | `InventoryService` | `InventoryLogRepository` | `InventoryLog` |
+| media | `AdminMediaController` | `MediaStorageService` | `MediaFileRepository` | `MediaFile` |
 | order | `OrderController`, `AdminOrderController` | `OrderService`, `OrderCancellationService` | `OrderRepository`, `OrderItemRepository` | `Order`, `OrderItem` |
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
 | product | `ProductController`, `AdminProductController` | `ProductService` | `ProductRepository` | `Product` |
@@ -74,6 +76,7 @@ com.commerceops.erp
 - `PageResponse<T>`: 프론트와 맞춘 페이지 응답 DTO.
 - `GlobalExceptionHandler`, `BusinessException`, `ErrorCode`: 공통 예외 처리.
 - `HealthController`: `GET /api/health`.
+- `MediaWebConfig`: `COMMERCEOPS_MEDIA_UPLOAD_DIR` 기준 로컬 업로드 디렉터리를 `/uploads/**` 정적 리소스로 제공.
 
 ## v0.1.1 ~ v0.1.6 반영 상태
 
@@ -88,6 +91,6 @@ com.commerceops.erp
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 `PaymentController`는 `/api/payments/approve`, `/api/payments/{paymentId}/cancel`, 하위 호환 `/api/payments/mock/complete`를 제공하며 `MOCK_PROVIDER` 기반으로 동작한다.
 - 리뷰 숨김/상태 변경. 현재 관리자 리뷰 운영은 조회와 삭제다.
-- 파일 업로드 기반 상품 이미지 관리.
+- S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.

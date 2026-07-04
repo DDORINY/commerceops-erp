@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.2.1`
+기준 버전: `v0.2.3`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -37,8 +37,8 @@
 | `/admin/customers` | `app/admin/customers/page.tsx` | `userService.getAdminUsers` |
 | `/admin/orders` | `app/admin/orders/page.tsx` | `orderService.getAdminOrders`, `updateOrderStatus` |
 | `/admin/products` | `app/admin/products/page.tsx` | `productService.getAdminProducts` |
-| `/admin/products/new` | `app/admin/products/new/page.tsx` | `productService.createProduct`, `getCategories` |
-| `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete |
+| `/admin/products/new` | `app/admin/products/new/page.tsx` | `productService.createProduct`, `getCategories`, `mediaService.uploadProductImage` |
+| `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, `mediaService.uploadProductImage` |
 | `/admin/inquiries` | `app/admin/inquiries/page.tsx` | `inquiryService.getAdminInquiries`, answer/close |
 | `/admin/reviews` | `app/admin/reviews/page.tsx` | `reviewService.getAdminReviews`, delete |
 | `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService` |
@@ -56,6 +56,7 @@
 | `api.ts` | API base URL, JSON fetch, Bearer 토큰 자동 추가, 401 refresh 재시도와 세션 만료 처리 |
 | `authService.ts` | 로그인, 회원가입, 내 정보, 토큰 갱신, 로그아웃 |
 | `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD |
+| `mediaService.ts` | 관리자 상품 이미지 multipart 업로드 |
 | `cartService.ts` | 장바구니 조회/추가/수량변경/삭제 |
 | `orderService.ts` | 주문 생성/조회/상세/취소, 관리자 주문 목록/상태 변경 |
 | `paymentService.ts` | 결제 승인, 결제 취소, 하위 호환 모의 결제 완료 API 호출 |
@@ -92,7 +93,7 @@
 ## 미구현/예정으로 남은 프론트 기능
 
 - 실제 PG 결제 UI/승인 콜백. 현재 checkout은 `/api/payments/approve`를 호출하되 provider는 백엔드 `MOCK_PROVIDER` 기반이다.
-- 상품 이미지 업로드 UI.
+- S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 리뷰 숨김 상태 UI. 현재 관리자 리뷰는 삭제 중심이다.
 - 고급 차트/BI 라이브러리 기반 분석 화면.
 - 피킹/패킹/출고 자동화 화면.

@@ -45,6 +45,32 @@ export async function apiClient<T>(
   return handleResponse<T>(response);
 }
 
+export async function apiFormClient<T>(
+  path: string,
+  formData: FormData,
+  options: RequestInit = {}
+): Promise<T> {
+  const response = await requestWithAuth(path, {
+    ...options,
+    method: options.method ?? 'POST',
+    body: formData,
+  });
+
+  if (response.status === 401 && shouldAttemptRefresh(path)) {
+    const refreshedToken = await refreshAccessToken();
+    if (refreshedToken) {
+      const retryResponse = await requestWithAuth(path, {
+        ...options,
+        method: options.method ?? 'POST',
+        body: formData,
+      }, refreshedToken);
+      return handleResponse<T>(retryResponse);
+    }
+  }
+
+  return handleResponse<T>(response);
+}
+
 async function requestWithAuth(
   path: string,
   options: RequestInit = {},
@@ -58,7 +84,7 @@ async function requestWithAuth(
     return await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },

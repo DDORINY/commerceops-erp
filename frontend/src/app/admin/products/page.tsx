@@ -132,7 +132,13 @@ export default function AdminProductsPage() {
               header: '이미지',
               render: (row) => (
                 <div className="relative w-12 h-14 bg-[#f5f5f5]">
-                  <Image src={row.imageUrl} alt={row.name} fill className="object-cover" sizes="48px" />
+                  <Image
+                    src={row.imageUrl || 'https://placehold.co/120x140?text=No+Image'}
+                    alt={row.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
                 </div>
               ),
             },

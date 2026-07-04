@@ -13,7 +13,7 @@ export interface ApiProductItem {
   name: string;
   price: number;
   stockQuantity: number;
-  imageUrl: string;
+  imageUrl: string | null;
   status: string;
   options: ProductOptionGroup[];
   createdAt: string;
@@ -27,7 +27,7 @@ export interface ApiProductDetail {
   description: string;
   price: number;
   stockQuantity: number;
-  imageUrl: string;
+  imageUrl: string | null;
   status: string;
   options: ProductOptionGroup[];
   createdAt: string;
@@ -49,7 +49,7 @@ export function toProductListItem(p: ApiProductItem): ProductListItem {
     originalPrice: p.price,
     discountRate: 0,
     stockQuantity: p.stockQuantity,
-    imageUrl: p.imageUrl,
+    imageUrl: p.imageUrl ?? 'https://placehold.co/600x750?text=No+Image',
     status: p.status as ProductListItem['status'],
     isNew: false,
     isBest: false,

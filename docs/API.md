@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.2.1`
+기준 버전: `v0.2.3`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -28,7 +28,8 @@
 | `/api/admin/inquiries/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/reviews/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
-| `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**` | `ADMIN`, `SUPER_ADMIN` |
+| `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
+| `/uploads/**` | 공개 정적 파일 |
 | 기타 인증 API | 로그인 사용자 |
 
 ## 실제 엔드포인트
@@ -50,6 +51,7 @@
 | Product | POST | `/api/admin/products` | `ProductCreateRequest` | `ProductResponse` | 관리자 |
 | Product | PATCH | `/api/admin/products/{productId}` | `ProductUpdateRequest` | `ProductResponse` | 관리자 |
 | Product | DELETE | `/api/admin/products/{productId}` | - | `null` | 관리자 |
+| Media Admin | POST | `/api/admin/media/product-images` | multipart `file` | `MediaFileResponse` | 관리자 |
 | Cart | GET | `/api/cart` | - | `CartResponse` | 인증 |
 | Cart | POST | `/api/cart` | `CartAddRequest` | `CartAddResponse` | 인증 |
 | Cart | PATCH | `/api/cart/{cartId}` | `CartUpdateRequest` | `CartUpdateResponse` | 인증 |
@@ -116,6 +118,7 @@
 ## 주요 DTO 메모
 
 - `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `MediaFileResponse`: `id`, `originalFilename`, `storedFilename`, `url`, `contentType`, `size`, `mediaType`, `createdAt`.
 - `LoginResponse`: `accessToken`, `refreshToken`, `tokenType`, `user`.
 - `RefreshTokenRequest`: `refreshToken`.
 - `RefreshTokenResponse`: `accessToken`, `refreshToken`, `tokenType`.

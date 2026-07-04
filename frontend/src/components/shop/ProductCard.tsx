@@ -11,13 +11,14 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const isSoldOut = product.status === 'SOLD_OUT' || product.stockQuantity === 0;
+  const imageSrc = product.imageUrl || 'https://placehold.co/600x750?text=No+Image';
 
   return (
     <Link href={`/products/${product.id}`} className="group block">
       {/* 이미지 */}
       <div className="relative w-full overflow-hidden bg-[#f7f7f7] aspect-[4/5]">
         <Image
-          src={product.imageUrl}
+          src={imageSrc}
           alt={product.name}
           fill
           className={[
