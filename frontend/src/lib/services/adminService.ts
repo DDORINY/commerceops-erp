@@ -1,4 +1,6 @@
-import { apiClient, PageResponse } from '@/lib/api';
+import { apiClient, type PageResponse } from '@/lib/api';
+
+export type ApiSalesPeriod = 'DAILY' | 'MONTHLY';
 
 export interface ApiDashboardSummary {
   totalSales: number;
@@ -45,7 +47,7 @@ export const adminService = {
   getDashboardSummary: () =>
     apiClient<ApiDashboardSummary>('/admin/dashboard/summary'),
 
-  getSales: (period = 'DAILY', startDate?: string, endDate?: string) => {
+  getSales: (period: ApiSalesPeriod = 'DAILY', startDate?: string, endDate?: string) => {
     const qs = new URLSearchParams({ period });
     if (startDate) qs.set('startDate', startDate);
     if (endDate) qs.set('endDate', endDate);
