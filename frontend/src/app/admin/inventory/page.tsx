@@ -234,7 +234,7 @@ export default function AdminInventoryPage() {
               ),
             },
             {
-              key: 'productId',
+              key: 'actions',
               header: '관리',
               render: (row) => (
                 <div className="flex gap-2">

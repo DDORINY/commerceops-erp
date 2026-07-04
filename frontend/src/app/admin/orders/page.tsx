@@ -236,7 +236,7 @@ export default function AdminOrdersPage() {
               render: (row) => formatDateTime(row.createdAt),
             },
             {
-              key: 'orderId',
+              key: 'actions',
               header: '관리',
               render: (row) => (
                 <div className="flex gap-2">

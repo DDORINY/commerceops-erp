@@ -162,7 +162,7 @@ export default function AdminProductsPage() {
               ),
             },
             {
-              key: 'id',
+              key: 'actions',
               header: '관리',
               render: (row) => (
                 <div className="flex gap-2">
