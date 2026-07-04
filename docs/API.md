@@ -1485,3 +1485,64 @@ GET /api/admin/dashboard/top-products
 | `totalProductStock` | 전체 창고를 합친 상품 가용 총재고 |
 
 `POST /api/admin/inventory/inbound`와 `/adjust` 요청에는 `warehouseId`가 필수다. 입고는 상품 총재고와 목적 창고 실재고를 함께 증가시키고, 조정은 선택 창고의 목표 실재고와 상품 총재고의 차이를 함께 반영한다.
+
+---
+
+## v0.1.2 관리자 리뷰 API
+
+관리자 리뷰 API는 JWT 인증이 필요하며 `ADMIN`, `SUPER_ADMIN` 권한만 접근할 수 있다.
+
+### 관리자 리뷰 목록 조회
+
+```http
+GET /api/admin/reviews?rating={rating}&keyword={keyword}&page={page}&size={size}
+```
+
+Query Parameters:
+
+| 이름 | 필수 | 설명 |
+| --- | --- | --- |
+| `rating` | 아니오 | 1~5 평점 필터 |
+| `keyword` | 아니오 | 상품명, 작성자명, 리뷰 내용 검색어 |
+| `page` | 아니오 | 0부터 시작하는 페이지 번호. 기본값 0 |
+| `size` | 아니오 | 페이지 크기. 기본값 15 |
+
+Response `data`:
+
+```json
+{
+  "content": [
+    {
+      "reviewId": 1,
+      "productId": 10,
+      "productName": "Sample Product",
+      "userName": "홍길동",
+      "orderItemId": 100,
+      "rating": 5,
+      "content": "좋아요.",
+      "createdAt": "2026-07-04T12:00:00"
+    }
+  ],
+  "page": 0,
+  "size": 15,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+### 관리자 리뷰 삭제
+
+```http
+DELETE /api/admin/reviews/{reviewId}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "리뷰가 삭제되었습니다.",
+  "data": null
+}
+```

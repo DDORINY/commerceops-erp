@@ -80,6 +80,16 @@ const NAV_ITEMS: Array<{ label: string; href: string; icon: React.ReactNode; adm
     ),
   },
   {
+    label: '리뷰 관리',
+    href: '/admin/reviews',
+    adminOnly: true,
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.378 2.454a1 1 0 00-.364 1.118l1.29 3.966c.299.922-.756 1.688-1.54 1.118l-3.377-2.454a1 1 0 00-1.176 0L8.028 18.05c-.783.57-1.838-.196-1.54-1.118l1.29-3.966a1 1 0 00-.364-1.118L4.036 9.394c-.783-.57-.38-1.81.588-1.81H8.8a1 1 0 00.95-.69l1.299-3.967z" />
+      </svg>
+    ),
+  },
+  {
     label: '회계 관리',
     href: '/admin/accounting',
     adminOnly: true,

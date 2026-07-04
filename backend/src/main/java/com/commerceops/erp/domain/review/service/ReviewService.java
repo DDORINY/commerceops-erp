@@ -16,6 +16,7 @@ import com.commerceops.erp.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +77,14 @@ public class ReviewService {
                 .stream()
                 .map(ReviewResponse::from)
                 .toList();
+    }
+
+    public PageResponse<ReviewResponse> getAdminReviews(Integer rating, String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return PageResponse.from(
+                reviewRepository.findAllForAdmin(rating, keyword, pageable)
+                        .map(ReviewResponse::from)
+        );
     }
 
     @Transactional

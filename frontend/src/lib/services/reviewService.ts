@@ -1,4 +1,4 @@
-import { apiClient, PageResponse } from '@/lib/api';
+import { apiClient, type PageResponse } from '@/lib/api';
 
 export interface ApiReview {
   reviewId: number;
@@ -25,4 +25,16 @@ export const reviewService = {
 
   deleteReview: (reviewId: number) =>
     apiClient<null>(`/reviews/${reviewId}`, { method: 'DELETE' }),
+
+  getAdminReviews: (rating?: number | 'ALL', keyword?: string, page = 0, size = 15) => {
+    const qs = new URLSearchParams();
+    if (rating && rating !== 'ALL') qs.set('rating', String(rating));
+    if (keyword) qs.set('keyword', keyword);
+    qs.set('page', String(page));
+    qs.set('size', String(size));
+    return apiClient<PageResponse<ApiReview>>(`/admin/reviews?${qs.toString()}`);
+  },
+
+  deleteAdminReview: (reviewId: number) =>
+    apiClient<null>(`/admin/reviews/${reviewId}`, { method: 'DELETE' }),
 };
