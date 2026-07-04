@@ -1,9 +1,14 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.2.4`
+기준 버전: `v0.2.5`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
-현재 레포에는 별도 Flyway/Liquibase DDL 마이그레이션이 없다. 이 문서는 실제 엔티티 기준의 논리 스키마이며, 물리 DDL, 인덱스, 외래키 이름은 운영 DB 도입 시 별도로 확정해야 한다.
+v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
+
+- 초기 마이그레이션: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
+- 기준 DB: MySQL 8.0
+- 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
+- 기존 개발 DB에 `flyway_schema_history`가 없는 경우 `baseline-on-migrate=true`, `baseline-version=0` 기준으로 시작한다.
 
 ## 테이블 요약
 
@@ -43,7 +48,13 @@
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
-| `ShipmentStatus` | `READY`, `SHIPPING`, `DELIVERED` |
+| `ShipmentStatus` | `READY`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
+
+## 주요 인덱스/제약 기준
+
+- 유니크: `users.email`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
+- 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 창고 이동 테이블에 상태/일시 인덱스를 둔다.
+- FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
 | `ReturnReason` | `CHANGE_OF_MIND`, `DEFECTIVE`, `WRONG_DELIVERY` |
 | `ReturnStatus` | `REQUESTED`, `APPROVED`, `REJECTED` |
 | `InquiryType` | `PRODUCT`, `ORDER`, `OTHER` |
@@ -67,9 +78,9 @@
 
 ## 현재 스키마 주의점
 
-- 실제 DDL 파일이 없으므로 컬럼 타입 길이, 인덱스명, 외래키명은 JPA/Hibernate 설정에 의존한다.
+- v0.2.5 이전 개발 DB는 Hibernate `ddl-auto=update`로 만들어졌을 수 있다. 운영 반영 전에는 `V1__initial_schema.sql`과 실제 DB 스키마 차이를 별도로 점검해야 한다.
 - `Product.options`, `Cart.selectedOptions`, `OrderItem.selectedOptions`는 JSON 문자열 또는 converter 기반 저장이다.
 - `Product.stockQuantity`와 `WarehouseStock.quantity/reservedQuantity`가 함께 존재한다. 창고 기능에서는 창고별 재고와 예약이 source of truth가 되며, 상품 총 재고는 보조/요약 값으로 함께 갱신된다.
 - 실제 PG 벤더별 거래 원장/웹훅 이벤트 테이블은 아직 없다. v0.2.2에서는 `payments.idempotency_key`, `provider`만 추가했다.
 - `audit_logs`는 리뷰 숨김/해제/삭제 이력부터 기록한다. 전체 관리자 기능 감사 로그는 후속 확장 범위다.
-- `media_files` 운영 DDL과 인덱스는 v0.2.5 DB 마이그레이션 작업에서 확정한다.
+- `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

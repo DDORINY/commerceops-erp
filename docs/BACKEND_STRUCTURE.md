@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.4`
+기준 버전: `v0.2.5`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -9,6 +9,7 @@
 - Java 17
 - Spring Security + JWT
 - Spring Data JPA
+- Flyway DB Migration
 - MySQL 운영 기준, 테스트는 H2 프로파일 사용
 
 ## 패키지 구조
@@ -79,6 +80,7 @@ com.commerceops.erp
 - `GlobalExceptionHandler`, `BusinessException`, `ErrorCode`: 공통 예외 처리.
 - `HealthController`: `GET /api/health`.
 - `MediaWebConfig`: `COMMERCEOPS_MEDIA_UPLOAD_DIR` 기준 로컬 업로드 디렉터리를 `/uploads/**` 정적 리소스로 제공.
+- Flyway: `backend/src/main/resources/db/migration`의 SQL을 운영/로컬 스키마 기준으로 사용한다. 테스트 프로파일은 기존 H2 `create-drop` 회귀 테스트를 유지하기 위해 Flyway를 비활성화한다.
 
 ## v0.1.1 ~ v0.1.6 반영 상태
 

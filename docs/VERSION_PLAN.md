@@ -231,6 +231,23 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [x] `v0.2.4` 태그 생성 및 push
 
+## v0.2.5 체크리스트
+
+목적: DB 마이그레이션 체계와 운영 스키마 기준 정리.
+
+- [x] 기존 JPA Entity와 DB 문서 확인
+- [x] Flyway 의존성과 기본 설정 추가
+- [x] 테스트 프로파일 Flyway 비활성화 기준 정리
+- [x] MySQL 8.0 기준 초기 DDL `V1__initial_schema.sql` 추가
+- [x] 주요 FK, unique, 조회 인덱스 기준 반영
+- [x] `docs/DB_SCHEMA.md`를 실제 DDL 기준으로 갱신
+- [x] `docs/DB_MIGRATION.md` 운영 기준 추가
+- [x] 관련 구조/현재 상태/API 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.5` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

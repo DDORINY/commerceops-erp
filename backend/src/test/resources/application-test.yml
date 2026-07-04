@@ -12,6 +12,8 @@ spring:
     properties:
       hibernate:
         format_sql: false
+  flyway:
+    enabled: false
 
 jwt:
   secret: Y29tbWVyY2VvcHMtZXJwLXRlc3Qtb25seS1zZWNyZXQta2V5LTIwMjYtdGVzdA==

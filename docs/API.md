@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.2.4`
+기준 버전: `v0.2.5`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -148,7 +148,7 @@
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |
-| `ShipmentStatus` | `READY`, `SHIPPING`, `DELIVERED` |
+| `ShipmentStatus` | `READY`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
 | `ReturnReason` | `CHANGE_OF_MIND`, `DEFECTIVE`, `WRONG_DELIVERY` |
 | `ReturnStatus` | `REQUESTED`, `APPROVED`, `REJECTED` |
 | `InquiryType` | `PRODUCT`, `ORDER`, `OTHER` |
