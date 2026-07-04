@@ -161,6 +161,22 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 | `v0.2.8` | `v0.2.8-ops-analytics-foundation` | 운영 분석/회계/WMS 고도화 기반 | 고급 회계/BI/WMS의 최소 기반과 다음 버전 이관 범위 정리 |
 | `v0.2.9` | `v0.2.9-release-verification` | v0.2 계획 대비 구현 확인 및 테스트 검증 | 전체 체크리스트와 lint/build/test 결과 기록 |
 
+## v0.2.1 체크리스트
+
+목적: 인증/세션/보안 안정화.
+
+- [x] 기존 Auth/User/Security/JWT 구조 확인
+- [x] 로그아웃 처리 방식 결정 및 최소 구현
+- [x] Access Token / Refresh Token 분리 구조 최소 구현
+- [x] 401 세션 만료 UX 개선
+- [x] 관리자 보호 경로 접근 제어 보강
+- [x] CORS와 관리자 API 권한 범위 점검
+- [x] 관련 API/구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.1` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

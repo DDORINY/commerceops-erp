@@ -9,6 +9,14 @@ export function setAccessToken(token: string): void {
   storage.set('accessToken', token);
 }
 
+export function getRefreshToken(): string | null {
+  return storage.get('refreshToken');
+}
+
+export function setRefreshToken(token: string): void {
+  storage.set('refreshToken', token);
+}
+
 export function removeAccessToken(): void {
   storage.remove('accessToken');
 }
@@ -29,6 +37,7 @@ export function setStoredUser(user: User): void {
 
 export function clearAuth(): void {
   storage.remove('accessToken');
+  storage.remove('refreshToken');
   storage.remove('user');
 }
 

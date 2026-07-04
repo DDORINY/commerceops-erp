@@ -14,8 +14,15 @@ export interface LoginUser {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   tokenType: string;
   user: LoginUser;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
 }
 
 export interface SignupRequest {
@@ -45,6 +52,15 @@ export const authService = {
     apiClient<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
+    }),
+  refresh: (refreshToken: string) =>
+    apiClient<RefreshTokenResponse>('/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    }),
+  logout: () =>
+    apiClient<void>('/auth/logout', {
+      method: 'POST',
     }),
   signup: (data: SignupRequest) =>
     apiClient<SignupResponse>('/auth/signup', {

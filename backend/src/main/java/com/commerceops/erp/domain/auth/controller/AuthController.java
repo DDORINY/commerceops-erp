@@ -32,6 +32,17 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("로그인이 완료되었습니다.", response));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<RefreshTokenResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        RefreshTokenResponse response = authService.refresh(request);
+        return ResponseEntity.ok(ApiResponse.ok("토큰이 갱신되었습니다.", response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.ok("로그아웃이 완료되었습니다.", null));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<MeResponse>> me(@AuthenticationPrincipal CustomUserDetails userDetails) {
         MeResponse response = authService.getMe(userDetails.getUsername());

@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.1.7`
+기준 버전: `v0.2.1`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -53,8 +53,8 @@
 
 | 파일 | 역할 |
 | --- | --- |
-| `api.ts` | API base URL, JSON fetch, Bearer 토큰 자동 추가, 401 처리 |
-| `authService.ts` | 로그인, 회원가입, 내 정보 |
+| `api.ts` | API base URL, JSON fetch, Bearer 토큰 자동 추가, 401 refresh 재시도와 세션 만료 처리 |
+| `authService.ts` | 로그인, 회원가입, 내 정보, 토큰 갱신, 로그아웃 |
 | `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD |
 | `cartService.ts` | 장바구니 조회/추가/수량변경/삭제 |
 | `orderService.ts` | 주문 생성/조회/상세/취소, 관리자 주문 목록/상태 변경 |
@@ -78,9 +78,11 @@
 
 ## 인증 흐름
 
-- 로그인 성공 시 `accessToken`을 `localStorage`에 저장한다.
+- 로그인 성공 시 `accessToken`, `refreshToken`을 `localStorage`에 저장한다.
 - `apiClient`는 브라우저 환경에서 `localStorage.accessToken`을 읽어 `Authorization: Bearer {token}` 헤더를 추가한다.
-- 401 응답 시 `accessToken`, `user`를 제거하고 `/login`으로 이동한다.
+- 401 응답 시 `refreshToken`으로 1회 재발급을 시도하고, 실패하면 `accessToken`, `refreshToken`, `user`를 제거하고 `/login`으로 이동한다.
+- 로그아웃은 서버 no-op API 호출 후 클라이언트 토큰과 사용자 정보를 제거한다.
+- v0.2.1 최소 구현에서는 refresh token을 `localStorage`에 저장한다. HttpOnly cookie, 서버 저장소 기반 rotation, 탈취 감지는 후속 보안 고도화 범위다.
 
 ## 현재 UI 상태 처리 기준
 

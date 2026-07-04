@@ -19,21 +19,40 @@ public class JwtTokenProvider {
 
     private final SecretKey signingKey;
     private final long expiration;
+    private final long refreshExpiration;
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expiration) {
+            @Value("${jwt.expiration}") long expiration,
+            @Value("${jwt.refresh-expiration:1209600000}") long refreshExpiration) {
         this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.expiration = expiration;
+        this.refreshExpiration = refreshExpiration;
     }
 
     public String generateToken(String email, UserRole role) {
+        return generateAccessToken(email, role);
+    }
+
+    public String generateAccessToken(String email, UserRole role) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role.name())
+                .claim("type", "access")
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration))
+                .signWith(signingKey)
+                .compact();
+    }
+
+    public String generateRefreshToken(String email) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(email)
+                .claim("type", "refresh")
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + refreshExpiration))
                 .signWith(signingKey)
                 .compact();
     }
@@ -50,6 +69,21 @@ public class JwtTokenProvider {
         return false;
     }
 
+    public boolean validateRefreshToken(String token) {
+        if (!validateToken(token)) {
+            return false;
+        }
+        return "refresh".equals(getTokenType(token));
+    }
+
+    public boolean validateAccessToken(String token) {
+        if (!validateToken(token)) {
+            return false;
+        }
+        String tokenType = getTokenType(token);
+        return tokenType == null || "access".equals(tokenType);
+    }
+
     public String getEmail(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)
@@ -57,5 +91,14 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    private String getTokenType(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("type", String.class);
     }
 }

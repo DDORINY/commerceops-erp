@@ -1,4 +1,25 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { authService } from '@/lib/services/authService';
+import { clearAuth, getStoredUser } from '@/lib/auth';
+
 export default function AdminTopbar({ title }: { title: string }) {
+  const router = useRouter();
+  const user = getStoredUser();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // 클라이언트 토큰 삭제가 v0.2.1 로그아웃의 기준 동작이다.
+    } finally {
+      clearAuth();
+      sessionStorage.setItem('authMessage', '로그아웃되었습니다.');
+      router.replace('/login');
+    }
+  };
+
   return (
     <header className="h-[60px] bg-white border-b border-[#e8eaf0] flex items-center justify-between px-6 flex-shrink-0">
       <h1 className="text-base font-semibold text-[#1a1f2e]">{title}</h1>
@@ -17,10 +38,17 @@ export default function AdminTopbar({ title }: { title: string }) {
             <span className="text-white text-xs font-medium">관</span>
           </div>
           <div className="hidden md:block">
-            <p className="text-xs font-medium text-[#1a1f2e]">관리자</p>
-            <p className="text-[10px] text-[#8a9bb5]">admin@commerceops.com</p>
+            <p className="text-xs font-medium text-[#1a1f2e]">{user?.name ?? '관리자'}</p>
+            <p className="text-[10px] text-[#8a9bb5]">{user?.email ?? 'admin@commerceops.com'}</p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="h-8 px-3 border border-[#d8dde8] text-xs text-[#5f6b7a] hover:border-[#aeb8c8] hover:text-[#1a1f2e] transition-colors"
+        >
+          로그아웃
+        </button>
       </div>
     </header>
   );

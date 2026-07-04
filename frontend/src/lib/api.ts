@@ -16,6 +16,8 @@ export interface PageResponse<T> {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 
+let refreshPromise: Promise<string | null> | null = null;
+
 export class ApiError extends Error {
   constructor(
     public statusCode: number,
@@ -30,12 +32,30 @@ export async function apiClient<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  const response = await requestWithAuth(path, options);
 
-  let response: Response;
+  if (response.status === 401 && shouldAttemptRefresh(path)) {
+    const refreshedToken = await refreshAccessToken();
+    if (refreshedToken) {
+      const retryResponse = await requestWithAuth(path, options, refreshedToken);
+      return handleResponse<T>(retryResponse);
+    }
+  }
+
+  return handleResponse<T>(response);
+}
+
+async function requestWithAuth(
+  path: string,
+  options: RequestInit = {},
+  overrideToken?: string
+): Promise<Response> {
+  const token =
+    overrideToken ??
+    (typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null);
+
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    return await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -46,15 +66,11 @@ export async function apiClient<T>(
   } catch {
     throw new ApiError(0, '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
   }
+}
 
+async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-      sessionStorage.setItem('authMessage', '로그인이 필요하거나 세션이 만료되었습니다. 다시 로그인해주세요.');
-      const next = `${window.location.pathname}${window.location.search}`;
-      window.location.href = `/login?next=${encodeURIComponent(next)}`;
-    }
+    expireSession();
     throw new ApiError(401, '로그인이 필요합니다.');
   }
 
@@ -75,4 +91,59 @@ export async function apiClient<T>(
 
   const body = (await response.json()) as ApiResponse<T>;
   return body.data;
+}
+
+function shouldAttemptRefresh(path: string): boolean {
+  if (typeof window === 'undefined') return false;
+  if (path === '/auth/login' || path === '/auth/signup' || path === '/auth/refresh') return false;
+  return Boolean(localStorage.getItem('refreshToken'));
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  if (!refreshPromise) {
+    refreshPromise = requestTokenRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
+async function requestTokenRefresh(): Promise<string | null> {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (!refreshToken) return null;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) return null;
+
+    const body = (await response.json()) as ApiResponse<{
+      accessToken: string;
+      refreshToken: string;
+    }>;
+    localStorage.setItem('accessToken', body.data.accessToken);
+    localStorage.setItem('refreshToken', body.data.refreshToken);
+    return body.data.accessToken;
+  } catch {
+    return null;
+  }
+}
+
+function expireSession(): void {
+  if (typeof window === 'undefined') return;
+
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+  sessionStorage.setItem('authMessage', '로그인이 필요하거나 세션이 만료되었습니다. 다시 로그인해주세요.');
+
+  if (!window.location.pathname.startsWith('/login')) {
+    const next = `${window.location.pathname}${window.location.search}`;
+    window.location.href = `/login?next=${encodeURIComponent(next)}`;
+  }
 }

@@ -45,12 +45,30 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
-        String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole());
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getEmail(), user.getRole());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
 
         return new LoginResponse(
-                token,
+                accessToken,
+                refreshToken,
                 "Bearer",
                 new LoginResponse.UserInfo(user.getId(), user.getEmail(), user.getName(), user.getRole().name())
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public RefreshTokenResponse refresh(RefreshTokenRequest request) {
+        if (!jwtTokenProvider.validateRefreshToken(request.refreshToken())) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+
+        User user = userRepository.findByEmail(jwtTokenProvider.getEmail(request.refreshToken()))
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return new RefreshTokenResponse(
+                jwtTokenProvider.generateAccessToken(user.getEmail(), user.getRole()),
+                jwtTokenProvider.generateRefreshToken(user.getEmail()),
+                "Bearer"
         );
     }
 

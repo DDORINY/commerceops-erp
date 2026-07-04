@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.1.7`
+기준 버전: `v0.2.1`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -67,9 +67,9 @@ com.commerceops.erp
 ## 글로벌 구성
 
 - `SecurityConfig`: JWT stateless 인증, 공개/관리자 권한 라우팅 설정.
-- `JwtAuthenticationFilter`: Bearer 토큰 파싱 후 SecurityContext 설정.
+- `JwtAuthenticationFilter`: Bearer access token 파싱 후 SecurityContext 설정. refresh token은 인증 토큰으로 사용하지 않는다.
 - `CustomUserDetailsService`: 사용자 로딩.
-- `JwtTokenProvider`: 토큰 생성/검증.
+- `JwtTokenProvider`: access token, refresh token 생성/검증.
 - `ApiResponse<T>`: 성공 응답 래퍼.
 - `PageResponse<T>`: 프론트와 맞춘 페이지 응답 DTO.
 - `GlobalExceptionHandler`, `BusinessException`, `ErrorCode`: 공통 예외 처리.
@@ -88,7 +88,6 @@ com.commerceops.erp
 
 - 실제 PG 결제/취소/환불 연동. 현재 결제 완료는 `PaymentController`의 `/api/payments/mock/complete`다.
 - 리뷰 숨김/상태 변경. 현재 관리자 리뷰 운영은 조회와 삭제다.
-- 로그아웃/토큰 재발급 API.
 - 파일 업로드 기반 상품 이미지 관리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.

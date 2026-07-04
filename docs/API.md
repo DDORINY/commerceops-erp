@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.1.7`
+기준 버전: `v0.2.1`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -17,7 +17,7 @@
 | 범위 | 권한 |
 | --- | --- |
 | `GET /api/health` | 공개 |
-| `POST /api/auth/signup`, `POST /api/auth/login` | 공개 |
+| `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` | 공개 |
 | `GET /api/categories/**`, `GET /api/products/**` | 공개 |
 | `/api/admin/users/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/orders/**` | `ADMIN`, `SUPER_ADMIN` |
@@ -38,6 +38,8 @@
 | Health | GET | `/api/health` | - | health payload | 공개 |
 | Auth | POST | `/api/auth/signup` | `SignupRequest` | `SignupResponse` | 공개 |
 | Auth | POST | `/api/auth/login` | `LoginRequest` | `LoginResponse` | 공개 |
+| Auth | POST | `/api/auth/refresh` | `RefreshTokenRequest` | `RefreshTokenResponse` | 공개 |
+| Auth | POST | `/api/auth/logout` | - | `null` | 공개 |
 | Auth | GET | `/api/auth/me` | - | `MeResponse` | 인증 |
 | Category | GET | `/api/categories` | - | `List<CategoryResponse>` | 공개 |
 | Category | POST | `/api/admin/categories` | `CategoryCreateRequest` | `CategoryResponse` | 관리자 |
@@ -112,6 +114,9 @@
 ## 주요 DTO 메모
 
 - `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `LoginResponse`: `accessToken`, `refreshToken`, `tokenType`, `user`.
+- `RefreshTokenRequest`: `refreshToken`.
+- `RefreshTokenResponse`: `accessToken`, `refreshToken`, `tokenType`.
 - `OrderCreateRequest`: `receiverName`, `receiverPhone`, `address`, `detailAddress`, `paymentMethod`, `cartItemIds`, `couponCode`.
 - `UserSummaryResponse`: `id`, `name`, `email`, `phone`, `role`, `status`, `createdAt`, `orderCount`, `totalOrderAmount`.
 - `DashboardSummaryResponse`: 전체/오늘 주문, 전체/오늘 매출, 고객/상품/품절/재고부족 수, 상태별 주문 수.
@@ -140,7 +145,6 @@
 ## 미구현/예정으로 분리된 항목
 
 - 실제 PG 승인, 취소, 환불 API. 현재는 `/api/payments/mock/complete`만 있다.
-- 로그아웃/리프레시 토큰 API.
 - 리뷰 숨김 또는 상태 변경 API. 현재는 관리자 목록 조회와 삭제만 있다.
 - 상품 이미지 업로드 API.
 - 고급 BI, 복식부기, 정산 리포트 API.

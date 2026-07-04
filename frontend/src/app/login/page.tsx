@@ -8,7 +8,7 @@ import ShopFooter from '@/components/shop/ShopFooter';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { authService } from '@/lib/services/authService';
-import { setAccessToken, setStoredUser } from '@/lib/auth';
+import { setAccessToken, setRefreshToken, setStoredUser } from '@/lib/auth';
 import type { User } from '@/features/auth/types';
 
 export default function LoginPage() {
@@ -42,6 +42,7 @@ export default function LoginPage() {
       setApiError('');
       const res = await authService.login({ email: form.email, password: form.password });
       setAccessToken(res.accessToken);
+      setRefreshToken(res.refreshToken);
       const user: User = {
         id: res.user.id,
         email: res.user.email,

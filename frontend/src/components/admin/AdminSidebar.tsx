@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getUserRole } from '@/lib/auth';
@@ -133,7 +133,11 @@ const NAV_ITEMS: Array<{ label: string; href: string; icon: React.ReactNode; adm
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const [userRole] = useState<string | null>(() => getUserRole());
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    queueMicrotask(() => setUserRole(getUserRole()));
+  }, []);
 
   const isAdminRole = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
 

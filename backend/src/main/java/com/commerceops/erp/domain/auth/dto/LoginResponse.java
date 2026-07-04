@@ -2,6 +2,7 @@ package com.commerceops.erp.domain.auth.dto;
 
 public record LoginResponse(
         String accessToken,
+        String refreshToken,
         String tokenType,
         UserInfo user
 ) {

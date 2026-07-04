@@ -1,24 +1,63 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CategoryNav from './CategoryNav';
+import { clearAuth, getStoredUser } from '@/lib/auth';
+import { authService } from '@/lib/services/authService';
+import type { User } from '@/features/auth/types';
 
 export default function ShopHeader() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    queueMicrotask(() => setUser(getStoredUser()));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // 서버 로그아웃은 no-op 보조 API이며 클라이언트 토큰 삭제가 기준 동작이다.
+    } finally {
+      clearAuth();
+      setUser(null);
+      sessionStorage.setItem('authMessage', '로그아웃되었습니다.');
+      router.push('/login');
+    }
+  };
 
   return (
     <header className="w-full border-b border-[#e5e5e5] bg-white sticky top-0 z-50">
       {/* 유틸 메뉴 */}
       <div className="border-b border-[#f0f0f0]">
         <div className="max-w-[1200px] mx-auto px-4 h-9 flex items-center justify-end gap-4">
-          <Link href="/login" className="text-xs text-[#777] hover:text-[#222] transition-colors">
-            로그인
-          </Link>
-          <span className="text-[#e0e0e0] text-xs">|</span>
-          <Link href="/signup" className="text-xs text-[#777] hover:text-[#222] transition-colors">
-            회원가입
-          </Link>
+          {user ? (
+            <>
+              <span className="text-xs text-[#777]">{user.name}님</span>
+              <span className="text-[#e0e0e0] text-xs">|</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-xs text-[#777] hover:text-[#222] transition-colors"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-xs text-[#777] hover:text-[#222] transition-colors">
+                로그인
+              </Link>
+              <span className="text-[#e0e0e0] text-xs">|</span>
+              <Link href="/signup" className="text-xs text-[#777] hover:text-[#222] transition-colors">
+                회원가입
+              </Link>
+            </>
+          )}
           <span className="text-[#e0e0e0] text-xs">|</span>
           <Link href="/orders" className="text-xs text-[#777] hover:text-[#222] transition-colors">
             주문조회
