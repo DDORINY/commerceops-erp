@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:commerceops;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+jwt:
+  secret: Y29tbWVyY2VvcHMtZXJwLXRlc3Qtb25seS1zZWNyZXQta2V5LTIwMjYtdGVzdA==
+  expiration: 3600000
+
+logging:
+  level:
+    com.commerceops.erp: WARN
+    org.hibernate.SQL: WARN

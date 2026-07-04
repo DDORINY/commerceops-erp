@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: commerceops-erp
+
+  jpa:
+    open-in-view: false
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
