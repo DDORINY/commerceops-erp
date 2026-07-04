@@ -11,12 +11,19 @@ import { formatPrice, formatDateTime } from '@/lib/format';
 export default function WishlistPage() {
   const [items, setItems] = useState<ApiWishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const fetchWishlist = useCallback(() => {
     wishlistService
       .getWishlist()
-      .then(setItems)
-      .catch(() => setItems([]))
+      .then((res) => {
+        setItems(res);
+        setErrorMessage('');
+      })
+      .catch(() => {
+        setItems([]);
+        setErrorMessage('찜 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -47,6 +54,16 @@ export default function WishlistPage() {
 
         {loading ? (
           <div className="text-center text-[#aaa] py-20">불러오는 중...</div>
+        ) : errorMessage ? (
+          <div className="text-center py-20">
+            <p className="text-[#c43a3a] text-sm mb-6">{errorMessage}</p>
+            <Link
+              href="/products"
+              className="inline-block border border-[#222] text-[#222] text-sm px-6 py-2.5 hover:bg-[#222] hover:text-white transition-colors"
+            >
+              쇼핑하러 가기
+            </Link>
+          </div>
         ) : items.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-[#bbb] text-sm mb-6">찜한 상품이 없습니다.</p>

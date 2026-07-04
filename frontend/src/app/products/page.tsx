@@ -23,6 +23,7 @@ export default function ProductsPage() {
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Filter state
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -64,8 +65,14 @@ export default function ProductsPage() {
         setProducts(res.content.map(toProductListItem));
         setTotalElements(res.totalElements);
         setTotalPages(res.totalPages || 1);
+        setErrorMessage('');
       })
-      .catch(() => setProducts([]))
+      .catch(() => {
+        setProducts([]);
+        setTotalElements(0);
+        setTotalPages(1);
+        setErrorMessage('상품 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      })
       .finally(() => setLoading(false));
   }, [categories, selectedCategory, keyword, sortBy, minPrice, maxPrice, inStock, page]);
 
@@ -278,7 +285,12 @@ export default function ProductsPage() {
         </div>
 
         {/* 상품 그리드 */}
-        {loading ? (
+        {errorMessage ? (
+          <div className="py-20 text-center">
+            <p className="text-[#c43a3a] text-sm mb-4">{errorMessage}</p>
+            <button onClick={handleReset} className="text-sm text-[#555] underline">필터 초기화</button>
+          </div>
+        ) : loading ? (
           <div className="py-20 text-center text-[#aaa] text-sm">상품을 불러오는 중...</div>
         ) : products.length === 0 ? (
           <div className="py-20 text-center">

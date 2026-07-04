@@ -10,12 +10,19 @@ import { formatPrice, formatDate, ORDER_STATUS_LABEL, ORDER_STATUS_COLOR } from 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     orderService
       .getOrders()
-      .then(setOrders)
-      .catch(() => setOrders([]))
+      .then((res) => {
+        setOrders(res);
+        setErrorMessage('');
+      })
+      .catch(() => {
+        setOrders([]);
+        setErrorMessage('주문 내역을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -31,6 +38,10 @@ export default function OrdersPage() {
         {loading ? (
           <div className="py-24 text-center text-[#aaa] text-sm">
             주문 내역을 불러오는 중...
+          </div>
+        ) : errorMessage ? (
+          <div className="py-24 text-center text-[#c43a3a] text-sm">
+            {errorMessage}
           </div>
         ) : orders.length === 0 ? (
           <div className="py-24 text-center text-[#aaa] text-sm">

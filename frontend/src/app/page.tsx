@@ -33,6 +33,7 @@ const QUICK_CATEGORIES = [
 export default function HomePage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [loadError, setLoadError] = useState('');
   const [recentProducts] = useState<RecentProduct[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -49,9 +50,12 @@ export default function HomePage() {
       .then((res) => {
         setProducts(res.content.map(toProductListItem));
         setTotalCount(res.totalElements);
+        setLoadError('');
       })
       .catch(() => {
         setProducts([]);
+        setTotalCount(0);
+        setLoadError('상품 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       });
 
   }, []);
@@ -68,6 +72,12 @@ export default function HomePage() {
         <MainBanner />
 
         <div className="max-w-[1200px] mx-auto px-4">
+          {loadError && (
+            <div className="mt-8 border border-[#f0d6d6] bg-[#fff7f7] px-4 py-3 text-sm text-[#c43a3a]">
+              {loadError}
+            </div>
+          )}
+
           <section className="py-12 border-b border-[#f0f0f0]">
             <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
               {QUICK_CATEGORIES.map((cat) => (

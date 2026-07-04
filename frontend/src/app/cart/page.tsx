@@ -12,12 +12,19 @@ import { formatPrice } from '@/lib/format';
 export default function CartPage() {
   const [items, setItems] = useState<ApiCartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     cartService
       .getCart()
-      .then((cart) => setItems(cart.items))
-      .catch(() => setItems([]))
+      .then((cart) => {
+        setItems(cart.items);
+        setErrorMessage('');
+      })
+      .catch(() => {
+        setItems([]);
+        setErrorMessage('장바구니를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -67,7 +74,14 @@ export default function CartPage() {
       <main className="max-w-[1200px] mx-auto px-4 py-10">
         <h1 className="text-xl font-bold text-[#222] mb-8 pb-4 border-b border-[#e5e5e5]">장바구니</h1>
 
-        {items.length === 0 ? (
+        {errorMessage ? (
+          <div className="py-24 text-center">
+            <p className="text-[#c43a3a] text-sm mb-6">{errorMessage}</p>
+            <Link href="/products">
+              <Button variant="outline">쇼핑 계속하기</Button>
+            </Link>
+          </div>
+        ) : items.length === 0 ? (
           <div className="py-24 text-center">
             <p className="text-[#aaa] text-sm mb-6">장바구니가 비어 있습니다.</p>
             <Link href="/products">

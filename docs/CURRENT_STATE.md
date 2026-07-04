@@ -111,3 +111,14 @@
 - `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**`는 `ADMIN`, `SUPER_ADMIN` 권한으로 명시 제한한다.
 - 주문 결제 예약, 배송 출고, 주문 취소 예약 해제, 반품 원창고 복구 흐름은 기존 `WarehouseFulfillmentService` 기준을 따른다.
 - 피킹/패킹/출고 자동화와 복잡한 WMS 정책은 v0.2 이후 고도화 범위로 유지한다.
+
+---
+
+## v0.1.6 업데이트 기록
+
+- 사용자 쇼핑 화면의 mock 사용 여부를 점검했다.
+- 메인, 상품 목록, 상품 상세, 장바구니, 주문/체크아웃, 주문 상세, 마이페이지, 위시리스트, 문의/리뷰 화면은 실제 service/API 흐름을 사용한다.
+- 실제 화면에서 import하지 않는 `frontend/src/features/*/mock.ts` 미사용 mock 데이터 파일을 제거했다.
+- 상품 목록, 메인, 장바구니, 주문 목록, 체크아웃, 위시리스트 화면에 최소 에러/빈 상태 처리를 보강했다.
+- JWT가 필요한 장바구니, 주문, 위시리스트, 문의/리뷰 요청은 기존 `apiClient`의 `Authorization: Bearer` 흐름을 그대로 사용한다.
+- `POST /api/payments/mock/complete`는 v0.1 범위의 백엔드 모의 결제 API로 유지한다. 실제 PG 결제/취소/환불 연동은 v0.2 이후 범위로 넘긴다.

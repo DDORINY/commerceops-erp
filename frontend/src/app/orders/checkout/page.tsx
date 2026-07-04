@@ -22,6 +22,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<ApiCartItem[]>([]);
   const [cartLoading, setCartLoading] = useState(true);
+  const [cartError, setCartError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     receiverName: '',
@@ -39,8 +40,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     cartService
       .getCart()
-      .then((cart) => setCartItems(cart.items))
-      .catch(() => setCartItems([]))
+      .then((cart) => {
+        setCartItems(cart.items);
+        setCartError('');
+      })
+      .catch(() => {
+        setCartItems([]);
+        setCartError('주문 상품을 불러오지 못했습니다. 장바구니를 확인해주세요.');
+      })
       .finally(() => setCartLoading(false));
   }, []);
 
@@ -119,6 +126,10 @@ export default function CheckoutPage() {
               </h2>
               {cartLoading ? (
                 <p className="text-sm text-[#aaa]">상품 목록을 불러오는 중...</p>
+              ) : cartError ? (
+                <p className="text-sm text-[#c43a3a]">{cartError}</p>
+              ) : cartItems.length === 0 ? (
+                <p className="text-sm text-[#aaa]">주문할 상품이 없습니다.</p>
               ) : (
                 <div className="space-y-3">
                   {cartItems.map((item) => (
@@ -269,7 +280,7 @@ export default function CheckoutPage() {
                 size="lg"
                 fullWidth
                 onClick={handleSubmit}
-                disabled={submitting || cartLoading}
+                disabled={submitting || cartLoading || !!cartError || cartItems.length === 0}
               >
                 {submitting ? '처리 중...' : '결제하기'}
               </Button>
