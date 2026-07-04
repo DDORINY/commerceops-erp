@@ -1482,7 +1482,7 @@ GET /api/admin/dashboard/top-products
 
 # 24. 창고 관리 API
 
-> v0.6 단계 1 구현. 모든 API는 `ADMIN` 또는 `SUPER_ADMIN` 권한이 필요하다.
+> v0.1.5 기준 관리자 창고 화면에서 사용한다. 모든 API는 JWT 인증과 `ADMIN` 또는 `SUPER_ADMIN` 권한이 필요하다.
 
 | Method | Path | 설명 |
 | --- | --- | --- |
@@ -1496,6 +1496,23 @@ GET /api/admin/dashboard/top-products
 
 재고 이동 상태는 `PENDING`, `COMPLETED`다. 이동 완료는 동일 트랜잭션에서 창고 재고를 잠그고 처리하며 상품의 전체 재고 수량은 변경하지 않는다. 상세 정합성 규칙은 [창고 관리 기능 명세](./features/warehouse-management.md)를 따른다.
 
+`GET /api/admin/warehouse-stocks` query:
+
+| 이름 | 필수 | 설명 |
+| --- | --- | --- |
+| `warehouseId` | 아니오 | 특정 창고 재고만 조회 |
+| `keyword` | 아니오 | 상품명 검색어 |
+| `page` | 아니오 | 0부터 시작하는 페이지 번호 |
+| `size` | 아니오 | 페이지 크기 |
+
+`GET /api/admin/stock-transfers` query:
+
+| 이름 | 필수 | 설명 |
+| --- | --- | --- |
+| `status` | 아니오 | `PENDING`, `COMPLETED` |
+| `page` | 아니오 | 0부터 시작하는 페이지 번호 |
+| `size` | 아니오 | 페이지 크기 |
+
 ## 24-1. 창고 재고 수량 의미
 
 창고별 재고 응답은 다음 수량을 구분한다.
@@ -1508,6 +1525,8 @@ GET /api/admin/dashboard/top-products
 | `totalProductStock` | 전체 창고를 합친 상품 가용 총재고 |
 
 `POST /api/admin/inventory/inbound`와 `/adjust` 요청에는 `warehouseId`가 필수다. 입고는 상품 총재고와 목적 창고 실재고를 함께 증가시키고, 조정은 선택 창고의 목표 실재고와 상품 총재고의 차이를 함께 반영한다.
+
+주문 결제 완료 시 창고별 가용 재고는 `reservedQuantity`로 예약된다. 배송 출고 시 `quantity`와 `reservedQuantity`가 함께 감소하고, 주문 취소는 예약을 해제하며, 반품 승인은 출고된 원창고 재고를 복구한다. 피킹/패킹/출고 자동화와 복잡한 WMS 정책은 v0.2 이후 범위다.
 
 ---
 

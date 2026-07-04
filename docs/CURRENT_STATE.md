@@ -98,3 +98,16 @@
 - 최근 결제 완료 주문은 `GET /api/admin/orders?status=PAID`를 사용한다.
 - 화면에는 로딩, 부분 실패 에러, 데이터 없음 상태를 표시한다.
 - 상품별 지표 기간 필터와 고급 BI/차트 라이브러리 도입은 v0.2 이후 범위로 유지한다.
+
+---
+
+## v0.1.5 업데이트 기록
+
+- 관리자 창고 관리 화면 `/admin/warehouses`는 실제 창고 API를 사용한다.
+- 창고 목록/등록은 `GET`, `POST /api/admin/warehouses`를 사용한다.
+- 창고별 재고 조회와 미배정 재고 배치는 `GET /api/admin/warehouse-stocks`, `POST /api/admin/warehouse-stocks/allocate`를 사용한다.
+- 재고 이동 목록/요청/완료 처리는 `GET`, `POST`, `PATCH /api/admin/stock-transfers/**`를 사용한다.
+- 창고별 재고 화면은 창고 필터와 상품명 검색, 로딩/에러/빈 상태를 처리한다.
+- `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**`는 `ADMIN`, `SUPER_ADMIN` 권한으로 명시 제한한다.
+- 주문 결제 예약, 배송 출고, 주문 취소 예약 해제, 반품 원창고 복구 흐름은 기존 `WarehouseFulfillmentService` 기준을 따른다.
+- 피킹/패킹/출고 자동화와 복잡한 WMS 정책은 v0.2 이후 고도화 범위로 유지한다.

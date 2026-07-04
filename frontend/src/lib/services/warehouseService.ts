@@ -1,4 +1,6 @@
-import { apiClient, PageResponse } from '@/lib/api';
+import { apiClient, type PageResponse } from '@/lib/api';
+
+export type ApiStockTransferStatus = 'PENDING' | 'COMPLETED';
 
 export interface ApiWarehouse {
   warehouseId: number;
@@ -32,7 +34,7 @@ export interface ApiStockTransfer {
   productId: number;
   productName: string;
   quantity: number;
-  status: 'PENDING' | 'COMPLETED';
+  status: ApiStockTransferStatus;
   requestedAt: string;
   completedAt: string | null;
 }
@@ -59,7 +61,7 @@ export const warehouseService = {
       body: JSON.stringify({ warehouseId, productId, quantity }),
     }),
 
-  getTransfers: (status?: string, page = 0, size = 20) => {
+  getTransfers: (status?: ApiStockTransferStatus | 'ALL', page = 0, size = 20) => {
     const qs = new URLSearchParams({ page: String(page), size: String(size) });
     if (status && status !== 'ALL') qs.set('status', status);
     return apiClient<PageResponse<ApiStockTransfer>>(`/admin/stock-transfers?${qs.toString()}`);
