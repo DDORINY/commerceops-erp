@@ -8,6 +8,7 @@ export interface ApiReview {
   orderItemId: number;
   rating: number;
   content: string | null;
+  status: 'VISIBLE' | 'HIDDEN' | 'DELETED';
   createdAt: string;
 }
 
@@ -37,4 +38,10 @@ export const reviewService = {
 
   deleteAdminReview: (reviewId: number) =>
     apiClient<null>(`/admin/reviews/${reviewId}`, { method: 'DELETE' }),
+
+  hideAdminReview: (reviewId: number) =>
+    apiClient<null>(`/admin/reviews/${reviewId}/hide`, { method: 'PATCH' }),
+
+  showAdminReview: (reviewId: number) =>
+    apiClient<null>(`/admin/reviews/${reviewId}/show`, { method: 'PATCH' }),
 };

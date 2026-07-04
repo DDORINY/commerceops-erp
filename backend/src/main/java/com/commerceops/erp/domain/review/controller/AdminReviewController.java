@@ -4,8 +4,10 @@ import com.commerceops.erp.domain.review.dto.ReviewResponse;
 import com.commerceops.erp.domain.review.service.ReviewService;
 import com.commerceops.erp.global.response.ApiResponse;
 import com.commerceops.erp.global.response.PageResponse;
+import com.commerceops.erp.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,9 +30,27 @@ public class AdminReviewController {
         ));
     }
 
+    @PatchMapping("/{reviewId}/hide")
+    public ResponseEntity<ApiResponse<Void>> hideReview(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        reviewService.hideReview(reviewId, userDetails.getUser());
+        return ResponseEntity.ok(ApiResponse.<Void>ok("Review has been hidden.", null));
+    }
+
+    @PatchMapping("/{reviewId}/show")
+    public ResponseEntity<ApiResponse<Void>> showReview(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        reviewService.showReview(reviewId, userDetails.getUser());
+        return ResponseEntity.ok(ApiResponse.<Void>ok("Review has been shown.", null));
+    }
+
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long reviewId) {
-        reviewService.adminDeleteReview(reviewId);
+    public ResponseEntity<ApiResponse<Void>> deleteReview(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        reviewService.adminDeleteReview(reviewId, userDetails.getUser());
         return ResponseEntity.ok(ApiResponse.<Void>ok("리뷰가 삭제되었습니다.", null));
     }
 }

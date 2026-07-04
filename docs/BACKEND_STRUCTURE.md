@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.3`
+기준 버전: `v0.2.4`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -19,6 +19,7 @@ com.commerceops.erp
 ├── domain
 │   ├── accounting
 │   ├── auth
+│   ├── audit
 │   ├── cart
 │   ├── category
 │   ├── coupon
@@ -48,6 +49,7 @@ com.commerceops.erp
 | 도메인 | Controller | Service | Repository | Entity |
 | --- | --- | --- | --- | --- |
 | accounting | `AdminAccountingController` | `AccountingService` | `AccountingEntryRepository` | `AccountingEntry` |
+| audit | `AdminAuditLogController` | `AuditLogService` | `AuditLogRepository` | `AuditLog` |
 | auth | `AuthController` | `AuthService` | `UserRepository` 사용 | `User` |
 | cart | `CartController` | `CartService` | `CartRepository` | `Cart` |
 | category | `CategoryController`, `AdminCategoryController` | `CategoryService` | `CategoryRepository` | `Category` |
@@ -81,7 +83,7 @@ com.commerceops.erp
 ## v0.1.1 ~ v0.1.6 반영 상태
 
 - 관리자 문의: `GET /api/admin/inquiries`, 답변, 종료 API 실제 연결.
-- 관리자 리뷰: `GET /api/admin/reviews`, `DELETE /api/admin/reviews/{reviewId}` 실제 연결.
+- 관리자 리뷰: `GET /api/admin/reviews`, 숨김/해제/삭제 API 실제 연결. 삭제는 `ReviewStatus.DELETED` soft delete로 처리한다.
 - 관리자 회계: `GET /api/admin/accounting/summary`, `GET /api/admin/accounting/entries` 실제 연결.
 - 관리자 판매/매출 분석: `GET /api/admin/dashboard/summary`, `/sales`, `/top-products` 사용.
 - 관리자 창고: 창고 목록/등록, 창고별 재고, 재고 할당, 재고 이동 실제 API 구현.
@@ -90,7 +92,7 @@ com.commerceops.erp
 ## 명시적 미구현
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 `PaymentController`는 `/api/payments/approve`, `/api/payments/{paymentId}/cancel`, 하위 호환 `/api/payments/mock/complete`를 제공하며 `MOCK_PROVIDER` 기반으로 동작한다.
-- 리뷰 숨김/상태 변경. 현재 관리자 리뷰 운영은 조회와 삭제다.
+- 전체 관리자 기능 감사 로그. 현재는 리뷰 숨김/해제/삭제 작업만 `audit_logs`에 기록한다.
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.

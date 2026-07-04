@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.2.3`
+기준 버전: `v0.2.4`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -40,7 +40,7 @@
 | `/admin/products/new` | `app/admin/products/new/page.tsx` | `productService.createProduct`, `getCategories`, `mediaService.uploadProductImage` |
 | `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, `mediaService.uploadProductImage` |
 | `/admin/inquiries` | `app/admin/inquiries/page.tsx` | `inquiryService.getAdminInquiries`, answer/close |
-| `/admin/reviews` | `app/admin/reviews/page.tsx` | `reviewService.getAdminReviews`, delete |
+| `/admin/reviews` | `app/admin/reviews/page.tsx` | `reviewService.getAdminReviews`, hide/show/delete, `auditService.getAuditLogs` |
 | `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService` |
 | `/admin/sales` | `app/admin/sales/page.tsx` | `adminService` dashboard sales/top products |
 | `/admin/inventory` | `app/admin/inventory/page.tsx` | `adminService.getInventory`, inbound/adjust |
@@ -62,7 +62,8 @@
 | `paymentService.ts` | 결제 승인, 결제 취소, 하위 호환 모의 결제 완료 API 호출 |
 | `wishlistService.ts` | 찜 토글/목록/상태 |
 | `inquiryService.ts` | 사용자/상품 문의, 관리자 문의 답변/종료 |
-| `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/삭제 |
+| `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/숨김/해제/삭제 |
+| `auditService.ts` | 관리자 작업 이력 조회 |
 | `returnService.ts` | 반품 요청/목록, 관리자 승인/거절 |
 | `shipmentService.ts` | 사용자 배송 조회, 관리자 배송 처리 |
 | `couponService.ts` | 쿠폰 검증, 관리자 쿠폰 CRUD 일부 |
@@ -94,6 +95,6 @@
 
 - 실제 PG 결제 UI/승인 콜백. 현재 checkout은 `/api/payments/approve`를 호출하되 provider는 백엔드 `MOCK_PROVIDER` 기반이다.
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
-- 리뷰 숨김 상태 UI. 현재 관리자 리뷰는 삭제 중심이다.
+- 전체 관리자 기능 감사 로그 UI. 현재는 관리자 리뷰 화면의 최근 리뷰 감사 로그만 표시한다.
 - 고급 차트/BI 라이브러리 기반 분석 화면.
 - 피킹/패킹/출고 자동화 화면.

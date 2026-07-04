@@ -12,6 +12,7 @@ public record ReviewResponse(
         Long orderItemId,
         Integer rating,
         String content,
+        String status,
         LocalDateTime createdAt
 ) {
     public static ReviewResponse from(Review review) {
@@ -23,6 +24,7 @@ public record ReviewResponse(
                 review.getOrderItemId(),
                 review.getRating(),
                 review.getContent(),
+                review.getEffectiveStatus().name(),
                 review.getCreatedAt()
         );
     }

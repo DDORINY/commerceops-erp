@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.2.3`
+기준 버전: `v0.2.4`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -27,6 +27,7 @@
 | `/api/admin/returns/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/inquiries/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/reviews/**` | `ADMIN`, `SUPER_ADMIN` |
+| `/api/admin/audit-logs/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/uploads/**` | 공개 정적 파일 |
@@ -87,7 +88,10 @@
 | Review | GET | `/api/my/reviews` | - | `List<ReviewResponse>` | 인증 |
 | Review | DELETE | `/api/reviews/{reviewId}` | - | `null` | 인증 |
 | Review Admin | GET | `/api/admin/reviews` | `rating`, `keyword`, `page`, `size` | `PageResponse<ReviewResponse>` | 관리자 |
+| Review Admin | PATCH | `/api/admin/reviews/{reviewId}/hide` | - | `null` | 관리자 |
+| Review Admin | PATCH | `/api/admin/reviews/{reviewId}/show` | - | `null` | 관리자 |
 | Review Admin | DELETE | `/api/admin/reviews/{reviewId}` | - | `null` | 관리자 |
+| Audit Admin | GET | `/api/admin/audit-logs` | `targetType`, `page`, `size` | `PageResponse<AuditLogResponse>` | 관리자 |
 | Wishlist | POST | `/api/wishlist/{productId}` | - | `WishlistToggleResponse` | 인증 |
 | Wishlist | GET | `/api/wishlist` | - | `List<WishlistItemResponse>` | 인증 |
 | Wishlist | GET | `/api/wishlist/{productId}/status` | - | `WishlistToggleResponse` | 인증 |
@@ -119,6 +123,8 @@
 
 - `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `stockQuantity`, `imageUrl`, `status`, `options`.
 - `MediaFileResponse`: `id`, `originalFilename`, `storedFilename`, `url`, `contentType`, `size`, `mediaType`, `createdAt`.
+- `ReviewResponse`: `reviewId`, `productId`, `productName`, `userName`, `orderItemId`, `rating`, `content`, `status`, `createdAt`.
+- `AuditLogResponse`: `id`, `actorId`, `actorEmail`, `actorName`, `actionType`, `targetType`, `targetId`, `beforeStatus`, `afterStatus`, `summary`, `createdAt`.
 - `LoginResponse`: `accessToken`, `refreshToken`, `tokenType`, `user`.
 - `RefreshTokenRequest`: `refreshToken`.
 - `RefreshTokenResponse`: `accessToken`, `refreshToken`, `tokenType`.
@@ -137,6 +143,8 @@
 | `UserRole` | `USER`, `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | `UserStatus` | `ACTIVE`, `INACTIVE`, `BLOCKED` |
 | `ProductStatus` | `ON_SALE`, `SOLD_OUT`, `HIDDEN`, `DELETED` |
+| `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
+| `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |
@@ -153,7 +161,6 @@
 ## 미구현/예정으로 분리된 항목
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 결제 승인 API는 `MOCK_PROVIDER` 기반으로 동작한다.
-- 리뷰 숨김 또는 상태 변경 API. 현재는 관리자 목록 조회와 삭제만 있다.
-- 상품 이미지 업로드 API.
+- 완전한 감사 로그 시스템. 현재는 리뷰 숨김/해제/삭제 작업 이력의 최소 기록만 제공한다.
 - 고급 BI, 복식부기, 정산 리포트 API.
 - 피킹, 패킹, 출고 자동화 API.

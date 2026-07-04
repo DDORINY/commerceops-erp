@@ -210,6 +210,27 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [x] `v0.2.3` 태그 생성 및 push
 
+## v0.2.4 체크리스트
+
+목적: 리뷰 숨김/상태 관리와 관리자 작업 이력 최소 구현.
+
+- [x] 기존 리뷰 작성/조회/삭제와 관리자 리뷰 화면 확인
+- [x] `ReviewStatus` 상태 모델 추가
+- [x] 사용자 상품 리뷰 목록에서 숨김/삭제 리뷰 미노출 처리
+- [x] 관리자 리뷰 목록에서 숨김 리뷰까지 확인 가능하게 처리
+- [x] `PATCH /api/admin/reviews/{reviewId}/hide` 추가
+- [x] `PATCH /api/admin/reviews/{reviewId}/show` 추가
+- [x] 기존 관리자 삭제 API soft delete 유지
+- [x] `audit_logs`와 `AuditLogService` 최소 구현
+- [x] 리뷰 숨김/해제/삭제 작업 이력 기록
+- [x] `GET /api/admin/audit-logs` 최근 작업 이력 조회 추가
+- [x] 관리자 리뷰 화면 상태 표시/숨김/해제/최근 감사 로그 연결
+- [x] 관련 API/DB/구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.4` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

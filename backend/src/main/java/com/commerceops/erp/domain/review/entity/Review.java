@@ -1,6 +1,7 @@
 package com.commerceops.erp.domain.review.entity;
 
 import com.commerceops.erp.domain.product.entity.Product;
+import com.commerceops.erp.domain.review.enums.ReviewStatus;
 import com.commerceops.erp.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,7 +41,28 @@ public class Review {
     @Column(length = 1000)
     private String content;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ReviewStatus status = ReviewStatus.VISIBLE;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public ReviewStatus getEffectiveStatus() {
+        return status == null ? ReviewStatus.VISIBLE : status;
+    }
+
+    public void hide() {
+        this.status = ReviewStatus.HIDDEN;
+    }
+
+    public void show() {
+        this.status = ReviewStatus.VISIBLE;
+    }
+
+    public void softDelete() {
+        this.status = ReviewStatus.DELETED;
+    }
 }
