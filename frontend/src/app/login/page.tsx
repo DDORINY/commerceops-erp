@@ -15,14 +15,15 @@ export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({ email: '', password: '' });
-  const [apiError, setApiError] = useState(() => {
-    if (typeof window === 'undefined') return '';
-    return sessionStorage.getItem('authMessage') ?? '';
-  });
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const authMessage = sessionStorage.getItem('authMessage') ?? '';
     sessionStorage.removeItem('authMessage');
+    if (authMessage) {
+      queueMicrotask(() => setApiError(authMessage));
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
