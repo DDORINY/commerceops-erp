@@ -12,6 +12,11 @@ export interface ApiProductItem {
   categoryName: string;
   name: string;
   price: number;
+  productCode: string | null;
+  brand: string | null;
+  originalPrice: number | null;
+  discountPrice: number | null;
+  tags: string | null;
   stockQuantity: number;
   imageUrl: string | null;
   status: string;
@@ -26,12 +31,37 @@ export interface ApiProductDetail {
   name: string;
   description: string;
   price: number;
+  productCode: string | null;
+  brand: string | null;
+  manufacturer: string | null;
+  modelName: string | null;
+  origin: string | null;
+  originalPrice: number | null;
+  discountPrice: number | null;
+  searchKeywords: string | null;
+  tags: string | null;
+  saleStartAt: string | null;
+  saleEndAt: string | null;
+  deliveryInfo: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  seoKeywords: string | null;
   stockQuantity: number;
   imageUrl: string | null;
   status: string;
   options: ProductOptionGroup[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ApiAdminProductItem extends ApiProductItem {
+  purchasePrice: number | null;
+  marginRate: number;
+}
+
+export interface ApiAdminProductDetail extends ApiProductDetail {
+  purchasePrice: number | null;
+  marginRate: number;
 }
 
 export interface ApiCategory {
@@ -46,8 +76,10 @@ export function toProductListItem(p: ApiProductItem): ProductListItem {
     categoryName: p.categoryName as ProductListItem['categoryName'],
     name: p.name,
     price: p.price,
-    originalPrice: p.price,
-    discountRate: 0,
+    originalPrice: p.originalPrice ?? p.price,
+    discountRate: p.originalPrice && p.discountPrice
+      ? Math.max(0, Math.round((p.discountPrice / p.originalPrice) * 100))
+      : 0,
     stockQuantity: p.stockQuantity,
     imageUrl: p.imageUrl ?? 'https://placehold.co/600x750?text=No+Image',
     status: p.status as ProductListItem['status'],
@@ -61,6 +93,22 @@ export interface ProductCreatePayload {
   name: string;
   description?: string;
   price: number;
+  productCode?: string;
+  brand?: string;
+  manufacturer?: string;
+  modelName?: string;
+  origin?: string;
+  originalPrice?: number;
+  discountPrice?: number;
+  purchasePrice?: number;
+  searchKeywords?: string;
+  tags?: string;
+  saleStartAt?: string;
+  saleEndAt?: string;
+  deliveryInfo?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
   stockQuantity: number;
   imageUrl?: string;
   status: string;
@@ -72,6 +120,22 @@ export interface ProductUpdatePayload {
   name?: string;
   description?: string;
   price?: number;
+  productCode?: string;
+  brand?: string;
+  manufacturer?: string;
+  modelName?: string;
+  origin?: string;
+  originalPrice?: number;
+  discountPrice?: number;
+  purchasePrice?: number;
+  searchKeywords?: string;
+  tags?: string;
+  saleStartAt?: string;
+  saleEndAt?: string;
+  deliveryInfo?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
   stockQuantity?: number;
   imageUrl?: string;
   status?: string;
@@ -116,21 +180,21 @@ export const productService = {
     if (params.page !== undefined) qs.set('page', String(params.page));
     if (params.size !== undefined) qs.set('size', String(params.size));
     const query = qs.toString() ? `?${qs.toString()}` : '';
-    return apiClient<PageResponse<ApiProductItem>>(`/admin/products${query}`);
+    return apiClient<PageResponse<ApiAdminProductItem>>(`/admin/products${query}`);
   },
 
-  getAdminProduct: (id: number) => apiClient<ApiProductDetail>(`/admin/products/${id}`),
+  getAdminProduct: (id: number) => apiClient<ApiAdminProductDetail>(`/admin/products/${id}`),
 
   getCategories: () => apiClient<ApiCategory[]>('/categories'),
 
   createProduct: (data: ProductCreatePayload) =>
-    apiClient<ApiProductDetail>('/admin/products', {
+    apiClient<ApiAdminProductDetail>('/admin/products', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   updateProduct: (id: number, data: ProductUpdatePayload) =>
-    apiClient<ApiProductDetail>(`/admin/products/${id}`, {
+    apiClient<ApiAdminProductDetail>(`/admin/products/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),

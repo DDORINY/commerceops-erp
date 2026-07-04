@@ -2,10 +2,12 @@ package com.commerceops.erp.domain.product.dto;
 
 import com.commerceops.erp.domain.product.entity.Product;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record ProductResponse(
+public record AdminProductResponse(
         Long id,
         Long categoryId,
         String categoryName,
@@ -19,6 +21,8 @@ public record ProductResponse(
         String origin,
         Integer originalPrice,
         Integer discountPrice,
+        Integer purchasePrice,
+        BigDecimal marginRate,
         String searchKeywords,
         String tags,
         LocalDateTime saleStartAt,
@@ -34,8 +38,8 @@ public record ProductResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static ProductResponse from(Product product) {
-        return new ProductResponse(
+    public static AdminProductResponse from(Product product) {
+        return new AdminProductResponse(
                 product.getId(),
                 product.getCategory().getId(),
                 product.getCategory().getName(),
@@ -49,6 +53,8 @@ public record ProductResponse(
                 product.getOrigin(),
                 product.getOriginalPrice(),
                 product.getDiscountPrice(),
+                product.getPurchasePrice(),
+                calculateMarginRate(product.getPrice(), product.getPurchasePrice()),
                 product.getSearchKeywords(),
                 product.getTags(),
                 product.getSaleStartAt(),
@@ -64,5 +70,14 @@ public record ProductResponse(
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );
+    }
+
+    private static BigDecimal calculateMarginRate(Integer price, Integer purchasePrice) {
+        if (price == null || purchasePrice == null || price <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(price - purchasePrice)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(price), 2, RoundingMode.HALF_UP);
     }
 }

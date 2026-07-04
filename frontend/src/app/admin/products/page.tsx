@@ -7,7 +7,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import DataTable from '@/components/admin/DataTable';
 import Pagination from '@/components/common/Pagination';
 import Button from '@/components/common/Button';
-import { productService, type ApiProductItem } from '@/lib/services/productService';
+import { productService, type ApiAdminProductItem } from '@/lib/services/productService';
 import { formatPrice, PRODUCT_STATUS_LABEL, PRODUCT_STATUS_COLOR } from '@/lib/format';
 
 const PAGE_SIZE = 8;
@@ -17,7 +17,7 @@ export default function AdminProductsPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [page, setPage] = useState(1);
-  const [products, setProducts] = useState<ApiProductItem[]>([]);
+  const [products, setProducts] = useState<ApiAdminProductItem[]>([]);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -122,7 +122,7 @@ export default function AdminProductsPage() {
           </Button>
         </div>
       ) : (
-        <DataTable<ApiProductItem>
+        <DataTable<ApiAdminProductItem>
           keyField="id"
           data={products}
           emptyMessage="상품 데이터가 없습니다."
@@ -148,7 +148,9 @@ export default function AdminProductsPage() {
               render: (row) => (
                 <div>
                   <p className="font-medium text-[#222] text-sm">{row.name}</p>
-                  <p className="text-xs text-[#999] mt-0.5">{row.categoryName}</p>
+                  <p className="text-xs text-[#999] mt-0.5">
+                    {row.productCode || 'No code'} · {row.brand || row.categoryName}
+                  </p>
                 </div>
               ),
             },
@@ -156,6 +158,16 @@ export default function AdminProductsPage() {
               key: 'price',
               header: '판매가',
               render: (row) => <span className="font-medium">{formatPrice(row.price)}</span>,
+            },
+            {
+              key: 'purchasePrice',
+              header: '매입가',
+              render: (row) => row.purchasePrice != null ? formatPrice(row.purchasePrice) : '-',
+            },
+            {
+              key: 'marginRate',
+              header: '마진율',
+              render: (row) => `${Number(row.marginRate ?? 0).toFixed(2)}%`,
             },
             { key: 'stockQuantity', header: '재고', render: (row) => `${row.stockQuantity}개` },
             {

@@ -1,12 +1,13 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.2.8`
+기준 버전: `v0.3.1`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 - 초기 마이그레이션: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
 - 알림 마이그레이션: `backend/src/main/resources/db/migration/V2__add_notifications.sql`
+- 상품 마스터 확장 마이그레이션: `backend/src/main/resources/db/migration/V3__extend_product_catalog_master.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -18,7 +19,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | --- | --- | --- |
 | `users` | `User` | `email`, `password`, `name`, `phone`, `role`, `status`, timestamps |
 | `categories` | `Category` | `name`, timestamps |
-| `products` | `Product` | `category_id`, `name`, `description`, `price`, `stock_quantity`, `image_url`, `status`, `options`, timestamps |
+| `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, `status`, `options`, timestamps |
 | `media_files` | `MediaFile` | `original_filename`, `stored_filename`, `storage_path`, `public_url`, `content_type`, `size`, `media_type`, `created_at` |
 | `carts` | `Cart` | `user_id`, `product_id`, `quantity`, `selected_options`, timestamps |
 | `orders` | `Order` | `user_id`, `order_number`, `total_price`, `discount_amount`, `coupon_code`, `status`, receiver fields, `payment_status`, timestamps |
@@ -65,7 +66,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 ## 주요 인덱스/제약 기준
 
-- 유니크: `users.email`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
+- 유니크: `users.email`, `products.product_code`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
 - 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다.
 - 알림 조회 인덱스: `notifications(user_id, read_at, created_at)`, `notifications(type, created_at)`, `notifications(target_type, target_id)`.
 - FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
@@ -85,6 +86,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 - v0.2.5 이전 개발 DB는 Hibernate `ddl-auto=update`로 만들어졌을 수 있다. 운영 반영 전에는 `V1__initial_schema.sql`과 실제 DB 스키마 차이를 별도로 점검해야 한다.
 - `Product.options`, `Cart.selectedOptions`, `OrderItem.selectedOptions`는 JSON 문자열 또는 converter 기반 저장이다.
+- v0.3.1 기준 `Product.price`는 판매가, `originalPrice`는 정상가, `discountPrice`는 할인 금액, `purchasePrice`는 관리자 전용 매입가로 사용한다. 마진율은 저장하지 않고 관리자 응답에서 `(판매가 - 매입가) / 판매가 * 100`으로 계산한다.
+- v0.3.1 기준 `Product.searchKeywords`, `Product.tags`, `Product.seoKeywords`는 TEXT 구분자 문자열로 저장한다. AI 태그 추천과 고급 검색이 필요해지면 별도 테이블로 분리할 수 있다.
 - `Product.stockQuantity`와 `WarehouseStock.quantity/reservedQuantity`가 함께 존재한다. 창고 기능에서는 창고별 재고와 예약이 source of truth가 되며, 상품 총 재고는 보조/요약 값으로 함께 갱신된다.
 - 실제 PG 벤더별 거래 원장/웹훅 이벤트 테이블은 아직 없다. v0.2.2에서는 `payments.idempotency_key`, `provider`만 추가했다.
 - `audit_logs`는 리뷰 숨김/해제/삭제 이력부터 기록한다. 전체 관리자 기능 감사 로그는 후속 확장 범위다.

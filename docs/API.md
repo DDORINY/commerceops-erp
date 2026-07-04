@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.2.8`
+기준 버전: `v0.3.1`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -48,10 +48,10 @@
 | Category | POST | `/api/admin/categories` | `CategoryCreateRequest` | `CategoryResponse` | 관리자 |
 | Product | GET | `/api/products` | `categoryId`, `keyword`, `sort`, `minPrice`, `maxPrice`, `inStock`, `page`, `size` | `PageResponse<ProductListResponse>` | 공개 |
 | Product | GET | `/api/products/{productId}` | - | `ProductResponse` | 공개 |
-| Product | GET | `/api/admin/products` | `status`, `keyword`, `page`, `size` | `PageResponse<ProductListResponse>` | 관리자 |
-| Product | GET | `/api/admin/products/{productId}` | - | `ProductResponse` | 관리자 |
-| Product | POST | `/api/admin/products` | `ProductCreateRequest` | `ProductResponse` | 관리자 |
-| Product | PATCH | `/api/admin/products/{productId}` | `ProductUpdateRequest` | `ProductResponse` | 관리자 |
+| Product | GET | `/api/admin/products` | `status`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
+| Product | GET | `/api/admin/products/{productId}` | - | `AdminProductResponse` | 관리자 |
+| Product | POST | `/api/admin/products` | `ProductCreateRequest` | `AdminProductResponse` | 관리자 |
+| Product | PATCH | `/api/admin/products/{productId}` | `ProductUpdateRequest` | `AdminProductResponse` | 관리자 |
 | Product | DELETE | `/api/admin/products/{productId}` | - | `null` | 관리자 |
 | Media Admin | POST | `/api/admin/media/product-images` | multipart `file` | `MediaFileResponse` | 관리자 |
 | Cart | GET | `/api/cart` | - | `CartResponse` | 인증 |
@@ -128,7 +128,9 @@
 
 ## 주요 DTO 메모
 
-- `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `productCode`, `brand`, `manufacturer`, `modelName`, `origin`, `originalPrice`, `discountPrice`, `purchasePrice`, `searchKeywords`, `tags`, `saleStartAt`, `saleEndAt`, `deliveryInfo`, `seoTitle`, `seoDescription`, `seoKeywords`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `ProductResponse`, `ProductListResponse`: 사용자 공개 상품 필드. `purchasePrice`, `marginRate`는 포함하지 않는다.
+- `AdminProductResponse`, `AdminProductListResponse`: 관리자 상품 필드. `purchasePrice`, 계산 필드 `marginRate`를 포함한다.
 - `MediaFileResponse`: `id`, `originalFilename`, `storedFilename`, `url`, `contentType`, `size`, `mediaType`, `createdAt`.
 - `ReviewResponse`: `reviewId`, `productId`, `productName`, `userName`, `orderItemId`, `rating`, `content`, `status`, `createdAt`.
 - `AuditLogResponse`: `id`, `actorId`, `actorEmail`, `actorName`, `actionType`, `targetType`, `targetId`, `beforeStatus`, `afterStatus`, `summary`, `createdAt`.

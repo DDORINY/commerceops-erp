@@ -7,7 +7,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
-import { productService, type ApiCategory, type ApiProductDetail, type ProductOptionGroup } from '@/lib/services/productService';
+import { productService, type ApiAdminProductDetail, type ApiCategory, type ProductOptionGroup } from '@/lib/services/productService';
 
 interface OptionGroupDraft {
   name: string;
@@ -30,8 +30,24 @@ export default function AdminProductEditPage({
   const [form, setForm] = useState({
     categoryId: '',
     name: '',
+    productCode: '',
+    brand: '',
+    manufacturer: '',
+    modelName: '',
+    origin: '',
     price: '',
+    originalPrice: '',
+    discountPrice: '',
+    purchasePrice: '',
     stockQuantity: '',
+    searchKeywords: '',
+    tags: '',
+    saleStartAt: '',
+    saleEndAt: '',
+    deliveryInfo: '',
+    seoTitle: '',
+    seoDescription: '',
+    seoKeywords: '',
     description: '',
     imageUrl: '',
     status: 'ON_SALE',
@@ -42,13 +58,29 @@ export default function AdminProductEditPage({
       productService.getAdminProduct(Number(id)),
       productService.getCategories(),
     ])
-      .then(([product, cats]: [ApiProductDetail, ApiCategory[]]) => {
+      .then(([product, cats]: [ApiAdminProductDetail, ApiCategory[]]) => {
         setCategories(cats);
         setForm({
           categoryId: String(product.categoryId),
           name: product.name,
+          productCode: product.productCode ?? '',
+          brand: product.brand ?? '',
+          manufacturer: product.manufacturer ?? '',
+          modelName: product.modelName ?? '',
+          origin: product.origin ?? '',
           price: String(product.price),
+          originalPrice: product.originalPrice != null ? String(product.originalPrice) : '',
+          discountPrice: product.discountPrice != null ? String(product.discountPrice) : '',
+          purchasePrice: product.purchasePrice != null ? String(product.purchasePrice) : '',
           stockQuantity: String(product.stockQuantity),
+          searchKeywords: product.searchKeywords ?? '',
+          tags: product.tags ?? '',
+          saleStartAt: product.saleStartAt ? product.saleStartAt.slice(0, 16) : '',
+          saleEndAt: product.saleEndAt ? product.saleEndAt.slice(0, 16) : '',
+          deliveryInfo: product.deliveryInfo ?? '',
+          seoTitle: product.seoTitle ?? '',
+          seoDescription: product.seoDescription ?? '',
+          seoKeywords: product.seoKeywords ?? '',
           description: product.description ?? '',
           imageUrl: product.imageUrl ?? '',
           status: product.status,
@@ -65,6 +97,9 @@ export default function AdminProductEditPage({
 
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  const optionalNumber = (value: string) => value.trim() ? Number(value) : undefined;
+  const optionalDateTime = (value: string) => value.trim() ? value : undefined;
 
   const addOptionGroup = () =>
     setOptionGroups((prev) => [...prev, { name: '', valueInput: '', values: [] }]);
@@ -108,6 +143,22 @@ export default function AdminProductEditPage({
         name: form.name.trim(),
         description: form.description.trim() || undefined,
         price: Number(form.price),
+        productCode: form.productCode.trim() || undefined,
+        brand: form.brand.trim() || undefined,
+        manufacturer: form.manufacturer.trim() || undefined,
+        modelName: form.modelName.trim() || undefined,
+        origin: form.origin.trim() || undefined,
+        originalPrice: optionalNumber(form.originalPrice),
+        discountPrice: optionalNumber(form.discountPrice),
+        purchasePrice: optionalNumber(form.purchasePrice),
+        searchKeywords: form.searchKeywords.trim() || undefined,
+        tags: form.tags.trim() || undefined,
+        saleStartAt: optionalDateTime(form.saleStartAt),
+        saleEndAt: optionalDateTime(form.saleEndAt),
+        deliveryInfo: form.deliveryInfo.trim() || undefined,
+        seoTitle: form.seoTitle.trim() || undefined,
+        seoDescription: form.seoDescription.trim() || undefined,
+        seoKeywords: form.seoKeywords.trim() || undefined,
         stockQuantity: Number(form.stockQuantity),
         imageUrl: form.imageUrl.trim() || undefined,
         status: form.status,
@@ -196,6 +247,36 @@ export default function AdminProductEditPage({
                 placeholder="예) 100"
                 fullWidth
               />
+            </div>
+
+            <div className="pt-2 space-y-4">
+              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">Catalog Master</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Product Code" value={form.productCode} onChange={(e) => set('productCode', e.target.value)} placeholder="SKU-001" fullWidth />
+                <Input label="Brand" value={form.brand} onChange={(e) => set('brand', e.target.value)} placeholder="Brand" fullWidth />
+                <Input label="Manufacturer" value={form.manufacturer} onChange={(e) => set('manufacturer', e.target.value)} placeholder="Manufacturer" fullWidth />
+                <Input label="Model Name" value={form.modelName} onChange={(e) => set('modelName', e.target.value)} placeholder="Model" fullWidth />
+                <Input label="Origin" value={form.origin} onChange={(e) => set('origin', e.target.value)} placeholder="Korea" fullWidth />
+              </div>
+            </div>
+
+            <div className="pt-2 space-y-4">
+              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">Price / Search / SEO</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Original Price" type="number" value={form.originalPrice} onChange={(e) => set('originalPrice', e.target.value)} placeholder="50000" fullWidth />
+                <Input label="Discount Amount" type="number" value={form.discountPrice} onChange={(e) => set('discountPrice', e.target.value)} placeholder="5000" fullWidth />
+                <Input label="Purchase Price" type="number" value={form.purchasePrice} onChange={(e) => set('purchasePrice', e.target.value)} placeholder="25000" fullWidth />
+              </div>
+              <Input label="Search Keywords" value={form.searchKeywords} onChange={(e) => set('searchKeywords', e.target.value)} placeholder="comma separated keywords" fullWidth />
+              <Input label="Tags" value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="comma separated tags" fullWidth />
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Sale Start" type="datetime-local" value={form.saleStartAt} onChange={(e) => set('saleStartAt', e.target.value)} fullWidth />
+                <Input label="Sale End" type="datetime-local" value={form.saleEndAt} onChange={(e) => set('saleEndAt', e.target.value)} fullWidth />
+              </div>
+              <Input label="Delivery Info" value={form.deliveryInfo} onChange={(e) => set('deliveryInfo', e.target.value)} placeholder="Shipping notes" fullWidth />
+              <Input label="SEO Title" value={form.seoTitle} onChange={(e) => set('seoTitle', e.target.value)} placeholder="SEO title" fullWidth />
+              <Input label="SEO Description" value={form.seoDescription} onChange={(e) => set('seoDescription', e.target.value)} placeholder="SEO description" fullWidth />
+              <Input label="SEO Keywords" value={form.seoKeywords} onChange={(e) => set('seoKeywords', e.target.value)} placeholder="SEO keywords" fullWidth />
             </div>
 
             <ProductImageUpload

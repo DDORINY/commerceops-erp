@@ -56,43 +56,61 @@ public class ProductService {
         return ProductResponse.from(product);
     }
 
-    public PageResponse<ProductListResponse> getAdminProducts(ProductStatus status, String keyword, int page, int size) {
+    public PageResponse<AdminProductListResponse> getAdminProducts(ProductStatus status, String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Product> products = productRepository.findAll(buildAdminSpec(status, keyword), pageable);
-        return PageResponse.from(products.map(ProductListResponse::from));
+        return PageResponse.from(products.map(AdminProductListResponse::from));
     }
 
-    public ProductResponse getAdminProduct(Long productId) {
+    public AdminProductResponse getAdminProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         if (product.getStatus() == ProductStatus.DELETED) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
         }
-        return ProductResponse.from(product);
+        return AdminProductResponse.from(product);
     }
 
     @Transactional
-    public ProductResponse createProduct(ProductCreateRequest request) {
+    public AdminProductResponse createProduct(ProductCreateRequest request) {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+        validateCatalogMaster(request.price(), request.originalPrice(), request.discountPrice(),
+                request.purchasePrice(), request.saleStartAt(), request.saleEndAt());
 
         Product product = Product.builder()
                 .category(category)
                 .name(request.name())
                 .description(request.description())
                 .price(request.price())
+                .productCode(normalizeText(request.productCode()))
+                .brand(normalizeText(request.brand()))
+                .manufacturer(normalizeText(request.manufacturer()))
+                .modelName(normalizeText(request.modelName()))
+                .origin(normalizeText(request.origin()))
+                .originalPrice(request.originalPrice())
+                .discountPrice(request.discountPrice())
+                .purchasePrice(request.purchasePrice())
+                .searchKeywords(normalizeText(request.searchKeywords()))
+                .tags(normalizeText(request.tags()))
+                .saleStartAt(request.saleStartAt())
+                .saleEndAt(request.saleEndAt())
+                .deliveryInfo(normalizeText(request.deliveryInfo()))
+                .seoTitle(normalizeText(request.seoTitle()))
+                .seoDescription(normalizeText(request.seoDescription()))
+                .seoKeywords(normalizeText(request.seoKeywords()))
                 .stockQuantity(request.stockQuantity())
                 .imageUrl(request.imageUrl())
                 .status(request.status())
                 .options(request.options())
                 .build();
 
-        return ProductResponse.from(productRepository.save(product));
+        return AdminProductResponse.from(productRepository.save(product));
     }
 
     @Transactional
-    public ProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
+    public AdminProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
@@ -102,11 +120,28 @@ public class ProductService {
                     .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
         }
 
+        validateCatalogMaster(
+                request.price() != null ? request.price() : product.getPrice(),
+                request.originalPrice() != null ? request.originalPrice() : product.getOriginalPrice(),
+                request.discountPrice() != null ? request.discountPrice() : product.getDiscountPrice(),
+                request.purchasePrice() != null ? request.purchasePrice() : product.getPurchasePrice(),
+                request.saleStartAt() != null ? request.saleStartAt() : product.getSaleStartAt(),
+                request.saleEndAt() != null ? request.saleEndAt() : product.getSaleEndAt()
+        );
+
         product.update(category, request.name(), request.description(),
                 request.price(), request.stockQuantity(), request.imageUrl(),
-                request.status(), request.options());
+                request.status(), request.options(),
+                normalizeText(request.productCode()), normalizeText(request.brand()),
+                normalizeText(request.manufacturer()), normalizeText(request.modelName()),
+                normalizeText(request.origin()), request.originalPrice(),
+                request.discountPrice(), request.purchasePrice(),
+                normalizeText(request.searchKeywords()), normalizeText(request.tags()),
+                request.saleStartAt(), request.saleEndAt(), normalizeText(request.deliveryInfo()),
+                normalizeText(request.seoTitle()), normalizeText(request.seoDescription()),
+                normalizeText(request.seoKeywords()));
 
-        return ProductResponse.from(product);
+        return AdminProductResponse.from(product);
     }
 
     @Transactional
@@ -130,7 +165,11 @@ public class ProductService {
                 String pattern = "%" + keyword.toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("name")), pattern),
-                        cb.like(cb.lower(root.get("description")), pattern)
+                        cb.like(cb.lower(root.get("description")), pattern),
+                        cb.like(cb.lower(root.get("brand")), pattern),
+                        cb.like(cb.lower(root.get("modelName")), pattern),
+                        cb.like(cb.lower(root.get("searchKeywords")), pattern),
+                        cb.like(cb.lower(root.get("tags")), pattern)
                 ));
             }
             if (minPrice != null) {
@@ -158,10 +197,50 @@ public class ProductService {
                 String pattern = "%" + keyword.toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("name")), pattern),
-                        cb.like(cb.lower(root.get("description")), pattern)
+                        cb.like(cb.lower(root.get("description")), pattern),
+                        cb.like(cb.lower(root.get("productCode")), pattern),
+                        cb.like(cb.lower(root.get("brand")), pattern),
+                        cb.like(cb.lower(root.get("manufacturer")), pattern),
+                        cb.like(cb.lower(root.get("modelName")), pattern),
+                        cb.like(cb.lower(root.get("searchKeywords")), pattern),
+                        cb.like(cb.lower(root.get("tags")), pattern)
                 ));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private void validateCatalogMaster(Integer price, Integer originalPrice, Integer discountPrice,
+                                       Integer purchasePrice, java.time.LocalDateTime saleStartAt,
+                                       java.time.LocalDateTime saleEndAt) {
+        if (price != null && price < 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (originalPrice != null && originalPrice < 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (discountPrice != null && discountPrice < 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (purchasePrice != null && purchasePrice < 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (originalPrice != null && price != null && originalPrice < price) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (discountPrice != null && price != null && discountPrice > price) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (saleStartAt != null && saleEndAt != null && saleEndAt.isBefore(saleStartAt)) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+    }
+
+    private String normalizeText(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? "" : trimmed;
     }
 }

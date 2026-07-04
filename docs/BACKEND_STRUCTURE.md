@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.8`
+기준 버전: `v0.3.1`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -88,6 +88,7 @@ com.commerceops.erp
 - `CorsConfig`: `COMMERCEOPS_CORS_ALLOWED_ORIGINS` 또는 `commerceops.cors.allowed-origins` 설정으로 허용 origin을 분리한다.
 - 관리자 권한: `MANAGER`는 운영 조회 중심 GET API에 접근하고, 데이터 변경/권한/회계/쿠폰/리뷰 운영/감사 로그는 `ADMIN`, `SUPER_ADMIN`으로 제한한다.
 - 운영 분석: `OpsAnalyticsService`는 신규 테이블 없이 `AccountingEntry`, `Order`, `Payment`, `Warehouse`, `WarehouseStock`, `StockReservation` 데이터를 읽기 전용으로 집계한다.
+- 상품 마스터: v0.3.1 기준 `Product`는 상품코드, 브랜드, 제조사, 모델명, 원산지, 정상가/할인금액/매입가, 검색 키워드, 태그, 판매 기간, 배송/SEO 필드를 포함한다. 사용자 응답은 원가/마진을 제외하고, 관리자 응답은 `AdminProductResponse` 계열 DTO로 내부 운영 필드를 포함한다.
 
 ## 환경 프로파일
 

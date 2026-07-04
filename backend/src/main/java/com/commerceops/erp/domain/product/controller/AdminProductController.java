@@ -1,8 +1,8 @@
 package com.commerceops.erp.domain.product.controller;
 
+import com.commerceops.erp.domain.product.dto.AdminProductListResponse;
+import com.commerceops.erp.domain.product.dto.AdminProductResponse;
 import com.commerceops.erp.domain.product.dto.ProductCreateRequest;
-import com.commerceops.erp.domain.product.dto.ProductListResponse;
-import com.commerceops.erp.domain.product.dto.ProductResponse;
 import com.commerceops.erp.domain.product.dto.ProductUpdateRequest;
 import com.commerceops.erp.domain.product.enums.ProductStatus;
 import com.commerceops.erp.domain.product.service.ProductService;
@@ -22,7 +22,7 @@ public class AdminProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResponse<ProductListResponse>>> getProducts(
+    public ResponseEntity<ApiResponse<PageResponse<AdminProductListResponse>>> getProducts(
             @RequestParam(required = false) ProductStatus status,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
@@ -34,23 +34,23 @@ public class AdminProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<ProductResponse>> getProduct(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<AdminProductResponse>> getProduct(@PathVariable Long productId) {
         return ResponseEntity.ok(
                 ApiResponse.ok("관리자 상품 상세 조회가 완료되었습니다.", productService.getAdminProduct(productId))
         );
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
+    public ResponseEntity<ApiResponse<AdminProductResponse>> createProduct(
             @Valid @RequestBody ProductCreateRequest request) {
-        ProductResponse response = productService.createProduct(request);
+        AdminProductResponse response = productService.createProduct(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created("상품이 등록되었습니다.", response));
     }
 
     @PatchMapping("/{productId}")
-    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
+    public ResponseEntity<ApiResponse<AdminProductResponse>> updateProduct(
             @PathVariable Long productId,
             @Valid @RequestBody ProductUpdateRequest request) {
         return ResponseEntity.ok(
