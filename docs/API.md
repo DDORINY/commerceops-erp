@@ -50,6 +50,8 @@
 | Product | GET | `/api/products/{productId}` | - | `ProductResponse` | 공개 |
 | Product | GET | `/api/admin/products` | `status`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
 | Product | GET | `/api/admin/products/{productId}` | - | `AdminProductResponse` | 관리자 |
+| Product Detail Block Admin | GET | `/api/admin/products/{productId}/detail-blocks` | - | `List<ProductDetailBlockResponse>` | 관리자 |
+| Product Detail Block Admin | PUT | `/api/admin/products/{productId}/detail-blocks` | `List<ProductDetailBlockRequest>` | `List<ProductDetailBlockResponse>` | 관리자 |
 | Product | POST | `/api/admin/products` | `ProductCreateRequest` | `AdminProductResponse` | 관리자 |
 | Product | PATCH | `/api/admin/products/{productId}` | `ProductUpdateRequest` | `AdminProductResponse` | 관리자 |
 | Product | DELETE | `/api/admin/products/{productId}` | - | `null` | 관리자 |
@@ -129,8 +131,9 @@
 ## 주요 DTO 메모
 
 - `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `productCode`, `brand`, `manufacturer`, `modelName`, `origin`, `originalPrice`, `discountPrice`, `purchasePrice`, `searchKeywords`, `tags`, `saleStartAt`, `saleEndAt`, `deliveryInfo`, `seoTitle`, `seoDescription`, `seoKeywords`, `stockQuantity`, `imageUrl`, `status`, `options`.
-- `ProductResponse`, `ProductListResponse`: 사용자 공개 상품 필드. `purchasePrice`, `marginRate`는 포함하지 않는다.
+- `ProductResponse`, `ProductListResponse`: 사용자 공개 상품 필드. `ProductResponse`는 visible 상세 블록 `detailBlocks`를 포함한다. `purchasePrice`, `marginRate`는 포함하지 않는다.
 - `AdminProductResponse`, `AdminProductListResponse`: 관리자 상품 필드. `purchasePrice`, 계산 필드 `marginRate`를 포함한다.
+- `ProductDetailBlockRequest`, `ProductDetailBlockResponse`: `blockType`, `title`, `content`, `imageUrl`, `specJson`, `sortOrder`, `visible`. `blockType`은 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML`.
 - `MediaFileResponse`: `id`, `originalFilename`, `storedFilename`, `url`, `contentType`, `size`, `mediaType`, `createdAt`.
 - `ReviewResponse`: `reviewId`, `productId`, `productName`, `userName`, `orderItemId`, `rating`, `content`, `status`, `createdAt`.
 - `AuditLogResponse`: `id`, `actorId`, `actorEmail`, `actorName`, `actionType`, `targetType`, `targetId`, `beforeStatus`, `afterStatus`, `summary`, `createdAt`.

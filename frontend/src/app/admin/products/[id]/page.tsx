@@ -7,7 +7,14 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
-import { productService, type ApiAdminProductDetail, type ApiCategory, type ProductOptionGroup } from '@/lib/services/productService';
+import {
+  productService,
+  type ApiAdminProductDetail,
+  type ApiCategory,
+  type ProductDetailBlock,
+  type ProductDetailBlockType,
+  type ProductOptionGroup,
+} from '@/lib/services/productService';
 
 interface OptionGroupDraft {
   name: string;
@@ -20,13 +27,16 @@ export default function AdminProductEditPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
+const { id } = use(params);
   const router = useRouter();
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [savingBlocks, setSavingBlocks] = useState(false);
+  const [blockMessage, setBlockMessage] = useState('');
   const [notFound, setNotFound] = useState(false);
   const [optionGroups, setOptionGroups] = useState<OptionGroupDraft[]>([]);
+  const [detailBlocks, setDetailBlocks] = useState<ProductDetailBlock[]>([]);
   const [form, setForm] = useState({
     categoryId: '',
     name: '',
@@ -56,10 +66,16 @@ export default function AdminProductEditPage({
   useEffect(() => {
     Promise.all([
       productService.getAdminProduct(Number(id)),
+      productService.getAdminProductDetailBlocks(Number(id)),
       productService.getCategories(),
     ])
-      .then(([product, cats]: [ApiAdminProductDetail, ApiCategory[]]) => {
+      .then(([product, blocks, cats]: [ApiAdminProductDetail, ProductDetailBlock[], ApiCategory[]]) => {
         setCategories(cats);
+        setDetailBlocks((blocks ?? []).map((block, index) => ({
+          ...block,
+          sortOrder: block.sortOrder ?? index,
+          visible: block.visible ?? true,
+        })));
         setForm({
           categoryId: String(product.categoryId),
           name: product.name,
@@ -126,6 +142,60 @@ export default function AdminProductEditPage({
     setOptionGroups((prev) => prev.map((og, i) =>
       i === groupIdx ? { ...og, values: og.values.filter((v) => v !== val) } : og
     ));
+
+  const addDetailBlock = (blockType: ProductDetailBlockType = 'TEXT') =>
+    setDetailBlocks((prev) => [
+      ...prev,
+      {
+        blockType,
+        title: '',
+        content: '',
+        imageUrl: '',
+        specJson: '',
+        sortOrder: prev.length,
+        visible: true,
+      },
+    ]);
+
+  const updateDetailBlock = (idx: number, patch: Partial<ProductDetailBlock>) =>
+    setDetailBlocks((prev) => prev.map((block, i) => i === idx ? { ...block, ...patch } : block));
+
+  const removeDetailBlock = (idx: number) =>
+    setDetailBlocks((prev) => prev.filter((_, i) => i !== idx).map((block, i) => ({ ...block, sortOrder: i })));
+
+  const moveDetailBlock = (idx: number, direction: -1 | 1) => {
+    setDetailBlocks((prev) => {
+      const nextIndex = idx + direction;
+      if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[nextIndex]] = [next[nextIndex], next[idx]];
+      return next.map((block, i) => ({ ...block, sortOrder: i }));
+    });
+  };
+
+  const handleSaveDetailBlocks = async () => {
+    setSavingBlocks(true);
+    setBlockMessage('');
+    try {
+      const saved = await productService.saveAdminProductDetailBlocks(
+        Number(id),
+        detailBlocks.map((block, index) => ({
+          ...block,
+          title: block.title?.trim() || undefined,
+          content: block.content?.trim() || undefined,
+          imageUrl: block.imageUrl?.trim() || undefined,
+          specJson: block.specJson?.trim() || undefined,
+          sortOrder: index,
+        }))
+      );
+      setDetailBlocks(saved.map((block, index) => ({ ...block, sortOrder: index })));
+      setBlockMessage('Detail blocks saved.');
+    } catch (err) {
+      setBlockMessage(err instanceof Error ? err.message : 'Failed to save detail blocks.');
+    } finally {
+      setSavingBlocks(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,6 +386,126 @@ export default function AdminProductEditPage({
                 rows={5}
                 className="w-full border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] resize-none"
               />
+            </div>
+
+            <div className="pt-2 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#f0f1f5]">
+                <div>
+                  <h2 className="text-sm font-bold text-[#1a1f2e]">Detail Page Blocks</h2>
+                  <p className="mt-1 text-xs text-[#8a9bb5]">
+                    Visible blocks are shown on the customer product detail page in this order.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" type="button" onClick={() => addDetailBlock()}>
+                  Add Block
+                </Button>
+              </div>
+
+              {blockMessage && (
+                <p className="border border-[#e8eaf0] bg-[#f7f8fc] px-3 py-2 text-xs text-[#4f5b70]">
+                  {blockMessage}
+                </p>
+              )}
+
+              {detailBlocks.length === 0 ? (
+                <div className="border border-dashed border-[#d8dce6] bg-[#fafbfe] px-4 py-6 text-center text-sm text-[#8a9bb5]">
+                  No detail blocks yet.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {detailBlocks.map((block, idx) => (
+                    <div key={`${block.id ?? 'new'}-${idx}`} className="border border-[#e8eaf0] p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-[#444] mb-1">Block Type</label>
+                          <select
+                            value={block.blockType}
+                            onChange={(e) => updateDetailBlock(idx, { blockType: e.target.value as ProductDetailBlockType })}
+                            className="border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] w-full"
+                          >
+                            {(['HEADING', 'TEXT', 'IMAGE', 'NOTICE', 'SPEC_TABLE', 'HTML'] as ProductDetailBlockType[]).map((type) => (
+                              <option key={type} value={type}>{type}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <Input
+                          label="Title"
+                          value={block.title ?? ''}
+                          onChange={(e) => updateDetailBlock(idx, { title: e.target.value })}
+                          placeholder="Optional title"
+                          fullWidth
+                        />
+                      </div>
+
+                      {(block.blockType === 'TEXT' || block.blockType === 'NOTICE' || block.blockType === 'HTML' || block.blockType === 'HEADING') && (
+                        <div>
+                          <label className="block text-sm font-medium text-[#444] mb-1">
+                            {block.blockType === 'HTML' ? 'HTML' : 'Content'}
+                          </label>
+                          <textarea
+                            value={block.content ?? ''}
+                            onChange={(e) => updateDetailBlock(idx, { content: e.target.value })}
+                            rows={block.blockType === 'HTML' ? 6 : 4}
+                            className="w-full border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] resize-none"
+                          />
+                        </div>
+                      )}
+
+                      {block.blockType === 'IMAGE' && (
+                        <Input
+                          label="Image URL"
+                          value={block.imageUrl ?? ''}
+                          onChange={(e) => updateDetailBlock(idx, { imageUrl: e.target.value })}
+                          placeholder="https://..."
+                          fullWidth
+                        />
+                      )}
+
+                      {block.blockType === 'SPEC_TABLE' && (
+                        <div>
+                          <label className="block text-sm font-medium text-[#444] mb-1">Spec JSON</label>
+                          <textarea
+                            value={block.specJson ?? ''}
+                            onChange={(e) => updateDetailBlock(idx, { specJson: e.target.value })}
+                            placeholder='[{"label":"Material","value":"Cotton"}]'
+                            rows={5}
+                            className="w-full border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] resize-none font-mono"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <label className="inline-flex items-center gap-2 text-sm text-[#555]">
+                          <input
+                            type="checkbox"
+                            checked={block.visible}
+                            onChange={(e) => updateDetailBlock(idx, { visible: e.target.checked })}
+                            className="accent-[#222]"
+                          />
+                          Visible
+                        </label>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" type="button" onClick={() => moveDetailBlock(idx, -1)} disabled={idx === 0}>
+                            Up
+                          </Button>
+                          <Button variant="ghost" size="sm" type="button" onClick={() => moveDetailBlock(idx, 1)} disabled={idx === detailBlocks.length - 1}>
+                            Down
+                          </Button>
+                          <Button variant="danger" size="sm" type="button" onClick={() => removeDetailBlock(idx)}>
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button variant="secondary" type="button" disabled={savingBlocks} onClick={handleSaveDetailBlocks}>
+                  {savingBlocks ? 'Saving...' : 'Save Detail Blocks'}
+                </Button>
+              </div>
             </div>
 
             <div className="pt-2">

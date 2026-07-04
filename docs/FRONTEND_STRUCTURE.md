@@ -19,7 +19,7 @@
 | --- | --- | --- |
 | `/` | `app/page.tsx` | `productService.getProducts` |
 | `/products` | `app/products/page.tsx` | `productService.getProducts`, `getCategories` |
-| `/products/[id]` | `app/products/[id]/page.tsx` | 상품 상세, 장바구니, 위시리스트, 문의, 리뷰 service |
+| `/products/[id]` | `app/products/[id]/page.tsx` | 상품 상세, 상세 블록 렌더러, 장바구니, 위시리스트, 문의, 리뷰 service |
 | `/cart` | `app/cart/page.tsx` | `cartService` |
 | `/orders` | `app/orders/page.tsx` | `orderService.getOrders` |
 | `/orders/checkout` | `app/orders/checkout/page.tsx` | `cartService`, `orderService`, `paymentService`, `couponService` |
@@ -38,7 +38,7 @@
 | `/admin/orders` | `app/admin/orders/page.tsx` | `orderService.getAdminOrders`, `updateOrderStatus` |
 | `/admin/products` | `app/admin/products/page.tsx` | `productService.getAdminProducts`, 상품코드/브랜드/매입가/마진율 표시 |
 | `/admin/products/new` | `app/admin/products/new/page.tsx` | `productService.createProduct`, getCategories, 이미지 업로드, 상품 마스터 입력 |
-| `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, 이미지 업로드, 상품 마스터 수정 |
+| `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, 이미지 업로드, 상품 마스터 수정, 상세 블록 편집 |
 | `/admin/inquiries` | `app/admin/inquiries/page.tsx` | `inquiryService.getAdminInquiries`, answer/close |
 | `/admin/reviews` | `app/admin/reviews/page.tsx` | `reviewService.getAdminReviews`, hide/show/delete, `auditService.getAuditLogs` |
 | `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService` |
@@ -55,7 +55,7 @@
 | --- | --- |
 | `api.ts` | API base URL, JSON fetch, Bearer 토큰 자동 추가, 401 refresh 재시도와 세션 만료 처리 |
 | `authService.ts` | 로그인, 회원가입, 내 정보, 토큰 갱신, 로그아웃 |
-| `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD, 상품 마스터 타입. 관리자 타입은 매입가/마진율을 포함하고 사용자 타입은 내부 운영 필드를 제외 |
+| `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD, 상품 마스터 타입, 상세 블록 타입/API. 관리자 타입은 매입가/마진율을 포함하고 사용자 타입은 내부 운영 필드를 제외 |
 | `mediaService.ts` | 관리자 상품 이미지 multipart 업로드 |
 | `cartService.ts` | 장바구니 조회/추가/수량변경/삭제 |
 | `orderService.ts` | 주문 생성/조회/상세/취소, 관리자 주문 목록/상태 변경 |

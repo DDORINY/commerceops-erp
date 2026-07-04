@@ -65,7 +65,7 @@ com.commerceops.erp
 | ops | `AdminOpsAnalyticsController` | `OpsAnalyticsService` | 회계/주문/결제/창고 repository 사용 | - |
 | order | `OrderController`, `AdminOrderController` | `OrderService`, `OrderCancellationService` | `OrderRepository`, `OrderItemRepository` | `Order`, `OrderItem` |
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
-| product | `ProductController`, `AdminProductController` | `ProductService` | `ProductRepository` | `Product` |
+| product | `ProductController`, `AdminProductController` | `ProductService`, `ProductDetailBlockService` | `ProductRepository`, `ProductDetailBlockRepository` | `Product`, `ProductDetailBlock` |
 | returns | `ReturnController`, `AdminReturnController` | `ReturnService` | `ReturnRequestRepository` | `ReturnRequest` |
 | review | `ReviewController`, `AdminReviewController` | `ReviewService` | `ReviewRepository` | `Review` |
 | shipment | `ShipmentController`, `AdminShipmentController` | `ShipmentService` | `ShipmentRepository` | `Shipment` |
@@ -89,6 +89,7 @@ com.commerceops.erp
 - 관리자 권한: `MANAGER`는 운영 조회 중심 GET API에 접근하고, 데이터 변경/권한/회계/쿠폰/리뷰 운영/감사 로그는 `ADMIN`, `SUPER_ADMIN`으로 제한한다.
 - 운영 분석: `OpsAnalyticsService`는 신규 테이블 없이 `AccountingEntry`, `Order`, `Payment`, `Warehouse`, `WarehouseStock`, `StockReservation` 데이터를 읽기 전용으로 집계한다.
 - 상품 마스터: v0.3.1 기준 `Product`는 상품코드, 브랜드, 제조사, 모델명, 원산지, 정상가/할인금액/매입가, 검색 키워드, 태그, 판매 기간, 배송/SEO 필드를 포함한다. 사용자 응답은 원가/마진을 제외하고, 관리자 응답은 `AdminProductResponse` 계열 DTO로 내부 운영 필드를 포함한다.
+- 상품 상세 CMS: v0.3.2 기준 `ProductDetailBlock`은 상품별 상세 블록을 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` 타입으로 저장한다. 관리자 API는 전체 블록을 조회/교체 저장하고, 사용자 상품 상세 응답은 visible 블록만 sortOrder 순서로 포함한다.
 
 ## 환경 프로파일
 

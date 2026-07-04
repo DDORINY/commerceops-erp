@@ -31,10 +31,15 @@ public record ProductResponse(
         String imageUrl,
         String status,
         List<ProductOptionGroup> options,
+        List<ProductDetailBlockResponse> detailBlocks,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
     public static ProductResponse from(Product product) {
+        return from(product, List.of());
+    }
+
+    public static ProductResponse from(Product product, List<ProductDetailBlockResponse> detailBlocks) {
         return new ProductResponse(
                 product.getId(),
                 product.getCategory().getId(),
@@ -61,6 +66,7 @@ public record ProductResponse(
                 product.getImageUrl(),
                 product.getStatus().name(),
                 product.getOptions() != null ? product.getOptions() : List.of(),
+                detailBlocks != null ? detailBlocks : List.of(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );

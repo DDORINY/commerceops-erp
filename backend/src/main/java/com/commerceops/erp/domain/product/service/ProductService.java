@@ -29,6 +29,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductDetailBlockService productDetailBlockService;
 
     public PageResponse<ProductListResponse> getProducts(Long categoryId, String keyword,
                                                           String sort, Integer minPrice, Integer maxPrice,
@@ -53,7 +54,7 @@ public class ProductService {
         if (product.getStatus() == ProductStatus.DELETED || product.getStatus() == ProductStatus.HIDDEN) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
         }
-        return ProductResponse.from(product);
+        return ProductResponse.from(product, productDetailBlockService.getVisibleBlocks(productId));
     }
 
     public PageResponse<AdminProductListResponse> getAdminProducts(ProductStatus status, String keyword, int page, int size) {

@@ -6,6 +6,21 @@ export interface ProductOptionGroup {
   values: string[];
 }
 
+export type ProductDetailBlockType = 'HEADING' | 'TEXT' | 'IMAGE' | 'NOTICE' | 'SPEC_TABLE' | 'HTML';
+
+export interface ProductDetailBlock {
+  id?: number;
+  blockType: ProductDetailBlockType;
+  title?: string | null;
+  content?: string | null;
+  imageUrl?: string | null;
+  specJson?: string | null;
+  sortOrder: number;
+  visible: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ApiProductItem {
   id: number;
   categoryId: number;
@@ -50,6 +65,7 @@ export interface ApiProductDetail {
   imageUrl: string | null;
   status: string;
   options: ProductOptionGroup[];
+  detailBlocks: ProductDetailBlock[];
   createdAt: string;
   updatedAt: string;
 }
@@ -184,6 +200,23 @@ export const productService = {
   },
 
   getAdminProduct: (id: number) => apiClient<ApiAdminProductDetail>(`/admin/products/${id}`),
+
+  getAdminProductDetailBlocks: (id: number) =>
+    apiClient<ProductDetailBlock[]>(`/admin/products/${id}/detail-blocks`),
+
+  saveAdminProductDetailBlocks: (id: number, blocks: ProductDetailBlock[]) =>
+    apiClient<ProductDetailBlock[]>(`/admin/products/${id}/detail-blocks`, {
+      method: 'PUT',
+      body: JSON.stringify(blocks.map((block, index) => ({
+        blockType: block.blockType,
+        title: block.title,
+        content: block.content,
+        imageUrl: block.imageUrl,
+        specJson: block.specJson,
+        sortOrder: index,
+        visible: block.visible,
+      }))),
+    }),
 
   getCategories: () => apiClient<ApiCategory[]>('/categories'),
 

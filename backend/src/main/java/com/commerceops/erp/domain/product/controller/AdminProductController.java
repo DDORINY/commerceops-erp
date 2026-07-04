@@ -3,8 +3,11 @@ package com.commerceops.erp.domain.product.controller;
 import com.commerceops.erp.domain.product.dto.AdminProductListResponse;
 import com.commerceops.erp.domain.product.dto.AdminProductResponse;
 import com.commerceops.erp.domain.product.dto.ProductCreateRequest;
+import com.commerceops.erp.domain.product.dto.ProductDetailBlockRequest;
+import com.commerceops.erp.domain.product.dto.ProductDetailBlockResponse;
 import com.commerceops.erp.domain.product.dto.ProductUpdateRequest;
 import com.commerceops.erp.domain.product.enums.ProductStatus;
+import com.commerceops.erp.domain.product.service.ProductDetailBlockService;
 import com.commerceops.erp.domain.product.service.ProductService;
 import com.commerceops.erp.global.response.ApiResponse;
 import com.commerceops.erp.global.response.PageResponse;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminProductController {
 
     private final ProductService productService;
+    private final ProductDetailBlockService productDetailBlockService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminProductListResponse>>> getProducts(
@@ -37,6 +41,25 @@ public class AdminProductController {
     public ResponseEntity<ApiResponse<AdminProductResponse>> getProduct(@PathVariable Long productId) {
         return ResponseEntity.ok(
                 ApiResponse.ok("관리자 상품 상세 조회가 완료되었습니다.", productService.getAdminProduct(productId))
+        );
+    }
+
+    @GetMapping("/{productId}/detail-blocks")
+    public ResponseEntity<ApiResponse<java.util.List<ProductDetailBlockResponse>>> getDetailBlocks(
+            @PathVariable Long productId) {
+        return ResponseEntity.ok(
+                ApiResponse.ok("Product detail blocks loaded.",
+                        productDetailBlockService.getAdminBlocks(productId))
+        );
+    }
+
+    @PutMapping("/{productId}/detail-blocks")
+    public ResponseEntity<ApiResponse<java.util.List<ProductDetailBlockResponse>>> replaceDetailBlocks(
+            @PathVariable Long productId,
+            @RequestBody java.util.List<ProductDetailBlockRequest> requests) {
+        return ResponseEntity.ok(
+                ApiResponse.ok("Product detail blocks saved.",
+                        productDetailBlockService.replaceAdminBlocks(productId, requests))
         );
     }
 

@@ -6,12 +6,98 @@ import Link from 'next/link';
 import ShopHeader from '@/components/shop/ShopHeader';
 import ShopFooter from '@/components/shop/ShopFooter';
 import Button from '@/components/common/Button';
-import { productService, type ApiProductDetail } from '@/lib/services/productService';
+import { productService, type ApiProductDetail, type ProductDetailBlock } from '@/lib/services/productService';
 import { cartService } from '@/lib/services/cartService';
 import { inquiryService, type ApiInquiry } from '@/lib/services/inquiryService';
 import { reviewService, type ApiReview } from '@/lib/services/reviewService';
 import { wishlistService } from '@/lib/services/wishlistService';
 import { formatPrice, formatDateTime, INQUIRY_STATUS_LABEL, INQUIRY_STATUS_COLOR } from '@/lib/format';
+
+function parseSpecRows(specJson?: string | null): { label: string; value: string }[] {
+  if (!specJson) return [];
+  try {
+    const parsed = JSON.parse(specJson);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((row) => ({
+        label: String(row?.label ?? ''),
+        value: String(row?.value ?? ''),
+      }))
+      .filter((row) => row.label || row.value);
+  } catch {
+    return [];
+  }
+}
+
+function ProductDetailBlockView({ block }: { block: ProductDetailBlock }) {
+  if (block.blockType === 'HEADING') {
+    return (
+      <section>
+        <h2 className="text-xl font-bold text-[#222] mb-3">{block.title || block.content}</h2>
+      </section>
+    );
+  }
+
+  if (block.blockType === 'TEXT') {
+    return (
+      <section>
+        {block.title && <h3 className="text-base font-bold text-[#222] mb-2">{block.title}</h3>}
+        <p className="whitespace-pre-wrap text-[#555]">{block.content}</p>
+      </section>
+    );
+  }
+
+  if (block.blockType === 'IMAGE') {
+    const src = block.imageUrl || 'https://placehold.co/900x560?text=No+Image';
+    return (
+      <section>
+        {block.title && <h3 className="text-base font-bold text-[#222] mb-3">{block.title}</h3>}
+        <div className="relative aspect-[16/10] bg-[#f7f7f7]">
+          <Image src={src} alt={block.title || 'Product detail image'} fill className="object-cover" sizes="100vw" />
+        </div>
+      </section>
+    );
+  }
+
+  if (block.blockType === 'NOTICE') {
+    return (
+      <section className="border border-[#e8eaf0] bg-[#f7f8fc] px-4 py-3">
+        {block.title && <p className="font-bold text-[#333] mb-1">{block.title}</p>}
+        <p className="whitespace-pre-wrap text-[#555]">{block.content}</p>
+      </section>
+    );
+  }
+
+  if (block.blockType === 'SPEC_TABLE') {
+    const rows = parseSpecRows(block.specJson);
+    if (rows.length === 0) return null;
+    return (
+      <section>
+        {block.title && <h3 className="text-base font-bold text-[#222] mb-3">{block.title}</h3>}
+        <div className="border border-[#e5e5e5] divide-y divide-[#e5e5e5]">
+          {rows.map((row, index) => (
+            <div key={`${row.label}-${index}`} className="grid grid-cols-[140px_1fr] text-sm">
+              <div className="bg-[#fafafa] px-4 py-3 text-[#777]">{row.label}</div>
+              <div className="px-4 py-3 text-[#444]">{row.value}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (block.blockType === 'HTML') {
+    return (
+      <section>
+        {block.title && <h3 className="text-base font-bold text-[#222] mb-2">{block.title}</h3>}
+        {/* Admin-authored internal CMS HTML. Keep this endpoint admin-only and document the XSS risk. */}
+        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: block.content || '' }} />
+      </section>
+    );
+  }
+
+  return null;
+}
 
 export default function ProductDetailPage({
   params,
@@ -346,14 +432,22 @@ export default function ProductDetailPage({
               </div>
             )}
             {activeTab === 'detail' && (
-              <div className="max-w-[600px]">
-                <p className="mb-4">{product.description || `${product.name}은 편안한 착용감과 세련된 디자인을 자랑하는 제품입니다.`}</p>
-                <ul className="space-y-2 text-[#777]">
-                  <li>소재: 폴리에스터 65%, 면 35%</li>
-                  <li>세탁 방법: 손세탁 권장, 30도 이하</li>
-                  <li>원산지: 국내산</li>
-                  <li>제조사: (주)커머스옵스 패션</li>
-                </ul>
+              <div className="max-w-[760px] space-y-8">
+                {product.detailBlocks?.length > 0 ? (
+                  product.detailBlocks.map((block, index) => (
+                    <ProductDetailBlockView key={block.id ?? `${block.blockType}-${index}`} block={block} />
+                  ))
+                ) : (
+                  <div className="max-w-[600px]">
+                    <p className="mb-4">{product.description || `${product.name}은 편안한 착용감과 세련된 디자인을 자랑하는 제품입니다.`}</p>
+                    <ul className="space-y-2 text-[#777]">
+                      <li>소재: 폴리에스터 65%, 면 35%</li>
+                      <li>세탁 방법: 손세탁 권장, 30도 이하</li>
+                      <li>원산지: 국내산</li>
+                      <li>제조사: (주)커머스옵스 패션</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
             {activeTab === 'shipping' && (
