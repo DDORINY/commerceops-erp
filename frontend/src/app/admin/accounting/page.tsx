@@ -9,6 +9,7 @@ import {
   accountingService,
   type ApiAccountingEntry,
   type ApiAccountingSummary,
+  type ApiAccountingEntryType,
 } from '@/lib/services/accountingService';
 import {
   formatPrice,
@@ -18,13 +19,13 @@ import {
   downloadCsv,
 } from '@/lib/format';
 
-type TypeFilter = 'ALL' | 'SALE' | 'REFUND' | 'INBOUND';
+type TypeFilter = 'ALL' | ApiAccountingEntryType;
 
 const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
   { value: 'ALL', label: '전체' },
   { value: 'SALE', label: '매출' },
   { value: 'REFUND', label: '환불' },
-  { value: 'INBOUND', label: '매입' },
+  { value: 'INBOUND', label: '입고' },
 ];
 
 const PAGE_SIZE = 20;
@@ -37,9 +38,20 @@ export default function AdminAccountingPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [entriesError, setEntriesError] = useState<string | null>(null);
 
   useEffect(() => {
-    accountingService.getSummary().then(setSummary).catch(() => {});
+    accountingService
+      .getSummary()
+      .then((data) => {
+        setSummary(data);
+        setSummaryError(null);
+      })
+      .catch((err) => {
+        setSummary(null);
+        setSummaryError(err instanceof Error ? err.message : '회계 요약을 불러오지 못했습니다.');
+      });
   }, []);
 
   const fetchEntries = useCallback(() => {
@@ -49,14 +61,33 @@ export default function AdminAccountingPage() {
         setEntries(res.content);
         setTotalPages(res.totalPages || 1);
         setTotalElements(res.totalElements);
+        setEntriesError(null);
       })
-      .catch(() => setEntries([]))
+      .catch((err) => {
+        setEntries([]);
+        setTotalPages(1);
+        setTotalElements(0);
+        setEntriesError(err instanceof Error ? err.message : '회계 내역을 불러오지 못했습니다.');
+      })
       .finally(() => setLoading(false));
   }, [typeFilter, page]);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
+
+  const handleTypeFilterChange = (value: TypeFilter) => {
+    setTypeFilter(value);
+    setPage(1);
+    setLoading(true);
+    setEntriesError(null);
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    setLoading(true);
+    setEntriesError(null);
+  };
 
   return (
     <AdminLayout title="회계 관리">
@@ -83,7 +114,7 @@ export default function AdminAccountingPage() {
           }
         />
         <StatCard
-          title="총 매입"
+          title="총 입고 금액"
           value={formatPrice(summary?.totalInbound ?? 0)}
           iconBgColor="bg-purple-100"
           icon={
@@ -110,7 +141,7 @@ export default function AdminAccountingPage() {
         {TYPE_FILTERS.map((f) => (
           <button
             key={f.value}
-            onClick={() => { setTypeFilter(f.value); setPage(1); }}
+            onClick={() => handleTypeFilterChange(f.value)}
             className={[
               'px-4 py-1.5 text-xs font-medium border transition-colors',
               typeFilter === f.value
@@ -122,6 +153,7 @@ export default function AdminAccountingPage() {
           </button>
         ))}
         <button
+          disabled={entries.length === 0}
           onClick={() => {
             downloadCsv(
               `accounting_${new Date().toISOString().slice(0,10)}.csv`,
@@ -129,11 +161,23 @@ export default function AdminAccountingPage() {
               entries.map((e) => [e.entryId, ACCOUNTING_TYPE_LABEL[e.type] ?? e.type, e.amount, e.description, e.referenceId ?? '', formatDateTime(e.createdAt)])
             );
           }}
-          className="ml-auto px-3 py-1.5 text-xs font-medium border border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white transition-colors"
+          className="ml-auto px-3 py-1.5 text-xs font-medium border border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-[#e8eaf0] disabled:hover:text-[#8a9bb5]"
         >
           CSV 다운로드
         </button>
       </div>
+
+      {summaryError && (
+        <div className="mb-4 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {summaryError}
+        </div>
+      )}
+
+      {entriesError && (
+        <div className="mb-4 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {entriesError}
+        </div>
+      )}
 
       {loading ? (
         <div className="py-12 text-center text-[#bbb] text-sm">로딩 중...</div>
@@ -141,6 +185,7 @@ export default function AdminAccountingPage() {
         <DataTable<ApiAccountingEntry>
           keyField="entryId"
           data={entries}
+          emptyMessage="회계 내역이 없습니다."
           columns={[
             { key: 'entryId', header: 'ID', render: (row) => <span className="text-xs text-[#aaa]">#{row.entryId}</span> },
             {
@@ -179,7 +224,7 @@ export default function AdminAccountingPage() {
       )}
 
       <div className="mt-2 text-xs text-[#aaa]">총 {totalElements}건</div>
-      <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+      <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
     </AdminLayout>
   );
 }
