@@ -86,7 +86,7 @@ com.commerceops.erp
 
 ## 명시적 미구현
 
-- 실제 PG 결제/취소/환불 연동. 현재 결제 완료는 `PaymentController`의 `/api/payments/mock/complete`다.
+- 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 `PaymentController`는 `/api/payments/approve`, `/api/payments/{paymentId}/cancel`, 하위 호환 `/api/payments/mock/complete`를 제공하며 `MOCK_PROVIDER` 기반으로 동작한다.
 - 리뷰 숨김/상태 변경. 현재 관리자 리뷰 운영은 조회와 삭제다.
 - 파일 업로드 기반 상품 이미지 관리.
 - 고급 WMS 피킹/패킹/출고 자동화.

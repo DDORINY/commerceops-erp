@@ -58,7 +58,7 @@
 | `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD |
 | `cartService.ts` | 장바구니 조회/추가/수량변경/삭제 |
 | `orderService.ts` | 주문 생성/조회/상세/취소, 관리자 주문 목록/상태 변경 |
-| `paymentService.ts` | v0.1 모의 결제 완료 API 호출 |
+| `paymentService.ts` | 결제 승인, 결제 취소, 하위 호환 모의 결제 완료 API 호출 |
 | `wishlistService.ts` | 찜 토글/목록/상태 |
 | `inquiryService.ts` | 사용자/상품 문의, 관리자 문의 답변/종료 |
 | `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/삭제 |
@@ -91,7 +91,7 @@
 
 ## 미구현/예정으로 남은 프론트 기능
 
-- 실제 PG 결제 UI/승인 콜백.
+- 실제 PG 결제 UI/승인 콜백. 현재 checkout은 `/api/payments/approve`를 호출하되 provider는 백엔드 `MOCK_PROVIDER` 기반이다.
 - 상품 이미지 업로드 UI.
 - 리뷰 숨김 상태 UI. 현재 관리자 리뷰는 삭제 중심이다.
 - 고급 차트/BI 라이브러리 기반 분석 화면.

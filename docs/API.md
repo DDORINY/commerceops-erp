@@ -60,6 +60,8 @@
 | Order | PATCH | `/api/orders/{orderId}/cancel` | - | `OrderStatusUpdateResponse` | 인증 |
 | Order Admin | GET | `/api/admin/orders` | `status`, `keyword`, `page`, `size` | `PageResponse<AdminOrderResponse>` | 관리자 |
 | Order Admin | PATCH | `/api/admin/orders/{orderId}/status` | `OrderStatusUpdateRequest` | `OrderStatusUpdateResponse` | 관리자 |
+| Payment | POST | `/api/payments/approve` | `PaymentApproveRequest` | `PaymentResponse` | 인증 |
+| Payment | POST | `/api/payments/{paymentId}/cancel` | `PaymentCancelRequest` | `PaymentResponse` | 인증 |
 | Payment | POST | `/api/payments/mock/complete` | `MockPaymentCompleteRequest` | `PaymentResponse` | 인증 |
 | Shipment | GET | `/api/orders/{orderId}/shipment` | - | `ShipmentResponse` | 인증 |
 | Shipment Admin | GET | `/api/admin/shipments` | `status`, `keyword`, `page`, `size` | `PageResponse<ShipmentResponse>` | 관리자 |
@@ -118,6 +120,9 @@
 - `RefreshTokenRequest`: `refreshToken`.
 - `RefreshTokenResponse`: `accessToken`, `refreshToken`, `tokenType`.
 - `OrderCreateRequest`: `receiverName`, `receiverPhone`, `address`, `detailAddress`, `paymentMethod`, `cartItemIds`, `couponCode`.
+- `PaymentApproveRequest`: `orderId`, `paymentMethod`, `providerTransactionId`, `idempotencyKey`.
+- `PaymentCancelRequest`: `reason`.
+- `PaymentResponse`: `paymentId`, `orderId`, `paymentMethod`, `paymentStatus`, `paidAmount`, `transactionId`, `idempotencyKey`.
 - `UserSummaryResponse`: `id`, `name`, `email`, `phone`, `role`, `status`, `createdAt`, `orderCount`, `totalOrderAmount`.
 - `DashboardSummaryResponse`: 전체/오늘 주문, 전체/오늘 매출, 고객/상품/품절/재고부족 수, 상태별 주문 수.
 - `WarehouseStockResponse`: 창고, 상품, 수량, 예약 수량, 가용 수량, 상품 총 재고.
@@ -144,7 +149,7 @@
 
 ## 미구현/예정으로 분리된 항목
 
-- 실제 PG 승인, 취소, 환불 API. 현재는 `/api/payments/mock/complete`만 있다.
+- 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 결제 승인 API는 `MOCK_PROVIDER` 기반으로 동작한다.
 - 리뷰 숨김 또는 상태 변경 API. 현재는 관리자 목록 조회와 삭제만 있다.
 - 상품 이미지 업로드 API.
 - 고급 BI, 복식부기, 정산 리포트 API.

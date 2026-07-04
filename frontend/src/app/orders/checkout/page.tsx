@@ -18,6 +18,13 @@ const PAYMENT_METHODS = [
   { value: 'MOCK_BANK', label: '무통장입금' },
 ];
 
+function createIdempotencyKey() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `PAY-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<ApiCartItem[]>([]);
@@ -102,7 +109,11 @@ export default function CheckoutPage() {
         couponCode: couponResult ? couponResult.code : undefined,
       });
 
-      await paymentService.completePayment(orderRes.orderId, form.paymentMethod);
+      await paymentService.approvePayment(
+        orderRes.orderId,
+        form.paymentMethod,
+        createIdempotencyKey()
+      );
       router.push('/orders');
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : '주문 처리에 실패했습니다.');

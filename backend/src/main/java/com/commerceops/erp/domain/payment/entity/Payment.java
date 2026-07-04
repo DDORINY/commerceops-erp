@@ -42,6 +42,12 @@ public class Payment {
     @Column(length = 100)
     private String transactionId;
 
+    @Column(length = 120, unique = true)
+    private String idempotencyKey;
+
+    @Column(length = 30)
+    private String provider;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -50,11 +56,13 @@ public class Payment {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public void complete(PaymentMethod paymentMethod, Integer paidAmount, String transactionId) {
+    public void complete(PaymentMethod paymentMethod, Integer paidAmount, String transactionId, String idempotencyKey) {
         this.paymentMethod = paymentMethod;
         this.paymentStatus = PaymentStatus.PAID;
         this.paidAmount = paidAmount;
         this.transactionId = transactionId;
+        this.idempotencyKey = idempotencyKey;
+        this.provider = "MOCK_PROVIDER";
     }
 
     public void cancelReadyPayment() {

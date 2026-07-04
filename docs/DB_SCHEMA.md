@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.1.7`
+기준 버전: `v0.2.2`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 현재 레포에는 별도 Flyway/Liquibase DDL 마이그레이션이 없다. 이 문서는 실제 엔티티 기준의 논리 스키마이며, 물리 DDL, 인덱스, 외래키 이름은 운영 DB 도입 시 별도로 확정해야 한다.
@@ -15,7 +15,7 @@
 | `carts` | `Cart` | `user_id`, `product_id`, `quantity`, `selected_options`, timestamps |
 | `orders` | `Order` | `user_id`, `order_number`, `total_price`, `discount_amount`, `coupon_code`, `status`, receiver fields, `payment_status`, timestamps |
 | `order_items` | `OrderItem` | `order_id`, `product_id`, snapshot `product_name`, `price`, `quantity`, `selected_options`, `created_at` |
-| `payments` | `Payment` | `order_id`, `payment_method`, `payment_status`, `paid_amount`, `transaction_id`, timestamps |
+| `payments` | `Payment` | `order_id`, `payment_method`, `payment_status`, `paid_amount`, `transaction_id`, `idempotency_key`, `provider`, timestamps |
 | `shipments` | `Shipment` | `order_id`, `status`, `tracking_number`, `carrier`, `shipped_at`, `delivered_at`, timestamps |
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `created_at` |
@@ -64,5 +64,5 @@
 - 실제 DDL 파일이 없으므로 컬럼 타입 길이, 인덱스명, 외래키명은 JPA/Hibernate 설정에 의존한다.
 - `Product.options`, `Cart.selectedOptions`, `OrderItem.selectedOptions`는 JSON 문자열 또는 converter 기반 저장이다.
 - `Product.stockQuantity`와 `WarehouseStock.quantity/reservedQuantity`가 함께 존재한다. 창고 기능에서는 창고별 재고와 예약이 source of truth가 되며, 상품 총 재고는 보조/요약 값으로 함께 갱신된다.
-- 실제 PG 결제/환불 테이블 확장은 아직 없다.
+- 실제 PG 벤더별 거래 원장/웹훅 이벤트 테이블은 아직 없다. v0.2.2에서는 `payments.idempotency_key`, `provider`만 추가했다.
 - 감사 로그, 관리자 작업 이력, 파일 업로드 메타데이터 테이블은 아직 없다.

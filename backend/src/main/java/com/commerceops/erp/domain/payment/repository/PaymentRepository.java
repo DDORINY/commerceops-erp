@@ -15,6 +15,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByOrder(Order order);
 
+    Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
     @Query("SELECT SUM(p.paidAmount) FROM Payment p WHERE p.paymentStatus = :status")
     Optional<Long> sumPaidAmountByStatus(@Param("status") PaymentStatus status);
 

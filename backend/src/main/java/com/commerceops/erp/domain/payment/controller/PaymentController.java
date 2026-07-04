@@ -1,6 +1,8 @@
 package com.commerceops.erp.domain.payment.controller;
 
 import com.commerceops.erp.domain.payment.dto.MockPaymentCompleteRequest;
+import com.commerceops.erp.domain.payment.dto.PaymentApproveRequest;
+import com.commerceops.erp.domain.payment.dto.PaymentCancelRequest;
 import com.commerceops.erp.domain.payment.dto.PaymentResponse;
 import com.commerceops.erp.domain.payment.service.PaymentService;
 import com.commerceops.erp.global.response.ApiResponse;
@@ -17,6 +19,23 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
+
+    @PostMapping("/approve")
+    public ResponseEntity<ApiResponse<PaymentResponse>> approvePayment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody PaymentApproveRequest request) {
+        PaymentResponse response = paymentService.approvePayment(userDetails.getUser(), request);
+        return ResponseEntity.ok(ApiResponse.ok("결제가 승인되었습니다.", response));
+    }
+
+    @PostMapping("/{paymentId}/cancel")
+    public ResponseEntity<ApiResponse<PaymentResponse>> cancelPayment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long paymentId,
+            @RequestBody(required = false) PaymentCancelRequest request) {
+        PaymentResponse response = paymentService.cancelPayment(userDetails.getUser(), paymentId, request);
+        return ResponseEntity.ok(ApiResponse.ok("결제가 취소 또는 환불되었습니다.", response));
+    }
 
     @PostMapping("/mock/complete")
     public ResponseEntity<ApiResponse<PaymentResponse>> completePayment(

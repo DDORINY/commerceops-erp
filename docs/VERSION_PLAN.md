@@ -177,6 +177,22 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [ ] `v0.2.1` 태그 생성 및 push
 
+## v0.2.2 체크리스트
+
+목적: 결제 승인/취소/환불 API 경계 정리와 멱등성 최소 구현.
+
+- [x] 기존 결제/주문 취소/회계/재고 복구 흐름 확인
+- [x] `POST /api/payments/approve` 추가
+- [x] `POST /api/payments/{paymentId}/cancel` 추가
+- [x] 결제 승인 멱등성 키 저장과 재호출 응답 처리 구현
+- [x] 기존 `/api/payments/mock/complete` 하위 호환 유지
+- [x] checkout 결제 호출을 `/api/payments/approve`로 전환
+- [x] 관련 API/DB/구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.2` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |
