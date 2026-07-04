@@ -248,6 +248,24 @@ v0.2.0에서 v0.1.9 검증 결과를 반영해 정리한 후보:
 - [x] backend `.\gradlew.bat test` 통과
 - [x] `v0.2.5` 태그 생성 및 push
 
+## v0.2.6 체크리스트
+
+목적: CI 자동 검증과 환경 분리 기준 정리.
+
+- [x] 기존 CI workflow 존재 여부 확인
+- [x] GitHub Actions workflow 추가
+- [x] frontend `npm ci`, lint, build 자동 검증 구성
+- [x] backend Java 17, Gradle test 자동 검증 구성
+- [x] 운영 backend profile `application-prod.yml` 추가
+- [x] CORS allowed origins 설정값 분리
+- [x] `.env.example`, `frontend/.env.example` 추가
+- [x] 배포/환경 분리 문서 추가
+- [x] 관련 구조/현재 상태 문서 갱신
+- [x] frontend `npm.cmd run lint` 통과
+- [x] frontend `npm.cmd run build` 통과
+- [x] backend `.\gradlew.bat test` 통과
+- [ ] `v0.2.6` 태그 생성 및 push
+
 ## v0.2 우선순위
 
 | 우선순위 | 항목 | 이유 |

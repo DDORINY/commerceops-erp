@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.2.5`
+기준 버전: `v0.2.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -81,6 +81,14 @@ com.commerceops.erp
 - `HealthController`: `GET /api/health`.
 - `MediaWebConfig`: `COMMERCEOPS_MEDIA_UPLOAD_DIR` 기준 로컬 업로드 디렉터리를 `/uploads/**` 정적 리소스로 제공.
 - Flyway: `backend/src/main/resources/db/migration`의 SQL을 운영/로컬 스키마 기준으로 사용한다. 테스트 프로파일은 기존 H2 `create-drop` 회귀 테스트를 유지하기 위해 Flyway를 비활성화한다.
+- `CorsConfig`: `COMMERCEOPS_CORS_ALLOWED_ORIGINS` 또는 `commerceops.cors.allowed-origins` 설정으로 허용 origin을 분리한다.
+
+## 환경 프로파일
+
+- `application.yml`: 공통 설정. 기본 active profile은 `local`.
+- `application-local.yml`: 로컬 DB/JWT 설정. 커밋 제외 대상.
+- `application-prod.yml`: 운영 profile 예시. DB/JWT secret은 환경 변수로 주입하고 Hibernate `ddl-auto=validate`를 사용한다.
+- `application-test.yml`: 테스트 profile. H2 `create-drop`, Flyway 비활성화.
 
 ## v0.1.1 ~ v0.1.6 반영 상태
 
