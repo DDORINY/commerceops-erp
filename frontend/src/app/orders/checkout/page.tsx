@@ -35,6 +35,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState('');
   const [couponResult, setCouponResult] = useState<CouponValidateResult | null>(null);
   const [couponError, setCouponError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
@@ -79,12 +80,13 @@ export default function CheckoutPage() {
   };
 
   const handleSubmit = async () => {
+    setSubmitError('');
     if (!form.receiverName || !form.receiverPhone || !form.address) {
-      alert('배송 정보를 모두 입력해주세요.');
+      setSubmitError('배송 정보를 모두 입력해주세요.');
       return;
     }
     if (cartItems.length === 0) {
-      alert('장바구니가 비어 있습니다.');
+      setSubmitError('장바구니가 비어 있습니다.');
       return;
     }
 
@@ -103,7 +105,7 @@ export default function CheckoutPage() {
       await paymentService.completePayment(orderRes.orderId, form.paymentMethod);
       router.push('/orders');
     } catch (err) {
-      alert(err instanceof Error ? err.message : '주문 처리에 실패했습니다.');
+      setSubmitError(err instanceof Error ? err.message : '주문 처리에 실패했습니다.');
     } finally {
       setSubmitting(false);
     }
@@ -284,6 +286,11 @@ export default function CheckoutPage() {
               >
                 {submitting ? '처리 중...' : '결제하기'}
               </Button>
+              {submitError && (
+                <p className="text-xs text-[#c43a3a] mt-3 text-center leading-relaxed">
+                  {submitError}
+                </p>
+              )}
               <p className="text-[10px] text-[#bbb] mt-3 text-center leading-relaxed">
                 위 내용을 확인하였으며 결제에 동의합니다.
               </p>

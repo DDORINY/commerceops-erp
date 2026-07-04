@@ -34,6 +34,8 @@ export default function ProductDetailPage({
   const [liked, setLiked] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [actionMessage, setActionMessage] = useState('');
+  const [tabError, setTabError] = useState('');
 
   useEffect(() => {
     productService
@@ -56,27 +58,37 @@ export default function ProductDetailPage({
       });
 
     // Check wishlist status
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     if (token) {
       wishlistService.getStatus(Number(id)).then((res) => setLiked(res.liked)).catch(() => {});
     }
   }, [id]);
 
   useEffect(() => {
+    if (activeTab !== 'inquiry' && activeTab !== 'review') {
+      return;
+    }
     if (activeTab === 'inquiry') {
-      inquiryService.getProductInquiries(Number(id)).then(setInquiries).catch(() => {});
+      inquiryService.getProductInquiries(Number(id)).then(setInquiries).catch(() => {
+        setInquiries([]);
+        setTabError('문의 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      });
     }
     if (activeTab === 'review') {
       reviewService.getProductReviews(Number(id), 0, 20).then((res) => {
         setReviews(res.content);
         setReviewTotalElements(res.totalElements);
-      }).catch(() => {});
+      }).catch(() => {
+        setReviews([]);
+        setReviewTotalElements(0);
+        setTabError('리뷰 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      });
     }
   }, [activeTab, id]);
 
   const handleInquirySubmit = async () => {
     if (!inquirySubject.trim() || !inquiryContent.trim()) {
-      alert('제목과 내용을 모두 입력하세요.');
+      setActionMessage('제목과 내용을 모두 입력하세요.');
       return;
     }
     setSubmittingInquiry(true);
@@ -85,9 +97,9 @@ export default function ProductDetailPage({
       setInquirySubject('');
       setInquiryContent('');
       inquiryService.getProductInquiries(Number(id)).then(setInquiries).catch(() => {});
-      alert('문의가 등록되었습니다.');
+      setActionMessage('문의가 등록되었습니다.');
     } catch (err) {
-      alert(err instanceof Error ? err.message : '문의 등록에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '문의 등록에 실패했습니다.');
     } finally {
       setSubmittingInquiry(false);
     }
@@ -98,8 +110,9 @@ export default function ProductDetailPage({
     try {
       const res = await wishlistService.toggle(Number(id));
       setLiked(res.liked);
+      setActionMessage(res.liked ? '찜 목록에 추가했습니다.' : '찜 목록에서 제거했습니다.');
     } catch {
-      alert('로그인이 필요한 서비스입니다.');
+      setActionMessage('로그인이 필요한 서비스입니다.');
     } finally {
       setWishlistLoading(false);
     }
@@ -111,7 +124,7 @@ export default function ProductDetailPage({
     if (product.options?.length > 0) {
       const missing = product.options.find((og) => !selectedOptions[og.name]);
       if (missing) {
-        alert(`"${missing.name}" 옵션을 선택해주세요.`);
+        setActionMessage(`"${missing.name}" 옵션을 선택해주세요.`);
         return;
       }
     }
@@ -119,12 +132,17 @@ export default function ProductDetailPage({
       setAddingToCart(true);
       const opts = Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined;
       await cartService.addToCart(product.id, quantity, opts);
-      alert(`"${product.name}" 장바구니에 추가됐습니다.`);
+      setActionMessage(`"${product.name}" 장바구니에 추가됐습니다.`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '장바구니 추가에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '장바구니 추가에 실패했습니다.');
     } finally {
       setAddingToCart(false);
     }
+  };
+
+  const handleTabChange = (tab: 'detail' | 'shipping' | 'review' | 'inquiry') => {
+    setTabError('');
+    setActiveTab(tab);
   };
 
   if (loading) {
@@ -258,6 +276,11 @@ export default function ProductDetailPage({
             )}
 
             <div className="mt-6 flex flex-col gap-3">
+              {actionMessage && (
+                <p className="border border-[#f0d6d6] bg-[#fff7f7] px-3 py-2 text-xs text-[#c43a3a]">
+                  {actionMessage}
+                </p>
+              )}
               <div className="flex gap-3">
                 <Button
                   variant="secondary"
@@ -295,7 +318,7 @@ export default function ProductDetailPage({
               ([tab, label]) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => handleTabChange(tab)}
                   className={[
                     'px-8 py-3.5 text-sm font-medium transition-colors',
                     activeTab === tab
@@ -310,6 +333,11 @@ export default function ProductDetailPage({
           </div>
 
           <div className="min-h-[200px] py-8 text-sm text-[#555] leading-relaxed">
+            {tabError && (
+              <div className="mb-5 border border-[#f0d6d6] bg-[#fff7f7] px-4 py-3 text-sm text-[#c43a3a]">
+                {tabError}
+              </div>
+            )}
             {activeTab === 'detail' && (
               <div className="max-w-[600px]">
                 <p className="mb-4">{product.description || `${product.name}은 편안한 착용감과 세련된 디자인을 자랑하는 제품입니다.`}</p>

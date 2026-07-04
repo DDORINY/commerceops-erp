@@ -33,26 +33,33 @@ export async function apiClient<T>(
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(0, '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+  }
 
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      sessionStorage.setItem('authMessage', '로그인이 필요하거나 세션이 만료되었습니다. 다시 로그인해주세요.');
+      const next = `${window.location.pathname}${window.location.search}`;
+      window.location.href = `/login?next=${encodeURIComponent(next)}`;
     }
     throw new ApiError(401, '로그인이 필요합니다.');
   }
 
   if (response.status === 403) {
-    throw new ApiError(403, '권한이 없습니다.');
+    throw new ApiError(403, '접근 권한이 없습니다. 관리자 권한 또는 계정 상태를 확인해주세요.');
   }
 
   if (!response.ok) {

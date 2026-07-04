@@ -12,6 +12,7 @@ export default function WishlistPage() {
   const [items, setItems] = useState<ApiWishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
 
   const fetchWishlist = useCallback(() => {
     wishlistService
@@ -33,10 +34,11 @@ export default function WishlistPage() {
 
   const handleRemove = async (productId: number) => {
     try {
+      setActionMessage('');
       await wishlistService.toggle(productId);
       setItems((prev) => prev.filter((item) => item.productId !== productId));
     } catch (err) {
-      alert(err instanceof Error ? err.message : '찜 해제에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '찜 해제에 실패했습니다.');
     }
   };
 
@@ -51,6 +53,12 @@ export default function WishlistPage() {
       <ShopHeader />
       <main className="max-w-[1200px] mx-auto px-4 py-10">
         <h1 className="text-xl font-bold text-[#222] mb-8">찜 목록</h1>
+
+        {actionMessage && (
+          <div className="mb-5 border border-[#f0d6d6] bg-[#fff7f7] px-4 py-3 text-sm text-[#c43a3a]">
+            {actionMessage}
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center text-[#aaa] py-20">불러오는 중...</div>

@@ -13,6 +13,7 @@ export default function CartPage() {
   const [items, setItems] = useState<ApiCartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
 
   useEffect(() => {
     cartService
@@ -35,6 +36,7 @@ export default function CartPage() {
   const updateQuantity = async (cartId: number, qty: number) => {
     const clampedQty = Math.max(1, qty);
     try {
+      setActionMessage('');
       await cartService.updateCartItem(cartId, clampedQty);
       setItems((prev) =>
         prev.map((item) =>
@@ -42,16 +44,17 @@ export default function CartPage() {
         )
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : '수량 변경에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '수량 변경에 실패했습니다.');
     }
   };
 
   const removeItem = async (cartId: number) => {
     try {
+      setActionMessage('');
       await cartService.removeFromCart(cartId);
       setItems((prev) => prev.filter((item) => item.cartId !== cartId));
     } catch (err) {
-      alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '삭제에 실패했습니다.');
     }
   };
 
@@ -73,6 +76,12 @@ export default function CartPage() {
 
       <main className="max-w-[1200px] mx-auto px-4 py-10">
         <h1 className="text-xl font-bold text-[#222] mb-8 pb-4 border-b border-[#e5e5e5]">장바구니</h1>
+
+        {actionMessage && (
+          <div className="mb-5 border border-[#f0d6d6] bg-[#fff7f7] px-4 py-3 text-sm text-[#c43a3a]">
+            {actionMessage}
+          </div>
+        )}
 
         {errorMessage ? (
           <div className="py-24 text-center">
