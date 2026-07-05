@@ -35,6 +35,45 @@ export interface UserPermissionGroupAssignment {
   createdAt: string;
 }
 
+export interface Permission {
+  id: number;
+  code: string;
+  name: string;
+  domain: string;
+  action: string;
+  description: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EffectivePermission {
+  userId: number;
+  userRole: string;
+  permissionCodes: string[];
+}
+
+export interface AdminMenuPermission {
+  id: number;
+  menuKey: string;
+  menuLabel: string;
+  menuPath: string;
+  requiredPermissionCode: string;
+  visible: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminMenuPermissionUpdateItem {
+  menuKey: string;
+  menuLabel: string;
+  menuPath: string;
+  requiredPermissionCode: string;
+  visible: boolean;
+  sortOrder: number;
+}
+
 export const permissionGroupService = {
   getPermissionGroups: () =>
     apiClient<PermissionGroup[]>('/admin/permission-groups'),
@@ -67,5 +106,27 @@ export const permissionGroupService = {
     apiClient<UserPermissionGroupAssignment[]>(`/admin/users/${userId}/permission-groups`, {
       method: 'PUT',
       body: JSON.stringify({ permissionGroupIds }),
+    }),
+
+  getPermissions: () => apiClient<Permission[]>('/admin/permissions'),
+
+  getGroupPermissions: (groupId: number) =>
+    apiClient<Permission[]>(`/admin/permission-groups/${groupId}/permissions`),
+
+  updateGroupPermissions: (groupId: number, permissionIds: number[]) =>
+    apiClient<Permission[]>(`/admin/permission-groups/${groupId}/permissions`, {
+      method: 'PUT',
+      body: JSON.stringify({ permissionIds }),
+    }),
+
+  getUserEffectivePermissions: (userId: number) =>
+    apiClient<EffectivePermission>(`/admin/users/${userId}/permissions`),
+
+  getMenuPermissions: () => apiClient<AdminMenuPermission[]>('/admin/menu-permissions'),
+
+  updateMenuPermissions: (items: AdminMenuPermissionUpdateItem[]) =>
+    apiClient<AdminMenuPermission[]>('/admin/menu-permissions', {
+      method: 'PUT',
+      body: JSON.stringify({ items }),
     }),
 };

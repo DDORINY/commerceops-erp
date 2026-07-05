@@ -55,6 +55,7 @@
 | `/admin/settings/staff` | `app/admin/settings/staff/page.tsx` | `staffService`, 직원 목록/등록/수정/상태 변경 |
 | `/admin/settings/permission-groups` | `app/admin/settings/permission-groups/page.tsx` | `permissionGroupService`, 권한 그룹 CRUD, 직원별 권한 그룹 할당 |
 | `/admin/settings/roles` | `app/admin/settings/roles/page.tsx` | 기존 role과 permission group 병행 운영 안내 |
+| `/admin/settings/menu-permissions` | `app/admin/settings/menu-permissions/page.tsx` | 권한 그룹별 기능 권한 매트릭스, 메뉴별 필요 권한 관리 |
 
 ## 서비스 레이어
 
@@ -83,7 +84,7 @@
 | `warehouseService.ts` | 창고, 창고별 재고, 이동, 할당 |
 | `userService.ts` | 관리자 고객 목록/권한 변경 |
 | `staffService.ts` | 관리자 직원 목록/상세/등록/수정, 부서/직급 조회, 직원 상태 변경 |
-| `permissionGroupService.ts` | 권한 그룹 목록/상세/생성/수정/활성 변경, 사용자 권한 그룹 조회/할당 |
+| `permissionGroupService.ts` | 권한 그룹 목록/상세/생성/수정/활성 변경, 사용자 권한 그룹 조회/할당, 권한 목록/그룹별 권한/유효 권한/메뉴 권한 |
 
 ## 타입 구조
 
@@ -164,3 +165,11 @@
 - `frontend/src/app/admin/settings/roles/page.tsx`: 기존 `USER/MANAGER/ADMIN/SUPER_ADMIN` role과 permission group 병행 운영 정책 안내.
 - `frontend/src/lib/services/permissionGroupService.ts`: `/api/admin/permission-groups`와 `/api/admin/users/{userId}/permission-groups` 타입과 API 함수.
 - `frontend/src/components/admin/AdminSidebarV2.tsx`: 인사/권한 관리 그룹의 권한 그룹 관리와 역할/권한 설정 메뉴를 실제 페이지 경로로 연결한다.
+
+## v0.4.4 Menu and Feature Permission Matrix UI
+
+- `frontend/src/app/admin/settings/menu-permissions/page.tsx`: 권한 그룹별 기능 권한 체크 매트릭스와 관리자 메뉴별 필요 권한 설정 화면.
+- `frontend/src/lib/services/permissionGroupService.ts`: `/api/admin/permissions`, `/api/admin/permission-groups/{groupId}/permissions`, `/api/admin/users/{userId}/permissions`, `/api/admin/menu-permissions` 호출을 포함한다.
+- `frontend/src/app/admin/settings/page.tsx`: 설정 홈에 메뉴/기능 권한 카드 추가.
+- `frontend/src/components/admin/AdminSidebarV2.tsx`: 인사/권한 관리 그룹에 메뉴/기능 권한 메뉴 추가.
+- v0.4.4에서는 매트릭스 관리 UI를 제공하고, 실제 사이드바 permission 기반 노출은 v0.4.5로 이관한다.

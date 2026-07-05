@@ -60,6 +60,13 @@ const SETTING_CARDS: SettingCard[] = [
     status: 'v0.4.3 권한 그룹 관리 연결',
     fields: ['권한 그룹', '역할/권한', '메뉴 권한', '기능 권한'],
   },
+  {
+    title: '메뉴/기능 권한',
+    description: '권한 그룹별 기능 권한과 관리자 메뉴별 필요 권한을 관리합니다.',
+    href: '/admin/settings/menu-permissions',
+    status: 'v0.4.4 권한 매트릭스 연결',
+    fields: ['권한 코드', '권한 그룹 매핑', '메뉴별 필요 권한'],
+  },
 ];
 
 export default function AdminSettingsPage() {
