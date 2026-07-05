@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.3.1`
+기준 버전: `v0.3.6`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -36,11 +36,11 @@
 | `/admin` | `app/admin/page.tsx` | `adminService`, `orderService` |
 | `/admin/customers` | `app/admin/customers/page.tsx` | `userService.getAdminUsers` |
 | `/admin/orders` | `app/admin/orders/page.tsx` | `orderService.getAdminOrders`, `updateOrderStatus` |
-| `/admin/products` | `app/admin/products/page.tsx` | `productService.getAdminProducts`, 상품코드/브랜드/매입가/마진율 표시 |
+| `/admin/products` | `app/admin/products/page.tsx` | `productService.getAdminProducts`, 상품코드/브랜드/매입가/마진율 표시, 카테고리/재고/판매기간 필터, 선택 대량 상태 변경 |
 | `/admin/categories` | `app/admin/categories/page.tsx` | `categoryService.getAdminCategoryTree`, create/update |
 | `/admin/banners` | `app/admin/banners/page.tsx` | `bannerService.getAdminBanners`, create/update/deactivate |
 | `/admin/products/new` | `app/admin/products/new/page.tsx` | `productService.createProduct`, getCategories, 이미지 업로드, 상품 마스터 입력 |
-| `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, 이미지 업로드, 상품 마스터 수정, 상세 블록 편집 |
+| `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, 이미지 업로드, 상품 마스터 수정, 상세 블록 편집, 운영 메모, 상태 변경 이력 |
 | `/admin/inquiries` | `app/admin/inquiries/page.tsx` | `inquiryService.getAdminInquiries`, answer/close |
 | `/admin/reviews` | `app/admin/reviews/page.tsx` | `reviewService.getAdminReviews`, hide/show/delete, `auditService.getAuditLogs` |
 | `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService` |
@@ -57,7 +57,7 @@
 | --- | --- |
 | `api.ts` | API base URL, JSON fetch, Bearer 토큰 자동 추가, 401 refresh 재시도와 세션 만료 처리 |
 | `authService.ts` | 로그인, 회원가입, 내 정보, 토큰 갱신, 로그아웃 |
-| `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD, 상품 마스터 타입, 상세 블록 타입/API. 관리자 타입은 매입가/마진율을 포함하고 사용자 타입은 내부 운영 필드를 제외 |
+| `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD, 상품 마스터 타입, 상세 블록 타입/API, 대량 상태 변경, 상품 운영 메모, 상태 변경 이력. 관리자 타입은 매입가/마진율을 포함하고 사용자 타입은 내부 운영 필드를 제외 |
 | `categoryService.ts` | 사용자 네비 카테고리, 관리자 카테고리 트리, 생성/수정 |
 | `bannerService.ts` | 공개 메인 배너 조회, 관리자 배너 목록/상세/등록/수정/비활성화 |
 | `mediaService.ts` | 관리자 상품 이미지 multipart 업로드 |
@@ -126,3 +126,10 @@
 - `AdminSidebarV2`의 open 상태를 `openGroupLabel` 단일 값으로 변경해 한 번에 하나의 그룹만 열린다.
 - query string이 있는 메뉴는 `pathname + searchParams`가 모두 일치할 때만 active 처리한다.
 - 중복 메뉴를 정리해 `/admin/sales`는 매출/회계 관리에만, 사업자/약관/정책 설정은 시스템 설정에만 배치한다.
+
+## v0.3.6 Product Admin Operations UI
+
+- `frontend/src/app/admin/products/page.tsx`: 카테고리/기존 상태/판매 상태/전시 상태/재고 상태/안전재고 이하/판매 기간 필터를 제공한다.
+- 상품 목록 행 체크박스와 현재 페이지 전체 선택을 제공하며, 선택 상품에 대해 판매 상태/전시 상태 대량 변경과 변경 사유 입력을 지원한다.
+- DataTable render 전용 컬럼은 `select`, `stockSummary`, `statusBadge`, `actions`처럼 고유 key를 사용한다.
+- `frontend/src/app/admin/products/[id]/page.tsx`: 상품 운영 메모 작성/조회와 상태 변경 이력 조회 패널을 제공한다.

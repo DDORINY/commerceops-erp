@@ -11,12 +11,19 @@ import {
   productService,
   type ApiAdminProductDetail,
   type ApiCategory,
+  type ProductOperationNote,
+  type ProductStatusHistory,
   type ProductDetailBlock,
   type ProductDetailBlockType,
   type ProductDisplayStatus,
   type ProductOptionGroup,
   type ProductSalesStatus,
 } from '@/lib/services/productService';
+import {
+  formatDateTime,
+  PRODUCT_DISPLAY_STATUS_LABEL,
+  PRODUCT_SALES_STATUS_LABEL,
+} from '@/lib/format';
 
 interface OptionGroupDraft {
   name: string;
@@ -45,6 +52,11 @@ export default function AdminProductEditPage({ params }: { params: Promise<{ id:
   const [submitting, setSubmitting] = useState(false);
   const [savingBlocks, setSavingBlocks] = useState(false);
   const [blockMessage, setBlockMessage] = useState('');
+  const [operationNotes, setOperationNotes] = useState<ProductOperationNote[]>([]);
+  const [statusHistories, setStatusHistories] = useState<ProductStatusHistory[]>([]);
+  const [noteContent, setNoteContent] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteMessage, setNoteMessage] = useState('');
   const [notFound, setNotFound] = useState(false);
   const [optionGroups, setOptionGroups] = useState<OptionGroupDraft[]>([]);
   const [detailBlocks, setDetailBlocks] = useState<ProductDetailBlock[]>([]);
@@ -81,10 +93,20 @@ export default function AdminProductEditPage({ params }: { params: Promise<{ id:
     Promise.all([
       productService.getAdminProduct(productId),
       productService.getAdminProductDetailBlocks(productId),
+      productService.getProductOperationNotes(productId),
+      productService.getProductStatusHistory(productId),
       productService.getCategories(),
     ])
-      .then(([product, blocks, cats]: [ApiAdminProductDetail, ProductDetailBlock[], ApiCategory[]]) => {
+      .then(([product, blocks, notes, histories, cats]: [
+        ApiAdminProductDetail,
+        ProductDetailBlock[],
+        ProductOperationNote[],
+        ProductStatusHistory[],
+        ApiCategory[],
+      ]) => {
         setCategories(cats);
+        setOperationNotes(notes ?? []);
+        setStatusHistories(histories ?? []);
         setDetailBlocks((blocks ?? []).map((block, index) => ({
           ...block,
           sortOrder: block.sortOrder ?? index,
@@ -179,6 +201,27 @@ export default function AdminProductEditPage({ params }: { params: Promise<{ id:
       setBlockMessage(err instanceof Error ? err.message : '상세 블록 저장에 실패했습니다.');
     } finally {
       setSavingBlocks(false);
+    }
+  };
+
+  const handleCreateNote = async () => {
+    const content = noteContent.trim();
+    if (!content) {
+      setNoteMessage('운영 메모 내용을 입력해주세요.');
+      return;
+    }
+
+    setSavingNote(true);
+    setNoteMessage('');
+    try {
+      const saved = await productService.createProductOperationNote(productId, content);
+      setOperationNotes((prev) => [saved, ...prev]);
+      setNoteContent('');
+      setNoteMessage('운영 메모가 저장되었습니다.');
+    } catch (err) {
+      setNoteMessage(err instanceof Error ? err.message : '운영 메모 저장에 실패했습니다.');
+    } finally {
+      setSavingNote(false);
     }
   };
 
@@ -371,6 +414,81 @@ export default function AdminProductEditPage({ params }: { params: Promise<{ id:
                 </div>
               ))}
               <div className="flex justify-end"><Button variant="secondary" type="button" disabled={savingBlocks} onClick={handleSaveDetailBlocks}>{savingBlocks ? '저장 중...' : '상세 블록 저장'}</Button></div>
+            </section>
+
+            <section className="space-y-4">
+              <div className="pb-3 border-b border-[#f0f1f5]">
+                <h2 className="text-sm font-bold text-[#1a1f2e]">상품 운영 메모</h2>
+                <p className="mt-1 text-xs text-[#8a9bb5]">관리자 상품 운영 중 남겨야 할 사유와 참고사항을 기록합니다.</p>
+              </div>
+              <textarea
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                placeholder="운영 메모 입력"
+                rows={4}
+                className="w-full border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] resize-none"
+              />
+              <div className="flex items-center justify-between gap-3">
+                {noteMessage ? <p className="text-xs text-[#4f5b70]">{noteMessage}</p> : <span />}
+                <Button variant="secondary" type="button" disabled={savingNote} onClick={handleCreateNote}>
+                  {savingNote ? '저장 중...' : '운영 메모 저장'}
+                </Button>
+              </div>
+              {operationNotes.length === 0 ? (
+                <div className="border border-dashed border-[#d8dce6] bg-[#fafbfe] px-4 py-6 text-center text-sm text-[#8a9bb5]">등록된 운영 메모가 없습니다.</div>
+              ) : (
+                <div className="space-y-2">
+                  {operationNotes.map((note) => (
+                    <div key={note.id} className="border border-[#e8eaf0] bg-[#fafbfe] p-3">
+                      <p className="whitespace-pre-wrap text-sm text-[#333]">{note.content}</p>
+                      <p className="mt-2 text-xs text-[#8a9bb5]">{note.writerEmail || '-'} · {formatDateTime(note.createdAt)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-4">
+              <div className="pb-3 border-b border-[#f0f1f5]">
+                <h2 className="text-sm font-bold text-[#1a1f2e]">상태 변경 이력</h2>
+                <p className="mt-1 text-xs text-[#8a9bb5]">단건/대량 상태 변경으로 실제 판매 또는 전시 상태가 바뀐 기록만 표시합니다.</p>
+              </div>
+              {statusHistories.length === 0 ? (
+                <div className="border border-dashed border-[#d8dce6] bg-[#fafbfe] px-4 py-6 text-center text-sm text-[#8a9bb5]">상태 변경 이력이 없습니다.</div>
+              ) : (
+                <div className="overflow-x-auto border border-[#e8eaf0]">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#f8f9fb] text-xs text-[#8a9bb5]">
+                      <tr>
+                        <th className="px-3 py-2 text-left">변경일시</th>
+                        <th className="px-3 py-2 text-left">작업자</th>
+                        <th className="px-3 py-2 text-left">판매 상태</th>
+                        <th className="px-3 py-2 text-left">전시 상태</th>
+                        <th className="px-3 py-2 text-left">사유</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statusHistories.map((history) => (
+                        <tr key={history.id} className="border-t border-[#f0f1f5]">
+                          <td className="px-3 py-2 whitespace-nowrap">{formatDateTime(history.createdAt)}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{history.changedByEmail || '-'}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            {history.previousSalesStatus ? PRODUCT_SALES_STATUS_LABEL[history.previousSalesStatus] : '-'}
+                            {' → '}
+                            {history.newSalesStatus ? PRODUCT_SALES_STATUS_LABEL[history.newSalesStatus] : '-'}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            {history.previousDisplayStatus ? PRODUCT_DISPLAY_STATUS_LABEL[history.previousDisplayStatus] : '-'}
+                            {' → '}
+                            {history.newDisplayStatus ? PRODUCT_DISPLAY_STATUS_LABEL[history.newDisplayStatus] : '-'}
+                          </td>
+                          <td className="px-3 py-2">{history.reason || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </section>
 
             <section className="space-y-4">

@@ -3,5 +3,8 @@ package com.commerceops.erp.domain.audit.enums;
 public enum AuditActionType {
     REVIEW_HIDE,
     REVIEW_SHOW,
-    REVIEW_DELETE
+    REVIEW_DELETE,
+    PRODUCT_STATUS_UPDATE,
+    PRODUCT_BULK_STATUS_UPDATE,
+    PRODUCT_OPERATION_NOTE_CREATE
 }
