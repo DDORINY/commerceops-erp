@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { getUserRole } from '@/lib/auth';
 
 type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER';
@@ -28,7 +28,6 @@ const MENU_GROUPS: MenuGroup[] = [
     label: '대시보드',
     items: [
       { label: '대시보드', href: '/admin', roles: ALL_ROLES },
-      { label: '운영 분석', href: '/admin/sales', roles: ALL_ROLES },
       { label: '알림', href: '/admin/settings?section=notifications', roles: ADMIN_ROLES, note: '설정 진입점' },
     ],
   },
@@ -38,8 +37,6 @@ const MENU_GROUPS: MenuGroup[] = [
       { label: '카테고리 관리', href: '/admin/categories', roles: ADMIN_ROLES },
       { label: '상단 네비 관리', href: '/admin/categories?focus=navigation', roles: ADMIN_ROLES },
       { label: '배너 관리', href: '/admin/banners', roles: ADMIN_ROLES },
-      { label: '사업자 설정', href: '/admin/settings?section=company', roles: ADMIN_ROLES },
-      { label: '약관 설정', href: '/admin/settings?section=terms', roles: ADMIN_ROLES },
     ],
   },
   {
@@ -106,14 +103,14 @@ const MENU_GROUPS: MenuGroup[] = [
       { label: '개인정보처리방침 설정', href: '/admin/settings?section=privacy', roles: ADMIN_ROLES },
       { label: '배송/반품 정책 설정', href: '/admin/settings?section=policies', roles: ADMIN_ROLES },
       { label: '관리자 작업 이력', href: '/admin/settings/audit-logs', roles: ADMIN_ROLES },
-      { label: '감사 로그', href: '/admin/settings/audit-logs', roles: ADMIN_ROLES },
       { label: '환경 설정', href: '/admin/settings?section=environment', roles: SUPER_ONLY, note: '후속 구현' },
     ],
   },
 ];
 
-function pathOnly(href: string) {
-  return href.split('?')[0];
+function splitHref(href: string) {
+  const [path, query = ''] = href.split('?');
+  return { path, query };
 }
 
 function roleLabel(role: string | null) {
@@ -125,8 +122,9 @@ function roleLabel(role: string | null) {
 
 export default function AdminSidebarV2() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [openGroupLabel, setOpenGroupLabel] = useState<string | null>(null);
 
   useEffect(() => {
     queueMicrotask(() => setUserRole(getUserRole()));
@@ -142,14 +140,29 @@ export default function AdminSidebarV2() {
       .filter((group) => group.items.length > 0);
   }, [userRole]);
 
-  const isActive = (href: string) => {
-    const target = pathOnly(href);
-    if (target === '/admin') return pathname === '/admin';
-    return pathname === target || pathname.startsWith(`${target}/`);
-  };
+  const currentQuery = searchParams.toString();
+
+  const isActive = useMemo(() => {
+    return (href: string) => {
+      const { path, query } = splitHref(href);
+      if (query) {
+        return pathname === path && currentQuery === query;
+      }
+      if (path === '/admin') return pathname === '/admin';
+      return pathname === path || pathname.startsWith(`${path}/`);
+    };
+  }, [currentQuery, pathname]);
+
+  const activeGroupLabel = useMemo(() => {
+    return visibleGroups.find((group) => group.items.some((item) => isActive(item.href)))?.label ?? null;
+  }, [isActive, visibleGroups]);
+
+  useEffect(() => {
+    queueMicrotask(() => setOpenGroupLabel(activeGroupLabel));
+  }, [activeGroupLabel]);
 
   const toggleGroup = (label: string) => {
-    setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+    setOpenGroupLabel((current) => (current === label ? null : label));
   };
 
   return (
@@ -167,7 +180,7 @@ export default function AdminSidebarV2() {
         <div className="space-y-1">
           {visibleGroups.map((group) => {
             const hasActive = group.items.some((item) => isActive(item.href));
-            const isOpen = openGroups[group.label] ?? hasActive;
+            const isOpen = openGroupLabel === group.label;
             return (
               <section key={group.label} className="px-3">
                 <button
