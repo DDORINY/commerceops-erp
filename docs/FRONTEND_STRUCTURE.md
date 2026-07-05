@@ -111,3 +111,12 @@
 - `frontend/src/app/admin/products/new/page.tsx`: 상품 등록 시 판매 상태, 전시 상태, 안전 재고 입력.
 - `frontend/src/app/admin/products/[id]/page.tsx`: 상품 수정 시 판매 상태, 전시 상태, 안전 재고 입력과 상세 블록 편집 유지.
 - `frontend/src/components/shop/ProductCard.tsx`, `frontend/src/app/products/[id]/page.tsx`: `purchasable`, `stockDisplayText` 기준으로 재고 배지와 구매 버튼 비활성화 처리.
+
+## v0.3.5.1 Admin Navigation and Settings
+
+- `frontend/src/components/admin/AdminSidebarV2.tsx`: 관리자 메뉴를 업무 영역별 아코디언 그룹으로 재구성했다.
+- `frontend/src/components/admin/AdminSidebar.tsx`: 구형 사이드바 진입점은 `AdminSidebarV2`를 재사용한다.
+- 권한별 메뉴 노출은 `getUserRole()` 기준으로 `SUPER_ADMIN`, `ADMIN`, `MANAGER`를 최소 분기한다.
+- `frontend/src/app/admin/settings/page.tsx`: 사업자 설정, 약관 설정, 정책 설정, 관리자 작업 이력, 직원/권한 관리 진입점.
+- `frontend/src/app/admin/settings/audit-logs/page.tsx`: 기존 `auditService.getAuditLogs()`와 `/api/admin/audit-logs`를 사용해 관리자 작업 이력을 표시한다.
+- 직원/부서/직급/권한 그룹/역할별 상세 권한 화면은 v0.4.0으로 이관한다.
