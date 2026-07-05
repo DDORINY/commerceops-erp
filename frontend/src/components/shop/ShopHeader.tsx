@@ -59,7 +59,7 @@ export default function ShopHeader() {
             </>
           )}
           <span className="text-[#e0e0e0] text-xs">|</span>
-          <Link href="/orders" className="text-xs text-[#777] hover:text-[#222] transition-colors">주문조회</Link>
+          <Link href="/orders/guest" className="text-xs text-[#777] hover:text-[#222] transition-colors">주문조회</Link>
           <span className="text-[#e0e0e0] text-xs">|</span>
           <Link href="/mypage" className="text-xs text-[#777] hover:text-[#222] transition-colors">마이페이지</Link>
           {canEnterAdmin(user) && (

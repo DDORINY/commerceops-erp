@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api';
+import { apiClient, publicApiClient } from '@/lib/api';
 
 export interface ApiCategoryNode {
   id: number;
@@ -36,7 +36,7 @@ export const flattenCategoryTree = (nodes: ApiCategoryNode[]): ApiCategoryNode[]
 
 export const categoryService = {
   getNavigationCategories: () =>
-    apiClient<ApiCategoryNode[]>('/categories/navigation'),
+    publicApiClient<ApiCategoryNode[]>('/categories/navigation'),
 
   getAdminCategoryTree: () =>
     apiClient<ApiCategoryNode[]>('/admin/categories/tree'),

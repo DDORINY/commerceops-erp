@@ -1,4 +1,4 @@
-import { apiClient, PageResponse } from '@/lib/api';
+import { apiClient, publicApiClient, PageResponse } from '@/lib/api';
 import type { ProductListItem } from '@/features/product/types';
 
 export interface ProductOptionGroup {
@@ -245,10 +245,10 @@ export const productService = {
     if (params.page !== undefined) qs.set('page', String(params.page));
     if (params.size !== undefined) qs.set('size', String(params.size));
     const query = qs.toString() ? `?${qs.toString()}` : '';
-    return apiClient<PageResponse<ApiProductItem>>(`/products${query}`);
+    return publicApiClient<PageResponse<ApiProductItem>>(`/products${query}`);
   },
 
-  getProduct: (id: number) => apiClient<ApiProductDetail>(`/products/${id}`),
+  getProduct: (id: number) => publicApiClient<ApiProductDetail>(`/products/${id}`),
 
   getAdminProducts: (params: {
     status?: string;
@@ -296,7 +296,7 @@ export const productService = {
       }))),
     }),
 
-  getCategories: () => apiClient<ApiCategory[]>('/categories'),
+  getCategories: () => publicApiClient<ApiCategory[]>('/categories'),
 
   createProduct: (data: ProductCreatePayload) =>
     apiClient<ApiAdminProductDetail>('/admin/products', {

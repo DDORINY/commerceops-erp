@@ -1,4 +1,4 @@
-﻿import { apiClient } from '@/lib/api';
+﻿import { apiClient, publicApiClient } from '@/lib/api';
 
 export type BannerPosition = 'MAIN_TOP' | 'MAIN_MIDDLE' | 'MAIN_BOTTOM';
 
@@ -38,7 +38,7 @@ export const BANNER_POSITION_LABEL: Record<BannerPosition, string> = {
 };
 
 export const bannerService = {
-  getBanners: () => apiClient<ApiMainBanner[]>('/banners'),
+  getBanners: () => publicApiClient<ApiMainBanner[]>('/banners'),
 
   getAdminBanners: () => apiClient<ApiMainBanner[]>('/admin/banners'),
 
@@ -61,3 +61,4 @@ export const bannerService = {
       method: 'DELETE',
     }),
 };
+

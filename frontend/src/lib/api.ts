@@ -1,4 +1,4 @@
-export interface ApiResponse<T> {
+﻿export interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
   message: string;
@@ -43,6 +43,14 @@ export async function apiClient<T>(
   }
 
   return handleResponse<T>(response);
+}
+
+export async function publicApiClient<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const response = await requestWithoutAuth(path, options);
+  return handleResponse<T>(response, { redirectOnUnauthorized: false });
 }
 
 export async function apiFormClient<T>(
@@ -94,9 +102,31 @@ async function requestWithAuth(
   }
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
+async function requestWithoutAuth(
+  path: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  try {
+    return await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(0, '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+async function handleResponse<T>(
+  response: Response,
+  options: { redirectOnUnauthorized?: boolean } = {}
+): Promise<T> {
   if (response.status === 401) {
-    expireSession();
+    if (options.redirectOnUnauthorized !== false) {
+      expireSession();
+    }
     throw new ApiError(401, '로그인이 필요합니다.');
   }
 

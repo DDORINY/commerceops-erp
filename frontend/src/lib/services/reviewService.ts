@@ -1,4 +1,4 @@
-import { apiClient, type PageResponse } from '@/lib/api';
+import { apiClient, publicApiClient, type PageResponse } from '@/lib/api';
 
 export interface ApiReview {
   reviewId: number;
@@ -20,7 +20,7 @@ export const reviewService = {
     }),
 
   getProductReviews: (productId: number, page = 0, size = 10) =>
-    apiClient<PageResponse<ApiReview>>(`/products/${productId}/reviews?page=${page}&size=${size}`),
+    publicApiClient<PageResponse<ApiReview>>(`/products/${productId}/reviews?page=${page}&size=${size}`),
 
   getMyReviews: () => apiClient<ApiReview[]>('/my/reviews'),
 

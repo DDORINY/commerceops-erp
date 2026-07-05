@@ -1,4 +1,4 @@
-import { apiClient, type PageResponse } from '@/lib/api';
+import { apiClient, publicApiClient, type PageResponse } from '@/lib/api';
 
 export type InquiryType = 'PRODUCT' | 'ORDER' | 'OTHER';
 export type InquiryStatus = 'WAITING' | 'ANSWERED' | 'CLOSED';
@@ -33,7 +33,7 @@ export const inquiryService = {
   getMyInquiries: () => apiClient<ApiInquiry[]>('/my/inquiries'),
 
   getProductInquiries: (productId: number) =>
-    apiClient<ApiInquiry[]>(`/products/${productId}/inquiries`),
+    publicApiClient<ApiInquiry[]>(`/products/${productId}/inquiries`),
 
   getAdminInquiries: (status?: InquiryStatus | 'ALL', keyword?: string, page = 0, size = 15) => {
     const qs = new URLSearchParams();
