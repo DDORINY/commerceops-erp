@@ -120,3 +120,9 @@
 - `frontend/src/app/admin/settings/page.tsx`: 사업자 설정, 약관 설정, 정책 설정, 관리자 작업 이력, 직원/권한 관리 진입점.
 - `frontend/src/app/admin/settings/audit-logs/page.tsx`: 기존 `auditService.getAuditLogs()`와 `/api/admin/audit-logs`를 사용해 관리자 작업 이력을 표시한다.
 - 직원/부서/직급/권한 그룹/역할별 상세 권한 화면은 v0.4.0으로 이관한다.
+
+## v0.3.5.2 Admin Sidebar Accordion Fix
+
+- `AdminSidebarV2`의 open 상태를 `openGroupLabel` 단일 값으로 변경해 한 번에 하나의 그룹만 열린다.
+- query string이 있는 메뉴는 `pathname + searchParams`가 모두 일치할 때만 active 처리한다.
+- 중복 메뉴를 정리해 `/admin/sales`는 매출/회계 관리에만, 사업자/약관/정책 설정은 시스템 설정에만 배치한다.
