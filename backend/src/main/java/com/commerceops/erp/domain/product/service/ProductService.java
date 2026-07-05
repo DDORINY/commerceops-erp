@@ -2,12 +2,19 @@ package com.commerceops.erp.domain.product.service;
 
 import com.commerceops.erp.domain.category.entity.Category;
 import com.commerceops.erp.domain.category.repository.CategoryRepository;
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.product.dto.*;
 import com.commerceops.erp.domain.product.entity.Product;
+import com.commerceops.erp.domain.product.entity.ProductOperationNote;
+import com.commerceops.erp.domain.product.entity.ProductStatusHistory;
 import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
 import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
 import com.commerceops.erp.domain.product.enums.ProductStatus;
+import com.commerceops.erp.domain.product.repository.ProductOperationNoteRepository;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
+import com.commerceops.erp.domain.product.repository.ProductStatusHistoryRepository;
+import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
 import com.commerceops.erp.global.response.PageResponse;
@@ -32,6 +39,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductDetailBlockService productDetailBlockService;
+    private final ProductStatusHistoryRepository productStatusHistoryRepository;
+    private final ProductOperationNoteRepository productOperationNoteRepository;
+    private final AuditLogService auditLogService;
 
     public PageResponse<ProductListResponse> getProducts(Long categoryId, String keyword,
                                                           String sort, Integer minPrice, Integer maxPrice,
@@ -62,11 +72,16 @@ public class ProductService {
     public PageResponse<AdminProductListResponse> getAdminProducts(ProductStatus status,
                                                                     ProductSalesStatus salesStatus,
                                                                     ProductDisplayStatus displayStatus,
+                                                                    Long categoryId,
+                                                                    String stockStatus,
+                                                                    Boolean lowStockOnly,
+                                                                    String salePeriodStatus,
                                                                     String keyword,
                                                                     int page,
                                                                     int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Product> products = productRepository.findAll(buildAdminSpec(status, salesStatus, displayStatus, keyword), pageable);
+        Page<Product> products = productRepository.findAll(buildAdminSpec(status, salesStatus, displayStatus,
+                categoryId, stockStatus, lowStockOnly, salePeriodStatus, keyword), pageable);
         return PageResponse.from(products.map(AdminProductListResponse::from));
     }
 
@@ -123,7 +138,7 @@ public class ProductService {
     }
 
     @Transactional
-    public AdminProductResponse updateProduct(Long productId, ProductUpdateRequest request) {
+    public AdminProductResponse updateProduct(Long productId, ProductUpdateRequest request, User actor) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
@@ -143,6 +158,9 @@ public class ProductService {
                 request.safetyStockQuantity() != null ? request.safetyStockQuantity() : product.getSafetyStockQuantity()
         );
 
+        ProductSalesStatus previousSalesStatus = product.getSalesStatus();
+        ProductDisplayStatus previousDisplayStatus = product.getDisplayStatus();
+
         product.update(category, request.name(), request.description(),
                 request.price(), request.stockQuantity(), request.imageUrl(),
                 request.status(), request.options(),
@@ -156,17 +174,101 @@ public class ProductService {
                 normalizeText(request.seoKeywords()), request.salesStatus(),
                 request.displayStatus(), request.safetyStockQuantity());
 
+        recordStatusChangeIfChanged(product, actor, previousSalesStatus, previousDisplayStatus, "Product updated.");
+
         return AdminProductResponse.from(product);
     }
 
     @Transactional
-    public AdminProductResponse updateProductStatus(Long productId, ProductStatusUpdateRequest request) {
+    public AdminProductResponse updateProductStatus(Long productId, ProductStatusUpdateRequest request, User actor) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         validateOperationStatus(request.salesStatus(), request.displayStatus(), request.safetyStockQuantity());
+        ProductSalesStatus previousSalesStatus = product.getSalesStatus();
+        ProductDisplayStatus previousDisplayStatus = product.getDisplayStatus();
         product.updateOperationStatus(request.salesStatus(), request.displayStatus(), request.safetyStockQuantity());
+        recordStatusChangeIfChanged(product, actor, previousSalesStatus, previousDisplayStatus, request.reason());
         return AdminProductResponse.from(product);
+    }
+
+    @Transactional
+    public ProductBulkStatusUpdateResponse bulkUpdateProductStatus(ProductBulkStatusUpdateRequest request, User actor) {
+        validateOperationStatus(request.salesStatus(), request.displayStatus(), null);
+        List<Product> products = productRepository.findAllById(request.productIds());
+        if (products.size() != request.productIds().size()) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        if (request.salesStatus() == null && request.displayStatus() == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        List<AdminProductListResponse> updated = products.stream()
+                .map(product -> {
+                    ProductSalesStatus previousSalesStatus = product.getSalesStatus();
+                    ProductDisplayStatus previousDisplayStatus = product.getDisplayStatus();
+                    product.updateOperationStatus(request.salesStatus(), request.displayStatus(), null);
+                    recordStatusChangeIfChanged(product, actor, previousSalesStatus, previousDisplayStatus, request.reason());
+                    return AdminProductListResponse.from(product);
+                })
+                .toList();
+
+        auditLogService.record(
+                actor,
+                AuditActionType.PRODUCT_BULK_STATUS_UPDATE,
+                "PRODUCT",
+                0L,
+                null,
+                statusSummary(request.salesStatus(), request.displayStatus()),
+                "Bulk product status update: " + updated.size() + " products"
+        );
+
+        return new ProductBulkStatusUpdateResponse(updated.size(), updated);
+    }
+
+    public List<ProductStatusHistoryResponse> getProductStatusHistory(Long productId, int limit) {
+        ensureAdminProductExists(productId);
+        int size = Math.max(1, Math.min(limit, 50));
+        return productStatusHistoryRepository.findByProductIdOrderByCreatedAtDesc(productId, PageRequest.of(0, size))
+                .stream()
+                .map(ProductStatusHistoryResponse::from)
+                .toList();
+    }
+
+    public List<ProductOperationNoteResponse> getProductOperationNotes(Long productId, int limit) {
+        ensureAdminProductExists(productId);
+        int size = Math.max(1, Math.min(limit, 50));
+        return productOperationNoteRepository.findByProductIdOrderByCreatedAtDesc(productId, PageRequest.of(0, size))
+                .stream()
+                .map(ProductOperationNoteResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public ProductOperationNoteResponse createProductOperationNote(Long productId, ProductOperationNoteRequest request, User actor) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (product.getDeletedAt() != null || product.getStatus() == ProductStatus.DELETED) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+
+        ProductOperationNote note = productOperationNoteRepository.save(ProductOperationNote.builder()
+                .product(product)
+                .writerUserId(actor.getId())
+                .writerEmail(actor.getEmail())
+                .content(request.content().trim())
+                .build());
+
+        auditLogService.record(
+                actor,
+                AuditActionType.PRODUCT_OPERATION_NOTE_CREATE,
+                "PRODUCT",
+                productId,
+                null,
+                null,
+                "Product operation note created."
+        );
+        return ProductOperationNoteResponse.from(note);
     }
 
     @Transactional
@@ -219,6 +321,10 @@ public class ProductService {
     private Specification<Product> buildAdminSpec(ProductStatus status,
                                                   ProductSalesStatus salesStatus,
                                                   ProductDisplayStatus displayStatus,
+                                                  Long categoryId,
+                                                  String stockStatus,
+                                                  Boolean lowStockOnly,
+                                                  String salePeriodStatus,
                                                   String keyword) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -232,6 +338,40 @@ public class ProductService {
             }
             if (displayStatus != null) {
                 predicates.add(cb.equal(root.get("displayStatus"), displayStatus));
+            }
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+            if (Boolean.TRUE.equals(lowStockOnly)) {
+                predicates.add(cb.greaterThan(root.get("stockQuantity"), 0));
+                predicates.add(cb.lessThanOrEqualTo(root.get("stockQuantity"), root.get("safetyStockQuantity")));
+            }
+            if (stockStatus != null && !stockStatus.isBlank() && !"ALL".equalsIgnoreCase(stockStatus)) {
+                String normalizedStockStatus = stockStatus.toUpperCase();
+                if ("SOLD_OUT".equals(normalizedStockStatus)) {
+                    predicates.add(cb.or(
+                            cb.lessThanOrEqualTo(root.get("stockQuantity"), 0),
+                            cb.equal(root.get("salesStatus"), ProductSalesStatus.SOLD_OUT)
+                    ));
+                } else if ("LOW_STOCK".equals(normalizedStockStatus)) {
+                    predicates.add(cb.greaterThan(root.get("stockQuantity"), 0));
+                    predicates.add(cb.lessThanOrEqualTo(root.get("stockQuantity"), root.get("safetyStockQuantity")));
+                } else if ("IN_STOCK".equals(normalizedStockStatus)) {
+                    predicates.add(cb.greaterThan(root.get("stockQuantity"), root.get("safetyStockQuantity")));
+                    predicates.add(cb.notEqual(root.get("salesStatus"), ProductSalesStatus.SOLD_OUT));
+                }
+            }
+            if (salePeriodStatus != null && !salePeriodStatus.isBlank() && !"ALL".equalsIgnoreCase(salePeriodStatus)) {
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                String normalizedSalePeriodStatus = salePeriodStatus.toUpperCase();
+                if ("ACTIVE".equals(normalizedSalePeriodStatus)) {
+                    predicates.add(cb.or(cb.isNull(root.get("saleStartAt")), cb.lessThanOrEqualTo(root.get("saleStartAt"), now)));
+                    predicates.add(cb.or(cb.isNull(root.get("saleEndAt")), cb.greaterThanOrEqualTo(root.get("saleEndAt"), now)));
+                } else if ("UPCOMING".equals(normalizedSalePeriodStatus)) {
+                    predicates.add(cb.greaterThan(root.get("saleStartAt"), now));
+                } else if ("ENDED".equals(normalizedSalePeriodStatus)) {
+                    predicates.add(cb.lessThan(root.get("saleEndAt"), now));
+                }
             }
             if (keyword != null && !keyword.isBlank()) {
                 String pattern = "%" + keyword.toLowerCase() + "%";
@@ -308,5 +448,57 @@ public class ProductService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? "" : trimmed;
+    }
+
+    private void recordStatusChangeIfChanged(Product product, User actor,
+                                             ProductSalesStatus previousSalesStatus,
+                                             ProductDisplayStatus previousDisplayStatus,
+                                             String reason) {
+        boolean changed = previousSalesStatus != product.getSalesStatus()
+                || previousDisplayStatus != product.getDisplayStatus();
+        if (!changed) {
+            return;
+        }
+
+        productStatusHistoryRepository.save(ProductStatusHistory.builder()
+                .product(product)
+                .changedByUserId(actor.getId())
+                .changedByEmail(actor.getEmail())
+                .previousSalesStatus(previousSalesStatus)
+                .newSalesStatus(product.getSalesStatus())
+                .previousDisplayStatus(previousDisplayStatus)
+                .newDisplayStatus(product.getDisplayStatus())
+                .reason(normalizeReason(reason))
+                .build());
+
+        auditLogService.record(
+                actor,
+                AuditActionType.PRODUCT_STATUS_UPDATE,
+                "PRODUCT",
+                product.getId(),
+                statusSummary(previousSalesStatus, previousDisplayStatus),
+                statusSummary(product.getSalesStatus(), product.getDisplayStatus()),
+                normalizeReason(reason)
+        );
+    }
+
+    private String statusSummary(ProductSalesStatus salesStatus, ProductDisplayStatus displayStatus) {
+        return "salesStatus=" + (salesStatus != null ? salesStatus.name() : "-")
+                + ", displayStatus=" + (displayStatus != null ? displayStatus.name() : "-");
+    }
+
+    private String normalizeReason(String reason) {
+        if (reason == null || reason.isBlank()) {
+            return "No reason provided.";
+        }
+        return reason.trim();
+    }
+
+    private void ensureAdminProductExists(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (product.getDeletedAt() != null || product.getStatus() == ProductStatus.DELETED) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
     }
 }

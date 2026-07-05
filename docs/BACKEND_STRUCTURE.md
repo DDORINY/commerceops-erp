@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.3.1`
+기준 버전: `v0.3.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -67,7 +67,7 @@ com.commerceops.erp
 | ops | `AdminOpsAnalyticsController` | `OpsAnalyticsService` | 회계/주문/결제/창고 repository 사용 | - |
 | order | `OrderController`, `AdminOrderController` | `OrderService`, `OrderCancellationService` | `OrderRepository`, `OrderItemRepository` | `Order`, `OrderItem` |
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
-| product | `ProductController`, `AdminProductController` | `ProductService`, `ProductDetailBlockService` | `ProductRepository`, `ProductDetailBlockRepository` | `Product`, `ProductDetailBlock` |
+| product | `ProductController`, `AdminProductController` | `ProductService`, `ProductDetailBlockService` | `ProductRepository`, `ProductDetailBlockRepository`, `ProductStatusHistoryRepository`, `ProductOperationNoteRepository` | `Product`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote` |
 | returns | `ReturnController`, `AdminReturnController` | `ReturnService` | `ReturnRequestRepository` | `ReturnRequest` |
 | review | `ReviewController`, `AdminReviewController` | `ReviewService` | `ReviewRepository` | `Review` |
 | shipment | `ShipmentController`, `AdminShipmentController` | `ShipmentService` | `ShipmentRepository` | `Shipment` |
@@ -94,6 +94,7 @@ com.commerceops.erp
 - 상품 상세 CMS: v0.3.2 기준 `ProductDetailBlock`은 상품별 상세 블록을 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` 타입으로 저장한다. 관리자 API는 전체 블록을 조회/교체 저장하고, 사용자 상품 상세 응답은 visible 블록만 sortOrder 순서로 포함한다.
 - 카테고리 네비: v0.3.3 기준 `Category`는 parent/depth/sortOrder/active/visibleInNav/slug를 포함한다. 공개 네비 API는 active=true, visibleInNav=true 카테고리만 트리로 반환하고, 관리자 API는 전체 트리를 조회/생성/수정한다.
 - 메인 배너 CMS: v0.3.4 기준 `MainBanner`는 title/subtitle/description/imageUrl/linkUrl/position/sortOrder/active/startsAt/endsAt를 포함한다. 공개 API는 활성 상태와 노출 기간 기준 배너만 반환하고, 관리자 API는 전체 배너 조회/등록/수정/비활성화를 제공한다.
+- 상품 운영 UX: v0.3.6 기준 관리자 상품 목록은 카테고리/재고/판매 기간 필터를 지원한다. `PATCH /api/admin/products/bulk-status`는 선택 상품의 판매/전시 상태를 일괄 변경하며, 실제 상태 변경은 `ProductStatusHistory`에 기록한다. 운영 메모는 `ProductOperationNote`에 누적 기록하고 상태 변경/대량 변경/메모 작성은 `AuditLog`에도 요약 저장한다.
 
 ## 환경 프로파일
 
@@ -114,7 +115,7 @@ com.commerceops.erp
 ## 명시적 미구현
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 `PaymentController`는 `/api/payments/approve`, `/api/payments/{paymentId}/cancel`, 하위 호환 `/api/payments/mock/complete`를 제공하며 `MOCK_PROVIDER` 기반으로 동작한다.
-- 전체 관리자 기능 감사 로그. 현재는 리뷰 숨김/해제/삭제 작업만 `audit_logs`에 기록한다.
+- 전체 관리자 기능 감사 로그. 현재는 리뷰 숨김/해제/삭제와 상품 상태 변경/대량 변경/운영 메모 작성만 `audit_logs`에 기록한다.
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.
@@ -127,3 +128,11 @@ com.commerceops.erp
 - `domain/product/enums/StockDisplayStatus.java`: 사용자 재고 표시 상태(`IN_STOCK`, `LOW_STOCK`, `SOLD_OUT`).
 - `Product.isPurchasable()` 기준을 장바구니와 주문 생성 검증에서 함께 사용한다.
 - 관리자 상품 상태 부분 변경 API는 `PATCH /api/admin/products/{productId}/status`이다.
+
+## v0.3.6 Product Admin Operations
+
+- `domain/product/entity/ProductStatusHistory.java`: 상품 판매/전시 상태 변경 전후와 작업자 snapshot을 저장한다.
+- `domain/product/entity/ProductOperationNote.java`: 상품별 관리자 운영 메모를 저장한다.
+- `PATCH /api/admin/products/bulk-status`: 선택 상품의 판매 상태와 전시 상태를 전체 성공/전체 실패 방식으로 일괄 변경한다.
+- `GET /api/admin/products/{productId}/status-history`: 최근 상태 변경 이력을 조회한다.
+- `GET /api/admin/products/{productId}/operation-notes`, `POST /api/admin/products/{productId}/operation-notes`: 상품 운영 메모 조회/작성.

@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.3.4`
+기준 버전: `v0.3.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -57,13 +57,17 @@
 | Banner Admin | DELETE | `/api/admin/banners/{bannerId}` | - | `null` | 관리자, active=false 비활성화 |
 | Product | GET | `/api/products` | `categoryId`, `keyword`, `sort`, `minPrice`, `maxPrice`, `inStock`, `page`, `size` | `PageResponse<ProductListResponse>` | 공개 |
 | Product | GET | `/api/products/{productId}` | - | `ProductResponse` | 공개 |
-| Product | GET | `/api/admin/products` | `status`, `salesStatus`, `displayStatus`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
+| Product | GET | `/api/admin/products` | `status`, `salesStatus`, `displayStatus`, `categoryId`, `stockStatus`, `lowStockOnly`, `salePeriodStatus`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
 | Product | GET | `/api/admin/products/{productId}` | - | `AdminProductResponse` | 관리자 |
 | Product Detail Block Admin | GET | `/api/admin/products/{productId}/detail-blocks` | - | `List<ProductDetailBlockResponse>` | 관리자 |
 | Product Detail Block Admin | PUT | `/api/admin/products/{productId}/detail-blocks` | `List<ProductDetailBlockRequest>` | `List<ProductDetailBlockResponse>` | 관리자 |
 | Product | POST | `/api/admin/products` | `ProductCreateRequest` | `AdminProductResponse` | 관리자 |
 | Product | PATCH | `/api/admin/products/{productId}` | `ProductUpdateRequest` | `AdminProductResponse` | 관리자 |
 | Product | PATCH | `/api/admin/products/{productId}/status` | `ProductStatusUpdateRequest` | `AdminProductResponse` | 관리자 |
+| Product | PATCH | `/api/admin/products/bulk-status` | `ProductBulkStatusUpdateRequest` | `ProductBulkStatusUpdateResponse` | 관리자 |
+| Product | GET | `/api/admin/products/{productId}/status-history` | `limit` | `List<ProductStatusHistoryResponse>` | 관리자/매니저 |
+| Product | GET | `/api/admin/products/{productId}/operation-notes` | `limit` | `List<ProductOperationNoteResponse>` | 관리자/매니저 |
+| Product | POST | `/api/admin/products/{productId}/operation-notes` | `ProductOperationNoteRequest` | `ProductOperationNoteResponse` | 관리자 |
 | Product | DELETE | `/api/admin/products/{productId}` | - | `null` | 관리자 |
 | Media Admin | POST | `/api/admin/media/product-images` | multipart `file` | `MediaFileResponse` | 관리자 |
 | Cart | GET | `/api/cart` | - | `CartResponse` | 인증 |
@@ -141,7 +145,12 @@
 ## 주요 DTO 메모
 
 - `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `productCode`, `brand`, `manufacturer`, `modelName`, `origin`, `originalPrice`, `discountPrice`, `purchasePrice`, `searchKeywords`, `tags`, `saleStartAt`, `saleEndAt`, `deliveryInfo`, `seoTitle`, `seoDescription`, `seoKeywords`, `salesStatus`, `displayStatus`, `safetyStockQuantity`, `stockQuantity`, `imageUrl`, `status`, `options`.
-- `ProductStatusUpdateRequest`: `salesStatus`, `displayStatus`, `safetyStockQuantity`.
+- `ProductStatusUpdateRequest`: `salesStatus`, `displayStatus`, `safetyStockQuantity`, `reason`.
+- `ProductBulkStatusUpdateRequest`: `productIds`, `salesStatus`, `displayStatus`, `reason`.
+- `ProductBulkStatusUpdateResponse`: `updatedCount`, `products`.
+- `ProductStatusHistoryResponse`: `productId`, `changedByUserId`, `changedByEmail`, `previousSalesStatus`, `newSalesStatus`, `previousDisplayStatus`, `newDisplayStatus`, `reason`, `createdAt`.
+- `ProductOperationNoteRequest`: `content`.
+- `ProductOperationNoteResponse`: `productId`, `writerUserId`, `writerEmail`, `content`, `createdAt`, `updatedAt`.
 - `CategoryResponse`: `id`, `name`, `parentId`, `depth`, `sortOrder`, `active`, `visibleInNav`, `slug`.
 - `CategoryTreeResponse`: `CategoryResponse` 계열 필드와 `children`.
 - `CategoryCreateRequest`, `CategoryUpdateRequest`: `name`, `parentId`, `sortOrder`, `active`, `visibleInNav`, `slug`.
@@ -179,7 +188,7 @@
 | `ProductDisplayStatus` | `VISIBLE`, `HIDDEN` |
 | `StockDisplayStatus` | `IN_STOCK`, `LOW_STOCK`, `SOLD_OUT` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
-| `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE` |
+| `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE`, `PRODUCT_STATUS_UPDATE`, `PRODUCT_BULK_STATUS_UPDATE`, `PRODUCT_OPERATION_NOTE_CREATE` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
@@ -197,6 +206,6 @@
 ## 미구현/예정으로 분리된 항목
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 결제 승인 API는 `MOCK_PROVIDER` 기반으로 동작한다.
-- 완전한 감사 로그 시스템. 현재는 리뷰 숨김/해제/삭제 작업 이력의 최소 기록만 제공한다.
+- 완전한 감사 로그 시스템. 현재는 리뷰 숨김/해제/삭제와 상품 상태 변경/대량 변경/운영 메모 작성 이력을 최소 기록한다.
 - 고급 BI, 복식부기, 정산 리포트 API는 미구현이다. v0.2.8 기준으로는 `/api/admin/ops-analytics/overview`에서 기초 운영 지표만 제공한다.
 - 피킹, 패킹, 출고 자동화 API.

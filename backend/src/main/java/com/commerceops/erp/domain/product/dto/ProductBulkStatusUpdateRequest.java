@@ -2,14 +2,15 @@ package com.commerceops.erp.domain.product.dto;
 
 import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
 import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
-public record ProductStatusUpdateRequest(
+import java.util.List;
+
+public record ProductBulkStatusUpdateRequest(
+        @NotEmpty List<Long> productIds,
         ProductSalesStatus salesStatus,
         ProductDisplayStatus displayStatus,
-        @Min(value = 0, message = "safetyStockQuantity must be greater than or equal to 0")
-        Integer safetyStockQuantity,
-        @Size(max = 500)
-        String reason
-) {}
+        @Size(max = 500) String reason
+) {
+}

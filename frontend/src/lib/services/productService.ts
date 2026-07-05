@@ -10,6 +10,7 @@ export type ProductDetailBlockType = 'HEADING' | 'TEXT' | 'IMAGE' | 'NOTICE' | '
 export type ProductSalesStatus = 'DRAFT' | 'ON_SALE' | 'PAUSED' | 'SOLD_OUT' | 'DISCONTINUED';
 export type ProductDisplayStatus = 'VISIBLE' | 'HIDDEN';
 export type StockDisplayStatus = 'IN_STOCK' | 'LOW_STOCK' | 'SOLD_OUT';
+export type SalePeriodStatus = 'ALL' | 'ACTIVE' | 'UPCOMING' | 'ENDED';
 
 export interface ProductDetailBlock {
   id?: number;
@@ -96,6 +97,34 @@ export interface ApiAdminProductDetail extends ApiProductDetail {
   displayStatus: ProductDisplayStatus;
   safetyStockQuantity: number;
   deletedAt: string | null;
+}
+
+export interface ProductStatusHistory {
+  id: number;
+  productId: number;
+  changedByUserId: number | null;
+  changedByEmail: string | null;
+  previousSalesStatus: ProductSalesStatus | null;
+  newSalesStatus: ProductSalesStatus | null;
+  previousDisplayStatus: ProductDisplayStatus | null;
+  newDisplayStatus: ProductDisplayStatus | null;
+  reason: string | null;
+  createdAt: string;
+}
+
+export interface ProductOperationNote {
+  id: number;
+  productId: number;
+  writerUserId: number | null;
+  writerEmail: string | null;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductBulkStatusUpdateResponse {
+  updatedCount: number;
+  products: ApiAdminProductItem[];
 }
 
 export interface ApiCategory {
@@ -223,6 +252,10 @@ export const productService = {
     status?: string;
     salesStatus?: string;
     displayStatus?: string;
+    categoryId?: number;
+    stockStatus?: string;
+    lowStockOnly?: boolean;
+    salePeriodStatus?: SalePeriodStatus;
     keyword?: string;
     page?: number;
     size?: number;
@@ -231,6 +264,10 @@ export const productService = {
     if (params.status && params.status !== 'ALL') qs.set('status', params.status);
     if (params.salesStatus && params.salesStatus !== 'ALL') qs.set('salesStatus', params.salesStatus);
     if (params.displayStatus && params.displayStatus !== 'ALL') qs.set('displayStatus', params.displayStatus);
+    if (params.categoryId) qs.set('categoryId', String(params.categoryId));
+    if (params.stockStatus && params.stockStatus !== 'ALL') qs.set('stockStatus', params.stockStatus);
+    if (params.lowStockOnly) qs.set('lowStockOnly', 'true');
+    if (params.salePeriodStatus && params.salePeriodStatus !== 'ALL') qs.set('salePeriodStatus', params.salePeriodStatus);
     if (params.keyword) qs.set('keyword', params.keyword);
     if (params.page !== undefined) qs.set('page', String(params.page));
     if (params.size !== undefined) qs.set('size', String(params.size));
@@ -277,11 +314,35 @@ export const productService = {
       salesStatus?: ProductSalesStatus;
       displayStatus?: ProductDisplayStatus;
       safetyStockQuantity?: number;
+      reason?: string;
     }
   ) =>
     apiClient<ApiAdminProductDetail>(`/admin/products/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify(data),
+    }),
+
+  bulkUpdateProductStatus: (data: {
+    productIds: number[];
+    salesStatus?: ProductSalesStatus;
+    displayStatus?: ProductDisplayStatus;
+    reason?: string;
+  }) =>
+    apiClient<ProductBulkStatusUpdateResponse>('/admin/products/bulk-status', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  getProductStatusHistory: (id: number, limit = 20) =>
+    apiClient<ProductStatusHistory[]>(`/admin/products/${id}/status-history?limit=${limit}`),
+
+  getProductOperationNotes: (id: number, limit = 20) =>
+    apiClient<ProductOperationNote[]>(`/admin/products/${id}/operation-notes?limit=${limit}`),
+
+  createProductOperationNote: (id: number, content: string) =>
+    apiClient<ProductOperationNote>(`/admin/products/${id}/operation-notes`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
     }),
 
   deleteProduct: (id: number) =>
