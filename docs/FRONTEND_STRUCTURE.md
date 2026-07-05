@@ -77,6 +77,7 @@
 | `accountingService.ts` | 관리자 회계 요약/내역 |
 | `warehouseService.ts` | 창고, 창고별 재고, 이동, 할당 |
 | `userService.ts` | 관리자 고객 목록/권한 변경 |
+| `staffService.ts` | 관리자 직원 목록/상세/등록/수정, 부서/직급 조회, 직원 상태 변경 |
 
 ## 타입 구조
 
@@ -117,7 +118,7 @@
 - `frontend/src/components/admin/AdminSidebarV2.tsx`: 관리자 메뉴를 업무 영역별 아코디언 그룹으로 재구성했다.
 - `frontend/src/components/admin/AdminSidebar.tsx`: 구형 사이드바 진입점은 `AdminSidebarV2`를 재사용한다.
 - 권한별 메뉴 노출은 `getUserRole()` 기준으로 `SUPER_ADMIN`, `ADMIN`, `MANAGER`를 최소 분기한다.
-- `frontend/src/app/admin/settings/page.tsx`: 사업자 설정, 약관 설정, 정책 설정, 관리자 작업 이력, 직원/권한 관리 진입점.
+- `frontend/src/app/admin/settings/page.tsx`: 사업자 설정, 약관 설정, 정책 설정, 관리자 작업 이력, 직원 관리, 권한 관리 진입점.
 - `frontend/src/app/admin/settings/audit-logs/page.tsx`: 기존 `auditService.getAuditLogs()`와 `/api/admin/audit-logs`를 사용해 관리자 작업 이력을 표시한다.
 - 직원/부서/직급/권한 그룹/역할별 상세 권한 화면은 v0.4.0으로 이관한다.
 
@@ -143,3 +144,10 @@
 - `frontend/src/components/shop/ProductCard.tsx`: 브랜드, 태그, 정상가/판매가, 할인, 재고 상태, 구매 불가 상태를 표시한다.
 - `frontend/src/app/products/[id]/page.tsx`: 브랜드/제조사/원산지/배송 정보, 태그, 상세 블록, 재고 상태와 구매 불가 사유를 표시한다.
 - 사용자 화면 타입은 공개 API 필드만 포함하며 `purchasePrice`, `marginRate` 같은 내부 운영 필드는 포함하지 않는다.
+
+## v0.4.2 Staff Management UI
+
+- `frontend/src/app/admin/settings/staff/page.tsx`: 직원 목록, 검색/필터, 직원 등록/수정, 재직 상태 변경, 활성/비활성 변경 화면.
+- `frontend/src/lib/services/staffService.ts`: `/api/admin/staff`와 `/api/admin/hr/departments`, `/api/admin/hr/positions` 호출 타입과 API 함수.
+- `frontend/src/components/admin/AdminSidebarV2.tsx`: 인사/권한 관리 그룹의 직원 관리 메뉴를 `/admin/settings/staff`로 연결한다.
+- 직원 관리 화면은 `SUPER_ADMIN` 메뉴로 노출되며, API 기준으로 조회는 `ADMIN/SUPER_ADMIN`, 변경은 `SUPER_ADMIN` 권한을 따른다.

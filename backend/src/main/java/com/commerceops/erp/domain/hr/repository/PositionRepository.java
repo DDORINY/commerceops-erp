@@ -8,4 +8,6 @@ import java.util.List;
 public interface PositionRepository extends JpaRepository<Position, Long> {
 
     List<Position> findAllByOrderByLevelAscSortOrderAscIdAsc();
+
+    List<Position> findByActiveTrueOrderByLevelAscSortOrderAscIdAsc();
 }

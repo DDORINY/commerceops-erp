@@ -57,6 +57,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/admin/notifications/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/admin/ops-analytics/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/admin/hr/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/staff").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/staff/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         // ADMIN 전용 (고객 관리, 상품 등록/수정/삭제, 쿠폰, 회계)
                         .requestMatchers("/api/admin/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/admin/orders/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
@@ -82,6 +84,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/coupons/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/admin/accounting/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/admin/hr/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/admin/staff").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/admin/staff/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/admin/media/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         // MANAGER 이상 접근 가능
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")

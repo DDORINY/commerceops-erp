@@ -77,4 +77,61 @@ public class StaffProfile {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public static StaffProfile create(User user, Department department, Position position,
+                                      String employeeNo, EmploymentStatus employmentStatus,
+                                      LocalDate joinedAt, Boolean active) {
+        return StaffProfile.builder()
+                .user(user)
+                .department(department)
+                .position(position)
+                .employeeNo(normalizeBlank(employeeNo))
+                .employmentStatus(employmentStatus != null ? employmentStatus : EmploymentStatus.ACTIVE)
+                .joinedAt(joinedAt)
+                .active(active == null || active)
+                .build();
+    }
+
+    public void update(Department department, Position position, String employeeNo,
+                       EmploymentStatus employmentStatus, LocalDate joinedAt,
+                       LocalDate leftAt, Boolean active) {
+        this.department = department;
+        this.position = position;
+        this.employeeNo = normalizeBlank(employeeNo);
+        if (employmentStatus != null) {
+            this.employmentStatus = employmentStatus;
+        }
+        this.joinedAt = joinedAt;
+        this.leftAt = leftAt;
+        if (active != null) {
+            this.active = active;
+        }
+        applyResignedLeftAt();
+    }
+
+    public void changeEmploymentStatus(EmploymentStatus employmentStatus, LocalDate leftAt) {
+        this.employmentStatus = employmentStatus;
+        this.leftAt = leftAt;
+        applyResignedLeftAt();
+    }
+
+    public void changeActive(Boolean active) {
+        this.active = active;
+    }
+
+    private void applyResignedLeftAt() {
+        if (employmentStatus == EmploymentStatus.RESIGNED && leftAt == null) {
+            leftAt = LocalDate.now();
+        }
+        if (employmentStatus != EmploymentStatus.RESIGNED) {
+            leftAt = null;
+        }
+    }
+
+    private static String normalizeBlank(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
 }

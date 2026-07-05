@@ -60,7 +60,7 @@ com.commerceops.erp
 | category | `CategoryController`, `AdminCategoryController` | `CategoryService` | `CategoryRepository` | `Category` |
 | coupon | `CouponController`, `AdminCouponController` | `CouponService` | `CouponRepository` | `Coupon` |
 | dashboard | `AdminDashboardController` | `DashboardService` | 주문/결제/상품/회원 repository 사용 | - |
-| hr | `AdminHrController` | `DepartmentService`, `PositionService`, `StaffProfileService` | `DepartmentRepository`, `PositionRepository`, `StaffProfileRepository` | `Department`, `Position`, `StaffProfile` |
+| hr | `AdminHrController`, `AdminStaffController` | `DepartmentService`, `PositionService`, `StaffProfileService`, `AdminStaffService` | `DepartmentRepository`, `PositionRepository`, `StaffProfileRepository`, `UserRepository` | `Department`, `Position`, `StaffProfile` |
 | inquiry | `InquiryController`, `AdminInquiryController` | `InquiryService` | `InquiryRepository` | `Inquiry` |
 | inventory | `AdminInventoryController` | `InventoryService` | `InventoryLogRepository` | `InventoryLog` |
 | media | `AdminMediaController` | `MediaStorageService` | `MediaFileRepository` | `MediaFile` |
@@ -98,6 +98,7 @@ com.commerceops.erp
 - 메인 배너 CMS: v0.3.4 기준 `MainBanner`는 title/subtitle/description/imageUrl/linkUrl/position/sortOrder/active/startsAt/endsAt를 포함한다. 공개 API는 활성 상태와 노출 기간 기준 배너만 반환하고, 관리자 API는 전체 배너 조회/등록/수정/비활성화를 제공한다.
 - 상품 운영 UX: v0.3.6 기준 관리자 상품 목록은 카테고리/재고/판매 기간 필터를 지원한다. `PATCH /api/admin/products/bulk-status`는 선택 상품의 판매/전시 상태를 일괄 변경하며, 실제 상태 변경은 `ProductStatusHistory`에 기록한다. 운영 메모는 `ProductOperationNote`에 누적 기록하고 상태 변경/대량 변경/메모 작성은 `AuditLog`에도 요약 저장한다.
 - HR 조직 기반: v0.4.1 기준 `Department`, `Position`, `StaffProfile`을 추가했다. 직원 프로필은 `User`와 1:1로 연결되며, 부서/직급은 nullable로 시작한다. 생성/수정 API와 관리자 화면은 v0.4.2 이후 범위다.
+- 직원 관리: v0.4.2 기준 `AdminStaffController`가 `/api/admin/staff` 목록/상세/등록/수정/재직 상태/활성 상태 변경 API를 제공한다. 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN` 기준으로 제한한다. 직원 생성/수정/상태 변경/활성 변경은 `AuditLog`에 기록한다.
 
 ## 환경 프로파일
 

@@ -88,7 +88,7 @@ const MENU_GROUPS: MenuGroup[] = [
   {
     label: '인사/권한 관리',
     items: [
-      { label: '직원 관리', href: '/admin/settings?section=staff', roles: SUPER_ONLY, note: 'v0.4 예정' },
+      { label: '직원 관리', href: '/admin/settings/staff', roles: SUPER_ONLY },
       { label: '부서 관리', href: '/admin/settings?section=departments', roles: SUPER_ONLY, note: 'v0.4 예정' },
       { label: '직급 관리', href: '/admin/settings?section=positions', roles: SUPER_ONLY, note: 'v0.4 예정' },
       { label: '권한 그룹 관리', href: '/admin/settings?section=permission-groups', roles: SUPER_ONLY, note: 'v0.4 예정' },

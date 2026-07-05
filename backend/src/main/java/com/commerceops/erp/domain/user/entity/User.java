@@ -75,4 +75,14 @@ public class User {
     public void changeRole(UserRole newRole) {
         this.role = newRole;
     }
+
+    public void updateProfile(String name) {
+        if (name != null && !name.isBlank()) {
+            this.name = name.trim();
+        }
+    }
+
+    public void changeStatus(UserStatus newStatus) {
+        this.status = newStatus;
+    }
 }
