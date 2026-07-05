@@ -302,7 +302,7 @@ export default function AdminSalesPage() {
                   },
                   { key: 'orderCount', header: '주문 수', render: (row) => `${row.orderCount}건` },
                   {
-                    key: 'salesAmount',
+                    key: 'avgOrderValue',
                     header: '평균 주문액',
                     render: (row) =>
                       formatPrice(row.orderCount > 0 ? Math.round(row.salesAmount / row.orderCount) : 0),
