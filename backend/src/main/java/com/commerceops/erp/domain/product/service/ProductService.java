@@ -4,6 +4,8 @@ import com.commerceops.erp.domain.category.entity.Category;
 import com.commerceops.erp.domain.category.repository.CategoryRepository;
 import com.commerceops.erp.domain.product.dto.*;
 import com.commerceops.erp.domain.product.entity.Product;
+import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
+import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
 import com.commerceops.erp.domain.product.enums.ProductStatus;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.global.exception.BusinessException;
@@ -51,15 +53,20 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (product.getStatus() == ProductStatus.DELETED || product.getStatus() == ProductStatus.HIDDEN) {
+        if (!product.isPubliclyVisible()) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
         }
         return ProductResponse.from(product, productDetailBlockService.getVisibleBlocks(productId));
     }
 
-    public PageResponse<AdminProductListResponse> getAdminProducts(ProductStatus status, String keyword, int page, int size) {
+    public PageResponse<AdminProductListResponse> getAdminProducts(ProductStatus status,
+                                                                    ProductSalesStatus salesStatus,
+                                                                    ProductDisplayStatus displayStatus,
+                                                                    String keyword,
+                                                                    int page,
+                                                                    int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Product> products = productRepository.findAll(buildAdminSpec(status, keyword), pageable);
+        Page<Product> products = productRepository.findAll(buildAdminSpec(status, salesStatus, displayStatus, keyword), pageable);
         return PageResponse.from(products.map(AdminProductListResponse::from));
     }
 
@@ -67,7 +74,7 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (product.getStatus() == ProductStatus.DELETED) {
+        if (product.getDeletedAt() != null || product.getStatus() == ProductStatus.DELETED) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
         }
         return AdminProductResponse.from(product);
@@ -78,7 +85,7 @@ public class ProductService {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
         validateCatalogMaster(request.price(), request.originalPrice(), request.discountPrice(),
-                request.purchasePrice(), request.saleStartAt(), request.saleEndAt());
+                request.purchasePrice(), request.saleStartAt(), request.saleEndAt(), request.safetyStockQuantity());
 
         Product product = Product.builder()
                 .category(category)
@@ -103,9 +110,14 @@ public class ProductService {
                 .seoKeywords(normalizeText(request.seoKeywords()))
                 .stockQuantity(request.stockQuantity())
                 .imageUrl(request.imageUrl())
-                .status(request.status())
+                .status(request.status() != null ? request.status() :
+                        legacyStatusFrom(request.salesStatus(), request.displayStatus(), request.stockQuantity()))
+                .salesStatus(request.salesStatus() != null ? request.salesStatus() : ProductSalesStatus.ON_SALE)
+                .displayStatus(request.displayStatus() != null ? request.displayStatus() : ProductDisplayStatus.VISIBLE)
+                .safetyStockQuantity(request.safetyStockQuantity() != null ? request.safetyStockQuantity() : 5)
                 .options(request.options())
                 .build();
+        product.updateOperationStatus(product.getSalesStatus(), product.getDisplayStatus(), product.getSafetyStockQuantity());
 
         return AdminProductResponse.from(productRepository.save(product));
     }
@@ -127,7 +139,8 @@ public class ProductService {
                 request.discountPrice() != null ? request.discountPrice() : product.getDiscountPrice(),
                 request.purchasePrice() != null ? request.purchasePrice() : product.getPurchasePrice(),
                 request.saleStartAt() != null ? request.saleStartAt() : product.getSaleStartAt(),
-                request.saleEndAt() != null ? request.saleEndAt() : product.getSaleEndAt()
+                request.saleEndAt() != null ? request.saleEndAt() : product.getSaleEndAt(),
+                request.safetyStockQuantity() != null ? request.safetyStockQuantity() : product.getSafetyStockQuantity()
         );
 
         product.update(category, request.name(), request.description(),
@@ -140,8 +153,19 @@ public class ProductService {
                 normalizeText(request.searchKeywords()), normalizeText(request.tags()),
                 request.saleStartAt(), request.saleEndAt(), normalizeText(request.deliveryInfo()),
                 normalizeText(request.seoTitle()), normalizeText(request.seoDescription()),
-                normalizeText(request.seoKeywords()));
+                normalizeText(request.seoKeywords()), request.salesStatus(),
+                request.displayStatus(), request.safetyStockQuantity());
 
+        return AdminProductResponse.from(product);
+    }
+
+    @Transactional
+    public AdminProductResponse updateProductStatus(Long productId, ProductStatusUpdateRequest request) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        validateOperationStatus(request.salesStatus(), request.displayStatus(), request.safetyStockQuantity());
+        product.updateOperationStatus(request.salesStatus(), request.displayStatus(), request.safetyStockQuantity());
         return AdminProductResponse.from(product);
     }
 
@@ -157,7 +181,13 @@ public class ProductService {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.notEqual(root.get("status"), ProductStatus.DELETED));
-            predicates.add(cb.notEqual(root.get("status"), ProductStatus.HIDDEN));
+            predicates.add(cb.isNull(root.get("deletedAt")));
+            predicates.add(cb.equal(root.get("displayStatus"), ProductDisplayStatus.VISIBLE));
+            predicates.add(root.get("salesStatus").in(List.of(
+                    ProductSalesStatus.ON_SALE,
+                    ProductSalesStatus.PAUSED,
+                    ProductSalesStatus.SOLD_OUT
+            )));
 
             if (categoryId != null) {
                 predicates.add(cb.equal(root.get("category").get("id"), categoryId));
@@ -186,13 +216,22 @@ public class ProductService {
         };
     }
 
-    private Specification<Product> buildAdminSpec(ProductStatus status, String keyword) {
+    private Specification<Product> buildAdminSpec(ProductStatus status,
+                                                  ProductSalesStatus salesStatus,
+                                                  ProductDisplayStatus displayStatus,
+                                                  String keyword) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.notEqual(root.get("status"), ProductStatus.DELETED));
+            predicates.add(cb.isNull(root.get("deletedAt")));
 
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (salesStatus != null) {
+                predicates.add(cb.equal(root.get("salesStatus"), salesStatus));
+            }
+            if (displayStatus != null) {
+                predicates.add(cb.equal(root.get("displayStatus"), displayStatus));
             }
             if (keyword != null && !keyword.isBlank()) {
                 String pattern = "%" + keyword.toLowerCase() + "%";
@@ -213,7 +252,7 @@ public class ProductService {
 
     private void validateCatalogMaster(Integer price, Integer originalPrice, Integer discountPrice,
                                        Integer purchasePrice, java.time.LocalDateTime saleStartAt,
-                                       java.time.LocalDateTime saleEndAt) {
+                                       java.time.LocalDateTime saleEndAt, Integer safetyStockQuantity) {
         if (price != null && price < 0) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
         }
@@ -235,6 +274,32 @@ public class ProductService {
         if (saleStartAt != null && saleEndAt != null && saleEndAt.isBefore(saleStartAt)) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
         }
+        if (safetyStockQuantity != null && safetyStockQuantity < 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+    }
+
+    private void validateOperationStatus(ProductSalesStatus salesStatus,
+                                         ProductDisplayStatus displayStatus,
+                                         Integer safetyStockQuantity) {
+        if (safetyStockQuantity != null && safetyStockQuantity < 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+    }
+
+    private ProductStatus legacyStatusFrom(ProductSalesStatus salesStatus,
+                                           ProductDisplayStatus displayStatus,
+                                           Integer stockQuantity) {
+        if (displayStatus == ProductDisplayStatus.HIDDEN
+                || salesStatus == ProductSalesStatus.DRAFT
+                || salesStatus == ProductSalesStatus.PAUSED
+                || salesStatus == ProductSalesStatus.DISCONTINUED) {
+            return ProductStatus.HIDDEN;
+        }
+        if (salesStatus == ProductSalesStatus.SOLD_OUT || (stockQuantity != null && stockQuantity <= 0)) {
+            return ProductStatus.SOLD_OUT;
+        }
+        return ProductStatus.ON_SALE;
     }
 
     private String normalizeText(String value) {

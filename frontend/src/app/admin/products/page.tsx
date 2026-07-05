@@ -1,14 +1,19 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import AdminLayout from '@/components/admin/AdminLayout';
 import DataTable from '@/components/admin/DataTable';
 import Pagination from '@/components/common/Pagination';
 import Button from '@/components/common/Button';
 import { productService, type ApiAdminProductItem } from '@/lib/services/productService';
-import { formatPrice, PRODUCT_STATUS_LABEL, PRODUCT_STATUS_COLOR } from '@/lib/format';
+import {
+  formatPrice,
+  PRODUCT_DISPLAY_STATUS_LABEL,
+  PRODUCT_OPERATION_STATUS_COLOR,
+  PRODUCT_SALES_STATUS_LABEL,
+} from '@/lib/format';
 
 const PAGE_SIZE = 8;
 
@@ -16,6 +21,8 @@ export default function AdminProductsPage() {
   const [keyword, setKeyword] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [salesStatusFilter, setSalesStatusFilter] = useState('ALL');
+  const [displayStatusFilter, setDisplayStatusFilter] = useState('ALL');
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState<ApiAdminProductItem[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -30,10 +37,11 @@ export default function AdminProductsPage() {
     const loadProducts = async () => {
       setLoading(true);
       setError('');
-
       try {
         const res = await productService.getAdminProducts({
           status: statusFilter,
+          salesStatus: salesStatusFilter,
+          displayStatus: displayStatusFilter,
           keyword: searchKeyword || undefined,
           page: page - 1,
           size: PAGE_SIZE,
@@ -58,7 +66,7 @@ export default function AdminProductsPage() {
     return () => {
       mounted = false;
     };
-  }, [statusFilter, searchKeyword, page, reloadKey]);
+  }, [statusFilter, salesStatusFilter, displayStatusFilter, searchKeyword, page, reloadKey]);
 
   const handleSearch = () => {
     setSearchKeyword(keyword);
@@ -66,12 +74,12 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('삭제하시겠습니까?')) return;
+    if (!confirm('상품을 삭제하시겠습니까?')) return;
     try {
       await productService.deleteProduct(id);
       setReloadKey((prev) => prev + 1);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '삭제에 실패했습니다.');
+      alert(err instanceof Error ? err.message : '상품 삭제에 실패했습니다.');
     }
   };
 
@@ -82,9 +90,7 @@ export default function AdminProductsPage() {
           총 <span className="font-semibold text-[#1a1f2e]">{totalElements}</span>개 상품
         </p>
         <Link href="/admin/products/new">
-          <Button variant="primary" size="sm">
-            + 상품 등록
-          </Button>
+          <Button variant="primary" size="sm">+ 상품 등록</Button>
         </Link>
       </div>
 
@@ -94,7 +100,7 @@ export default function AdminProductsPage() {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          placeholder="상품명 검색"
+          placeholder="상품명, 코드, 브랜드 검색"
           className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e] flex-1 min-w-[200px]"
         />
         <select
@@ -102,14 +108,33 @@ export default function AdminProductsPage() {
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e] bg-white"
         >
-          <option value="ALL">전체 상태</option>
+          <option value="ALL">전체 기존 상태</option>
           <option value="ON_SALE">판매중</option>
           <option value="SOLD_OUT">품절</option>
           <option value="HIDDEN">숨김</option>
         </select>
-        <Button variant="primary" size="sm" onClick={handleSearch}>
-          검색
-        </Button>
+        <select
+          value={salesStatusFilter}
+          onChange={(e) => { setSalesStatusFilter(e.target.value); setPage(1); }}
+          className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e] bg-white"
+        >
+          <option value="ALL">전체 판매 상태</option>
+          <option value="DRAFT">임시저장</option>
+          <option value="ON_SALE">판매중</option>
+          <option value="PAUSED">일시중지</option>
+          <option value="SOLD_OUT">품절</option>
+          <option value="DISCONTINUED">판매종료</option>
+        </select>
+        <select
+          value={displayStatusFilter}
+          onChange={(e) => { setDisplayStatusFilter(e.target.value); setPage(1); }}
+          className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e] bg-white"
+        >
+          <option value="ALL">전체 전시 상태</option>
+          <option value="VISIBLE">노출</option>
+          <option value="HIDDEN">숨김</option>
+        </select>
+        <Button variant="primary" size="sm" onClick={handleSearch}>검색</Button>
       </div>
 
       {loading ? (
@@ -169,14 +194,28 @@ export default function AdminProductsPage() {
               header: '마진율',
               render: (row) => `${Number(row.marginRate ?? 0).toFixed(2)}%`,
             },
-            { key: 'stockQuantity', header: '재고', render: (row) => `${row.stockQuantity}개` },
+            {
+              key: 'stockQuantity',
+              header: '재고',
+              render: (row) => (
+                <div>
+                  <p>{row.stockQuantity}개</p>
+                  <p className="text-xs text-[#8a9bb5]">안전 {row.safetyStockQuantity ?? 0}개</p>
+                </div>
+              ),
+            },
             {
               key: 'status',
               header: '상태',
               render: (row) => (
-                <span className={`text-xs font-medium px-2 py-0.5 ${PRODUCT_STATUS_COLOR[row.status] ?? ''}`}>
-                  {PRODUCT_STATUS_LABEL[row.status] ?? row.status}
-                </span>
+                <div className="flex flex-col gap-1">
+                  <span className={`text-xs font-medium px-2 py-0.5 ${PRODUCT_OPERATION_STATUS_COLOR[row.salesStatus] ?? ''}`}>
+                    {PRODUCT_SALES_STATUS_LABEL[row.salesStatus] ?? row.salesStatus}
+                  </span>
+                  <span className={`text-xs font-medium px-2 py-0.5 ${PRODUCT_OPERATION_STATUS_COLOR[row.displayStatus] ?? ''}`}>
+                    {PRODUCT_DISPLAY_STATUS_LABEL[row.displayStatus] ?? row.displayStatus}
+                  </span>
+                </div>
               ),
             },
             {

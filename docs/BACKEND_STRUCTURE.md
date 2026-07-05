@@ -119,3 +119,11 @@ com.commerceops.erp
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.
 - 대규모 BI/데이터 웨어하우스와 WMS 자동 피킹/패킹 최적화. v0.2.8에서는 기초 overview API와 문서 기준만 추가했다.
+
+## v0.3.5 Product Sales Status
+
+- `domain/product/enums/ProductSalesStatus.java`: 판매 운영 상태(`DRAFT`, `ON_SALE`, `PAUSED`, `SOLD_OUT`, `DISCONTINUED`).
+- `domain/product/enums/ProductDisplayStatus.java`: 전시 상태(`VISIBLE`, `HIDDEN`).
+- `domain/product/enums/StockDisplayStatus.java`: 사용자 재고 표시 상태(`IN_STOCK`, `LOW_STOCK`, `SOLD_OUT`).
+- `Product.isPurchasable()` 기준을 장바구니와 주문 생성 검증에서 함께 사용한다.
+- 관리자 상품 상태 부분 변경 API는 `PATCH /api/admin/products/{productId}/status`이다.

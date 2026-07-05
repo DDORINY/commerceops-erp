@@ -104,3 +104,10 @@
 - 전체 관리자 기능 감사 로그 UI. 현재는 관리자 리뷰 화면의 최근 리뷰 감사 로그만 표시한다.
 - 고급 차트/BI 라이브러리 기반 분석 화면. v0.2.8에서는 `opsAnalyticsService` 타입과 API 호출 기준만 추가했다.
 - 피킹/패킹/출고 자동화 화면.
+
+## v0.3.5 Product Sales Status UI
+
+- `frontend/src/app/admin/products/page.tsx`: 판매 상태/전시 상태 필터와 상태 배지 표시.
+- `frontend/src/app/admin/products/new/page.tsx`: 상품 등록 시 판매 상태, 전시 상태, 안전 재고 입력.
+- `frontend/src/app/admin/products/[id]/page.tsx`: 상품 수정 시 판매 상태, 전시 상태, 안전 재고 입력과 상세 블록 편집 유지.
+- `frontend/src/components/shop/ProductCard.tsx`, `frontend/src/app/products/[id]/page.tsx`: `purchasable`, `stockDisplayText` 기준으로 재고 배지와 구매 버튼 비활성화 처리.

@@ -152,3 +152,26 @@ export const PRODUCT_STATUS_COLOR: Record<string, string> = {
   HIDDEN: 'bg-gray-100 text-gray-500',
   DELETED: 'bg-gray-200 text-gray-400',
 };
+
+export const PRODUCT_SALES_STATUS_LABEL: Record<string, string> = {
+  DRAFT: '임시저장',
+  ON_SALE: '판매중',
+  PAUSED: '일시중지',
+  SOLD_OUT: '품절',
+  DISCONTINUED: '판매종료',
+};
+
+export const PRODUCT_DISPLAY_STATUS_LABEL: Record<string, string> = {
+  VISIBLE: '노출',
+  HIDDEN: '숨김',
+};
+
+export const PRODUCT_OPERATION_STATUS_COLOR: Record<string, string> = {
+  DRAFT: 'bg-slate-100 text-slate-600',
+  ON_SALE: 'bg-green-100 text-green-700',
+  PAUSED: 'bg-yellow-100 text-yellow-700',
+  SOLD_OUT: 'bg-red-100 text-red-600',
+  DISCONTINUED: 'bg-gray-100 text-gray-500',
+  VISIBLE: 'bg-blue-100 text-blue-700',
+  HIDDEN: 'bg-gray-100 text-gray-500',
+};

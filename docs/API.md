@@ -57,12 +57,13 @@
 | Banner Admin | DELETE | `/api/admin/banners/{bannerId}` | - | `null` | 관리자, active=false 비활성화 |
 | Product | GET | `/api/products` | `categoryId`, `keyword`, `sort`, `minPrice`, `maxPrice`, `inStock`, `page`, `size` | `PageResponse<ProductListResponse>` | 공개 |
 | Product | GET | `/api/products/{productId}` | - | `ProductResponse` | 공개 |
-| Product | GET | `/api/admin/products` | `status`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
+| Product | GET | `/api/admin/products` | `status`, `salesStatus`, `displayStatus`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
 | Product | GET | `/api/admin/products/{productId}` | - | `AdminProductResponse` | 관리자 |
 | Product Detail Block Admin | GET | `/api/admin/products/{productId}/detail-blocks` | - | `List<ProductDetailBlockResponse>` | 관리자 |
 | Product Detail Block Admin | PUT | `/api/admin/products/{productId}/detail-blocks` | `List<ProductDetailBlockRequest>` | `List<ProductDetailBlockResponse>` | 관리자 |
 | Product | POST | `/api/admin/products` | `ProductCreateRequest` | `AdminProductResponse` | 관리자 |
 | Product | PATCH | `/api/admin/products/{productId}` | `ProductUpdateRequest` | `AdminProductResponse` | 관리자 |
+| Product | PATCH | `/api/admin/products/{productId}/status` | `ProductStatusUpdateRequest` | `AdminProductResponse` | 관리자 |
 | Product | DELETE | `/api/admin/products/{productId}` | - | `null` | 관리자 |
 | Media Admin | POST | `/api/admin/media/product-images` | multipart `file` | `MediaFileResponse` | 관리자 |
 | Cart | GET | `/api/cart` | - | `CartResponse` | 인증 |
@@ -139,12 +140,13 @@
 
 ## 주요 DTO 메모
 
-- `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `productCode`, `brand`, `manufacturer`, `modelName`, `origin`, `originalPrice`, `discountPrice`, `purchasePrice`, `searchKeywords`, `tags`, `saleStartAt`, `saleEndAt`, `deliveryInfo`, `seoTitle`, `seoDescription`, `seoKeywords`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `productCode`, `brand`, `manufacturer`, `modelName`, `origin`, `originalPrice`, `discountPrice`, `purchasePrice`, `searchKeywords`, `tags`, `saleStartAt`, `saleEndAt`, `deliveryInfo`, `seoTitle`, `seoDescription`, `seoKeywords`, `salesStatus`, `displayStatus`, `safetyStockQuantity`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `ProductStatusUpdateRequest`: `salesStatus`, `displayStatus`, `safetyStockQuantity`.
 - `CategoryResponse`: `id`, `name`, `parentId`, `depth`, `sortOrder`, `active`, `visibleInNav`, `slug`.
 - `CategoryTreeResponse`: `CategoryResponse` 계열 필드와 `children`.
 - `CategoryCreateRequest`, `CategoryUpdateRequest`: `name`, `parentId`, `sortOrder`, `active`, `visibleInNav`, `slug`.
-- `ProductResponse`, `ProductListResponse`: 사용자 공개 상품 필드. `ProductResponse`는 visible 상세 블록 `detailBlocks`를 포함한다. `purchasePrice`, `marginRate`는 포함하지 않는다.
-- `AdminProductResponse`, `AdminProductListResponse`: 관리자 상품 필드. `purchasePrice`, 계산 필드 `marginRate`를 포함한다.
+- `ProductResponse`, `ProductListResponse`: 사용자 공개 상품 필드. `ProductResponse`는 visible 상세 블록 `detailBlocks`를 포함한다. `purchasable`, `stockDisplayStatus`, `stockDisplayText`, `remainingStockQuantity`를 포함하며 `purchasePrice`, `marginRate`, `displayStatus`, `safetyStockQuantity`는 포함하지 않는다.
+- `AdminProductResponse`, `AdminProductListResponse`: 관리자 상품 필드. `purchasePrice`, 계산 필드 `marginRate`, `salesStatus`, `displayStatus`, `safetyStockQuantity`, `purchasable`, `stockDisplayStatus`, `stockDisplayText`를 포함한다.
 - `ProductDetailBlockRequest`, `ProductDetailBlockResponse`: `blockType`, `title`, `content`, `imageUrl`, `specJson`, `sortOrder`, `visible`. `blockType`은 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML`.
 - `MediaFileResponse`: `id`, `originalFilename`, `storedFilename`, `url`, `contentType`, `size`, `mediaType`, `createdAt`.
 - `ReviewResponse`: `reviewId`, `productId`, `productName`, `userName`, `orderItemId`, `rating`, `content`, `status`, `createdAt`.
@@ -173,6 +175,9 @@
 | `UserRole` | `USER`, `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | `UserStatus` | `ACTIVE`, `INACTIVE`, `BLOCKED` |
 | `ProductStatus` | `ON_SALE`, `SOLD_OUT`, `HIDDEN`, `DELETED` |
+| `ProductSalesStatus` | `DRAFT`, `ON_SALE`, `PAUSED`, `SOLD_OUT`, `DISCONTINUED` |
+| `ProductDisplayStatus` | `VISIBLE`, `HIDDEN` |
+| `StockDisplayStatus` | `IN_STOCK`, `LOW_STOCK`, `SOLD_OUT` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
 | `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |

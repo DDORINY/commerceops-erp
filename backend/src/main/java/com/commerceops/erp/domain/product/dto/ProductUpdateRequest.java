@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.product.dto;
 
+import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
+import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
 import com.commerceops.erp.domain.product.enums.ProductStatus;
 import jakarta.validation.constraints.Min;
 
@@ -11,7 +13,7 @@ public record ProductUpdateRequest(
         String name,
         String description,
 
-        @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+        @Min(value = 0, message = "媛寃⑹? 0???댁긽?댁뼱???⑸땲??")
         Integer price,
 
         String productCode,
@@ -38,10 +40,17 @@ public record ProductUpdateRequest(
         String seoDescription,
         String seoKeywords,
 
-        @Min(value = 0, message = "재고 수량은 0 이상이어야 합니다.")
+        ProductSalesStatus salesStatus,
+        ProductDisplayStatus displayStatus,
+
+        @Min(value = 0, message = "safetyStockQuantity must be greater than or equal to 0")
+        Integer safetyStockQuantity,
+
+        @Min(value = 0, message = "?ш퀬 ?섎웾? 0 ?댁긽?댁뼱???⑸땲??")
         Integer stockQuantity,
 
         String imageUrl,
         ProductStatus status,
         List<ProductOptionGroup> options
 ) {}
+

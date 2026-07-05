@@ -19,6 +19,11 @@ public record ProductListResponse(
         Integer stockQuantity,
         String imageUrl,
         String status,
+        String salesStatus,
+        Boolean purchasable,
+        String stockDisplayStatus,
+        String stockDisplayText,
+        Integer remainingStockQuantity,
         List<ProductOptionGroup> options,
         LocalDateTime createdAt
 ) {
@@ -37,6 +42,11 @@ public record ProductListResponse(
                 product.getStockQuantity(),
                 product.getImageUrl(),
                 product.getStatus().name(),
+                product.getSalesStatus().name(),
+                product.isPurchasable(LocalDateTime.now()),
+                product.getStockDisplayStatus().name(),
+                product.getStockDisplayText(),
+                product.getStockQuantity(),
                 product.getOptions() != null ? product.getOptions() : List.of(),
                 product.getCreatedAt()
         );

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { use, useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -53,7 +53,7 @@ function ProductDetailBlockView({ block }: { block: ProductDetailBlock }) {
       <section>
         {block.title && <h3 className="text-base font-bold text-[#222] mb-3">{block.title}</h3>}
         <div className="relative aspect-[16/10] bg-[#f7f7f7]">
-          <Image src={src} alt={block.title || '상품 상세 이미지'} fill className="object-cover" sizes="100vw" />
+          <Image src={src} alt={block.title || '?곹뭹 ?곸꽭 ?대?吏'} fill className="object-cover" sizes="100vw" />
         </div>
       </section>
     );
@@ -163,7 +163,7 @@ export default function ProductDetailPage({
     if (activeTab === 'inquiry') {
       inquiryService.getProductInquiries(Number(id)).then(setInquiries).catch(() => {
         setInquiries([]);
-        setTabError('문의 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+        setTabError('臾몄쓽 紐⑸줉??遺덈윭?ㅼ? 紐삵뻽?듬땲?? ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.');
       });
     }
     if (activeTab === 'review') {
@@ -173,14 +173,14 @@ export default function ProductDetailPage({
       }).catch(() => {
         setReviews([]);
         setReviewTotalElements(0);
-        setTabError('리뷰 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+        setTabError('由щ럭 紐⑸줉??遺덈윭?ㅼ? 紐삵뻽?듬땲?? ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.');
       });
     }
   }, [activeTab, id]);
 
   const handleInquirySubmit = async () => {
     if (!inquirySubject.trim() || !inquiryContent.trim()) {
-      setActionMessage('제목과 내용을 모두 입력하세요.');
+      setActionMessage('?쒕ぉ怨??댁슜??紐⑤몢 ?낅젰?섏꽭??');
       return;
     }
     setSubmittingInquiry(true);
@@ -189,9 +189,9 @@ export default function ProductDetailPage({
       setInquirySubject('');
       setInquiryContent('');
       inquiryService.getProductInquiries(Number(id)).then(setInquiries).catch(() => {});
-      setActionMessage('문의가 등록되었습니다.');
+      setActionMessage('臾몄쓽媛 ?깅줉?섏뿀?듬땲??');
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : '문의 등록에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '臾몄쓽 ?깅줉???ㅽ뙣?덉뒿?덈떎.');
     } finally {
       setSubmittingInquiry(false);
     }
@@ -202,9 +202,9 @@ export default function ProductDetailPage({
     try {
       const res = await wishlistService.toggle(Number(id));
       setLiked(res.liked);
-      setActionMessage(res.liked ? '찜 목록에 추가했습니다.' : '찜 목록에서 제거했습니다.');
+      setActionMessage(res.liked ? '李?紐⑸줉??異붽??덉뒿?덈떎.' : '李?紐⑸줉?먯꽌 ?쒓굅?덉뒿?덈떎.');
     } catch {
-      setActionMessage('로그인이 필요한 서비스입니다.');
+      setActionMessage('濡쒓렇?몄씠 ?꾩슂???쒕퉬?ㅼ엯?덈떎.');
     } finally {
       setWishlistLoading(false);
     }
@@ -212,11 +212,15 @@ export default function ProductDetailPage({
 
   const handleAddToCart = async () => {
     if (!product) return;
-    // 옵션이 있는 상품인데 선택되지 않은 옵션이 있으면 경고
+    if (!isPurchasable) {
+      setActionMessage(stockLabel);
+      return;
+    }
+    // ?듭뀡???덈뒗 ?곹뭹?몃뜲 ?좏깮?섏? ?딆? ?듭뀡???덉쑝硫?寃쎄퀬
     if (product.options?.length > 0) {
       const missing = product.options.find((og) => !selectedOptions[og.name]);
       if (missing) {
-        setActionMessage(`"${missing.name}" 옵션을 선택해주세요.`);
+        setActionMessage(`"${missing.name}" ?듭뀡???좏깮?댁＜?몄슂.`);
         return;
       }
     }
@@ -224,9 +228,9 @@ export default function ProductDetailPage({
       setAddingToCart(true);
       const opts = Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined;
       await cartService.addToCart(product.id, quantity, opts);
-      setActionMessage(`"${product.name}" 장바구니에 추가됐습니다.`);
+      setActionMessage(`"${product.name}" ?λ컮援щ땲??異붽??먯뒿?덈떎.`);
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : '장바구니 추가에 실패했습니다.');
+      setActionMessage(err instanceof Error ? err.message : '?λ컮援щ땲 異붽????ㅽ뙣?덉뒿?덈떎.');
     } finally {
       setAddingToCart(false);
     }
@@ -242,7 +246,7 @@ export default function ProductDetailPage({
       <>
         <ShopHeader />
         <div className="max-w-[1200px] mx-auto px-4 py-20 text-center text-[#aaa]">
-          상품을 불러오는 중...
+          ?곹뭹??遺덈윭?ㅻ뒗 以?..
         </div>
         <ShopFooter />
       </>
@@ -254,10 +258,10 @@ export default function ProductDetailPage({
       <>
         <ShopHeader />
         <div className="max-w-[1200px] mx-auto px-4 py-20 text-center text-[#aaa]">
-          상품을 찾을 수 없습니다.
+          ?곹뭹??李얠쓣 ???놁뒿?덈떎.
           <br />
           <Link href="/products" className="text-[#222] underline mt-4 inline-block">
-            목록으로 돌아가기
+            紐⑸줉?쇰줈 ?뚯븘媛湲?
           </Link>
         </div>
         <ShopFooter />
@@ -265,7 +269,9 @@ export default function ProductDetailPage({
     );
   }
 
-  const isSoldOut = product.status === 'SOLD_OUT' || product.stockQuantity === 0;
+  const isPurchasable = product.purchasable ?? (product.status !== 'SOLD_OUT' && product.stockQuantity > 0);
+  const isSoldOut = product.stockDisplayStatus === 'SOLD_OUT' || product.status === 'SOLD_OUT' || product.stockQuantity === 0;
+  const stockLabel = product.stockDisplayText ?? (isSoldOut ? '품절' : '구매 가능');
   const imageSrc = product.imageUrl || 'https://placehold.co/600x750?text=No+Image';
 
   return (
@@ -294,7 +300,7 @@ export default function ProductDetailPage({
             {isSoldOut && (
               <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
                 <span className="bg-[#777] text-white text-sm font-medium px-6 py-2 tracking-widest">
-                  품절
+                  ?덉젅
                 </span>
               </div>
             )}
@@ -310,10 +316,10 @@ export default function ProductDetailPage({
               </span>
             </div>
 
-            <p className="text-sm text-[#999] mb-6">배송비 3,000원 (5만원 이상 무료)</p>
+            <p className="text-sm text-[#999] mb-6">諛곗넚鍮?3,000??(5留뚯썝 ?댁긽 臾대즺)</p>
 
             <div className="border-t border-[#f0f0f0] pt-6 space-y-4">
-              {/* 옵션 선택 */}
+              {/* ?듭뀡 ?좏깮 */}
               {product.options?.length > 0 && product.options.map((og) => (
                 <div key={og.name} className="flex items-center gap-4 text-sm">
                   <span className="w-20 text-[#999] shrink-0">{og.name}</span>
@@ -331,21 +337,21 @@ export default function ProductDetailPage({
               ))}
 
               <div className="flex items-center gap-4 text-sm">
-                <span className="w-20 text-[#999]">재고 현황</span>
+                <span className="w-20 text-[#999]">?ш퀬 ?꾪솴</span>
                 <span className={isSoldOut ? 'text-[#d94f4f] font-medium' : 'text-[#222]'}>
-                  {isSoldOut ? '품절' : `${product.stockQuantity}개 남음`}
+                  {isSoldOut ? '?덉젅' : `${product.stockQuantity}媛??⑥쓬`}
                 </span>
               </div>
 
-              {!isSoldOut && (
+              {isPurchasable && (
                 <div className="flex items-center gap-4 text-sm">
-                  <span className="w-20 text-[#999]">수량</span>
+                  <span className="w-20 text-[#999]">?섎웾</span>
                   <div className="flex items-center border border-[#ddd]">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       className="w-10 h-10 flex items-center justify-center text-[#555] hover:bg-[#f5f5f5] transition-colors"
                     >
-                      −
+                      ??
                     </button>
                     <span className="w-12 text-center text-[#222] font-medium">{quantity}</span>
                     <button
@@ -359,9 +365,9 @@ export default function ProductDetailPage({
               )}
             </div>
 
-            {!isSoldOut && (
+            {isPurchasable && (
               <div className="border-t border-[#f0f0f0] mt-6 pt-4 flex items-center justify-between">
-                <span className="text-sm text-[#999]">합계</span>
+                <span className="text-sm text-[#999]">?⑷퀎</span>
                 <span className="text-xl font-bold text-[#222]">
                   {formatPrice(product.price * quantity)}
                 </span>
@@ -379,10 +385,10 @@ export default function ProductDetailPage({
                   variant="secondary"
                   size="lg"
                   fullWidth
-                  disabled={isSoldOut || addingToCart}
+                  disabled={!isPurchasable || addingToCart}
                   onClick={handleAddToCart}
                 >
-                  {isSoldOut ? '품절된 상품입니다' : addingToCart ? '추가 중...' : '장바구니 담기'}
+                  {!isPurchasable ? stockLabel : addingToCart ? '추가 중...' : '장바구니 담기'}
                 </Button>
                 <button
                   onClick={handleToggleWishlist}
@@ -396,7 +402,7 @@ export default function ProductDetailPage({
                   {liked ? '♥' : '♡'}
                 </button>
               </div>
-              {!isSoldOut && (
+              {isPurchasable && (
                 <Button variant="primary" size="lg" fullWidth>
                   바로 구매하기
                 </Button>
@@ -407,7 +413,7 @@ export default function ProductDetailPage({
 
         <div>
           <div className="flex border-b border-[#e5e5e5] mb-8">
-            {([['detail', '상품 상세'], ['shipping', '배송/교환/반품'], ['review', `리뷰 ${reviewTotalElements > 0 ? `(${reviewTotalElements})` : ''}`], ['inquiry', '상품 문의']] as const).map(
+            {([['detail', '?곹뭹 ?곸꽭'], ['shipping', '諛곗넚/援먰솚/諛섑뭹'], ['review', `由щ럭 ${reviewTotalElements > 0 ? `(${reviewTotalElements})` : ''}`], ['inquiry', '?곹뭹 臾몄쓽']] as const).map(
               ([tab, label]) => (
                 <button
                   key={tab}
@@ -439,12 +445,12 @@ export default function ProductDetailPage({
                   ))
                 ) : (
                   <div className="max-w-[600px]">
-                    <p className="mb-4">{product.description || `${product.name}은 편안한 착용감과 세련된 디자인을 자랑하는 제품입니다.`}</p>
+                    <p className="mb-4">{product.description || `${product.name} 상품 상세 설명입니다.`}</p>
                     <ul className="space-y-2 text-[#777]">
-                      <li>소재: 폴리에스터 65%, 면 35%</li>
-                      <li>세탁 방법: 손세탁 권장, 30도 이하</li>
-                      <li>원산지: 국내산</li>
-                      <li>제조사: (주)커머스옵스 패션</li>
+                      <li>소재: 상품별 상세 정보를 확인하세요.</li>
+                      <li>관리 방법: 상품 안내 기준을 따르세요.</li>
+                      <li>원산지: 상품 정보 참조</li>
+                      <li>제조사: 상품 정보 참조</li>
                     </ul>
                   </div>
                 )}
@@ -460,13 +466,13 @@ export default function ProductDetailPage({
                 <div>
                   <p className="font-medium text-[#333] mb-1">교환/반품 안내</p>
                   <p>수령 후 7일 이내 교환/반품 가능</p>
-                  <p>착용 및 세탁 후 교환/반품 불가</p>
+                  <p>착용 및 훼손 시 교환/반품이 제한될 수 있습니다.</p>
                 </div>
               </div>
             )}
             {activeTab === 'review' && (
               <div>
-                {/* 평균 평점 */}
+                {/* ?됯퇏 ?됱젏 */}
                 {reviews.length > 0 && (() => {
                   const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
                   return (
@@ -483,7 +489,7 @@ export default function ProductDetailPage({
                 })()}
 
                 {reviews.length === 0 ? (
-                  <div className="text-center text-[#bbb] py-8 text-sm">아직 리뷰가 없습니다.</div>
+                  <div className="text-center text-[#bbb] py-8 text-sm">?꾩쭅 由щ럭媛 ?놁뒿?덈떎.</div>
                 ) : (
                   <div className="divide-y divide-[#f0f0f0]">
                     {reviews.map((r) => (
@@ -507,9 +513,9 @@ export default function ProductDetailPage({
 
             {activeTab === 'inquiry' && (
               <div>
-                {/* 문의 작성 폼 */}
+                {/* 臾몄쓽 ?묒꽦 ??*/}
                 <div className="border border-[#e5e5e5] p-5 mb-6">
-                  <h3 className="text-sm font-bold text-[#222] mb-4">문의 작성</h3>
+                  <h3 className="text-sm font-bold text-[#222] mb-4">臾몄쓽 ?묒꽦</h3>
                   <div className="space-y-3">
                     <input
                       type="text"
@@ -526,14 +532,14 @@ export default function ProductDetailPage({
                       className="w-full border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#222] resize-none"
                     />
                     <Button variant="primary" size="sm" disabled={submittingInquiry} onClick={handleInquirySubmit}>
-                      {submittingInquiry ? '등록 중...' : '문의 등록'}
+                      {submittingInquiry ? '?깅줉 以?..' : '臾몄쓽 ?깅줉'}
                     </Button>
                   </div>
                 </div>
 
-                {/* 문의 목록 */}
+                {/* 臾몄쓽 紐⑸줉 */}
                 {inquiries.length === 0 ? (
-                  <div className="text-center text-[#bbb] py-8 text-sm">등록된 문의가 없습니다.</div>
+                  <div className="text-center text-[#bbb] py-8 text-sm">?깅줉??臾몄쓽媛 ?놁뒿?덈떎.</div>
                 ) : (
                   <div className="divide-y divide-[#f0f0f0]">
                     {inquiries.map((inq) => (
@@ -543,12 +549,12 @@ export default function ProductDetailPage({
                             {INQUIRY_STATUS_LABEL[inq.status] ?? inq.status}
                           </span>
                           <span className="text-xs font-medium text-[#333]">{inq.subject}</span>
-                          <span className="text-xs text-[#bbb] ml-auto">{inq.userName} · {formatDateTime(inq.createdAt)}</span>
+                          <span className="text-xs text-[#bbb] ml-auto">{inq.userName} 쨌 {formatDateTime(inq.createdAt)}</span>
                         </div>
                         <p className="text-xs text-[#777] mt-1 whitespace-pre-wrap">{inq.content}</p>
                         {inq.answer && (
                           <div className="bg-[#f7f8fc] border-l-2 border-[#4c74e5] px-4 py-2 mt-2">
-                            <span className="text-xs font-bold text-[#4c74e5]">관리자 답변</span>
+                            <span className="text-xs font-bold text-[#4c74e5]">愿由ъ옄 ?듬?</span>
                             <p className="text-xs text-[#555] mt-0.5 whitespace-pre-wrap">{inq.answer}</p>
                           </div>
                         )}
@@ -566,3 +572,9 @@ export default function ProductDetailPage({
     </>
   );
 }
+
+
+
+
+
+
