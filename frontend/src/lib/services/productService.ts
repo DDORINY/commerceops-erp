@@ -83,6 +83,12 @@ export interface ApiAdminProductDetail extends ApiProductDetail {
 export interface ApiCategory {
   id: number;
   name: string;
+  parentId?: number | null;
+  depth?: number;
+  sortOrder?: number;
+  active?: boolean;
+  visibleInNav?: boolean;
+  slug?: string | null;
 }
 
 export function toProductListItem(p: ApiProductItem): ProductListItem {

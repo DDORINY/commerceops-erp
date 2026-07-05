@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.3.1`
+기준 버전: `v0.3.3`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -9,6 +9,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 알림 마이그레이션: `backend/src/main/resources/db/migration/V2__add_notifications.sql`
 - 상품 마스터 확장 마이그레이션: `backend/src/main/resources/db/migration/V3__extend_product_catalog_master.sql`
 - 상품 상세 블록 마이그레이션: `backend/src/main/resources/db/migration/V4__create_product_detail_blocks.sql`
+- 카테고리 네비 확장 마이그레이션: `backend/src/main/resources/db/migration/V5__extend_categories_navigation.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -19,7 +20,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | 테이블 | 엔티티 | 주요 컬럼/관계 |
 | --- | --- | --- |
 | `users` | `User` | `email`, `password`, `name`, `phone`, `role`, `status`, timestamps |
-| `categories` | `Category` | `name`, timestamps |
+| `categories` | `Category` | `name`, `parent_id`, `depth`, `sort_order`, `active`, `visible_in_nav`, `slug`, timestamps |
 | `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, `status`, `options`, timestamps |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
 | `media_files` | `MediaFile` | `original_filename`, `stored_filename`, `storage_path`, `public_url`, `content_type`, `size`, `media_type`, `created_at` |
@@ -69,16 +70,17 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 ## 주요 인덱스/제약 기준
 
-- 유니크: `users.email`, `products.product_code`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
+- 유니크: `users.email`, `categories.slug`, `products.product_code`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
 - 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다. 상세 블록은 `product_detail_blocks(product_id, sort_order)` 기준으로 정렬 조회한다.
 - 알림 조회 인덱스: `notifications(user_id, read_at, created_at)`, `notifications(type, created_at)`, `notifications(target_type, target_id)`.
-- FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
+- FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `categories.parent_id`는 자기 참조 FK다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
 
 ## 관계 요약
 
 - `User` 1:N `Cart`, `Order`, `Inquiry`, `Review`, `Wishlist`, `ReturnRequest`, `Notification`.
 - `AuditLog`는 v0.2.4 기준 리뷰 운영 작업 이력을 저장하며 FK 없이 actor/target 스냅샷 값을 보관한다.
 - `Category` 1:N `Product`.
+- `Category`는 `parent_id` 자기 참조로 트리 구조를 구성한다.
 - `Product` 1:N `Cart`, `OrderItem`, `Review`, `Inquiry`, `Wishlist`, `InventoryLog`, `WarehouseStock`, `StockTransfer`, `ProductDetailBlock`.
 - v0.2.3 기준 상품 대표 이미지는 `products.image_url`에 업로드 결과 URL을 저장한다. `media_files`는 파일 메타데이터를 보관하며 상품과의 별도 FK는 아직 두지 않는다.
 - `Order` 1:N `OrderItem`; `Order` 1:1 `Payment`, `Shipment`; `Order` 1:N `ReturnRequest`, `StockReservation`.

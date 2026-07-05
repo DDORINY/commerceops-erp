@@ -48,6 +48,16 @@ export default function ProductsPage() {
     productService.getCategories().then(setCategories).catch(() => setCategories([]));
   }, []);
 
+  useEffect(() => {
+    queueMicrotask(() => {
+      const category = new URLSearchParams(window.location.search).get('category');
+      if (category) {
+        setSelectedCategory(category);
+        setPage(1);
+      }
+    });
+  }, []);
+
   const fetchProducts = useCallback(() => {
     const category = categories.find((c) => c.name === selectedCategory);
     productService

@@ -1,13 +1,11 @@
 package com.commerceops.erp.domain.category.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
-public record CategoryCreateRequest(
-        @NotBlank(message = "카테고리 이름은 필수입니다.")
+public record CategoryUpdateRequest(
         String name,
         Long parentId,
         Integer sortOrder,
         Boolean active,
         Boolean visibleInNav,
         String slug
-) {}
+) {
+}

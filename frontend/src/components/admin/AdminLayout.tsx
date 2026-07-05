@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import AdminSidebar from './AdminSidebar';
+import AdminSidebarV2 from './AdminSidebarV2';
 import AdminTopbar from './AdminTopbar';
 import { getAccessToken, getUserRole } from '@/lib/auth';
 
@@ -61,7 +61,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-[#f4f5f9]">
-      <AdminSidebar />
+      <AdminSidebarV2 />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminTopbar title={title} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>

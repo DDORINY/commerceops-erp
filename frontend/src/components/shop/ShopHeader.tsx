@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import CategoryNav from './CategoryNav';
+import DynamicCategoryNav from './DynamicCategoryNav';
 import { clearAuth, getStoredUser } from '@/lib/auth';
 import { authService } from '@/lib/services/authService';
 import type { User } from '@/features/auth/types';
@@ -121,7 +121,7 @@ export default function ShopHeader() {
       </div>
 
       {/* 카테고리 네비게이션 */}
-      <CategoryNav />
+      <DynamicCategoryNav />
     </header>
   );
 }

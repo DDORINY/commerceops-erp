@@ -28,9 +28,9 @@
 | `/api/admin/inquiries/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/reviews/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/audit-logs/**` | `ADMIN`, `SUPER_ADMIN` |
-| `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
+| `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/categories/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
-| 변경성 `/api/admin/products/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
+| 변경성 `/api/admin/products/**`, `/api/admin/categories/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/uploads/**` | 공개 정적 파일 |
 | 기타 인증 API | 로그인 사용자 |
 
@@ -45,7 +45,10 @@
 | Auth | POST | `/api/auth/logout` | - | `null` | 공개 |
 | Auth | GET | `/api/auth/me` | - | `MeResponse` | 인증 |
 | Category | GET | `/api/categories` | - | `List<CategoryResponse>` | 공개 |
+| Category | GET | `/api/categories/navigation` | - | `List<CategoryTreeResponse>` | 공개 |
+| Category Admin | GET | `/api/admin/categories/tree` | - | `List<CategoryTreeResponse>` | 관리자 |
 | Category | POST | `/api/admin/categories` | `CategoryCreateRequest` | `CategoryResponse` | 관리자 |
+| Category Admin | PATCH | `/api/admin/categories/{categoryId}` | `CategoryUpdateRequest` | `CategoryResponse` | 관리자 |
 | Product | GET | `/api/products` | `categoryId`, `keyword`, `sort`, `minPrice`, `maxPrice`, `inStock`, `page`, `size` | `PageResponse<ProductListResponse>` | 공개 |
 | Product | GET | `/api/products/{productId}` | - | `ProductResponse` | 공개 |
 | Product | GET | `/api/admin/products` | `status`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |
@@ -131,6 +134,9 @@
 ## 주요 DTO 메모
 
 - `ProductCreateRequest`, `ProductUpdateRequest`: `categoryId`, `name`, `description`, `price`, `productCode`, `brand`, `manufacturer`, `modelName`, `origin`, `originalPrice`, `discountPrice`, `purchasePrice`, `searchKeywords`, `tags`, `saleStartAt`, `saleEndAt`, `deliveryInfo`, `seoTitle`, `seoDescription`, `seoKeywords`, `stockQuantity`, `imageUrl`, `status`, `options`.
+- `CategoryResponse`: `id`, `name`, `parentId`, `depth`, `sortOrder`, `active`, `visibleInNav`, `slug`.
+- `CategoryTreeResponse`: `CategoryResponse` 계열 필드와 `children`.
+- `CategoryCreateRequest`, `CategoryUpdateRequest`: `name`, `parentId`, `sortOrder`, `active`, `visibleInNav`, `slug`.
 - `ProductResponse`, `ProductListResponse`: 사용자 공개 상품 필드. `ProductResponse`는 visible 상세 블록 `detailBlocks`를 포함한다. `purchasePrice`, `marginRate`는 포함하지 않는다.
 - `AdminProductResponse`, `AdminProductListResponse`: 관리자 상품 필드. `purchasePrice`, 계산 필드 `marginRate`를 포함한다.
 - `ProductDetailBlockRequest`, `ProductDetailBlockResponse`: `blockType`, `title`, `content`, `imageUrl`, `specJson`, `sortOrder`, `visible`. `blockType`은 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML`.

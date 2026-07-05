@@ -2,7 +2,9 @@ package com.commerceops.erp.domain.category.dto;
 
 import com.commerceops.erp.domain.category.entity.Category;
 
-public record CategoryResponse(
+import java.util.List;
+
+public record CategoryTreeResponse(
         Long id,
         String name,
         Long parentId,
@@ -10,11 +12,11 @@ public record CategoryResponse(
         Integer sortOrder,
         Boolean active,
         Boolean visibleInNav,
-        String slug
+        String slug,
+        List<CategoryTreeResponse> children
 ) {
-
-    public static CategoryResponse from(Category category) {
-        return new CategoryResponse(
+    public static CategoryTreeResponse from(Category category, List<CategoryTreeResponse> children) {
+        return new CategoryTreeResponse(
                 category.getId(),
                 category.getName(),
                 category.getParent() != null ? category.getParent().getId() : null,
@@ -22,7 +24,8 @@ public record CategoryResponse(
                 category.getSortOrder(),
                 category.getActive(),
                 category.getVisibleInNav(),
-                category.getSlug()
+                category.getSlug(),
+                children
         );
     }
 }
