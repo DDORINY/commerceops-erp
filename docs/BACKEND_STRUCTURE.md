@@ -60,6 +60,7 @@ com.commerceops.erp
 | category | `CategoryController`, `AdminCategoryController` | `CategoryService` | `CategoryRepository` | `Category` |
 | coupon | `CouponController`, `AdminCouponController` | `CouponService` | `CouponRepository` | `Coupon` |
 | dashboard | `AdminDashboardController` | `DashboardService` | 주문/결제/상품/회원 repository 사용 | - |
+| hr | `AdminHrController` | `DepartmentService`, `PositionService`, `StaffProfileService` | `DepartmentRepository`, `PositionRepository`, `StaffProfileRepository` | `Department`, `Position`, `StaffProfile` |
 | inquiry | `InquiryController`, `AdminInquiryController` | `InquiryService` | `InquiryRepository` | `Inquiry` |
 | inventory | `AdminInventoryController` | `InventoryService` | `InventoryLogRepository` | `InventoryLog` |
 | media | `AdminMediaController` | `MediaStorageService` | `MediaFileRepository` | `MediaFile` |
@@ -89,12 +90,14 @@ com.commerceops.erp
 - Flyway: `backend/src/main/resources/db/migration`의 SQL을 운영/로컬 스키마 기준으로 사용한다. 테스트 프로파일은 기존 H2 `create-drop` 회귀 테스트를 유지하기 위해 Flyway를 비활성화한다.
 - `CorsConfig`: `COMMERCEOPS_CORS_ALLOWED_ORIGINS` 또는 `commerceops.cors.allowed-origins` 설정으로 허용 origin을 분리한다.
 - 관리자 권한: `MANAGER`는 운영 조회 중심 GET API에 접근하고, 데이터 변경/권한/회계/쿠폰/리뷰 운영/감사 로그는 `ADMIN`, `SUPER_ADMIN`으로 제한한다.
+- HR 기본 조회 API: v0.4.1 기준 `/api/admin/hr/**`는 기존 role 기반 정책을 유지하며 `ADMIN`, `SUPER_ADMIN`만 접근한다. permission group 기반 접근 제어는 v0.4.3 이후로 이관한다.
 - 운영 분석: `OpsAnalyticsService`는 신규 테이블 없이 `AccountingEntry`, `Order`, `Payment`, `Warehouse`, `WarehouseStock`, `StockReservation` 데이터를 읽기 전용으로 집계한다.
 - 상품 마스터: v0.3.1 기준 `Product`는 상품코드, 브랜드, 제조사, 모델명, 원산지, 정상가/할인금액/매입가, 검색 키워드, 태그, 판매 기간, 배송/SEO 필드를 포함한다. 사용자 응답은 원가/마진을 제외하고, 관리자 응답은 `AdminProductResponse` 계열 DTO로 내부 운영 필드를 포함한다.
 - 상품 상세 CMS: v0.3.2 기준 `ProductDetailBlock`은 상품별 상세 블록을 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` 타입으로 저장한다. 관리자 API는 전체 블록을 조회/교체 저장하고, 사용자 상품 상세 응답은 visible 블록만 sortOrder 순서로 포함한다.
 - 카테고리 네비: v0.3.3 기준 `Category`는 parent/depth/sortOrder/active/visibleInNav/slug를 포함한다. 공개 네비 API는 active=true, visibleInNav=true 카테고리만 트리로 반환하고, 관리자 API는 전체 트리를 조회/생성/수정한다.
 - 메인 배너 CMS: v0.3.4 기준 `MainBanner`는 title/subtitle/description/imageUrl/linkUrl/position/sortOrder/active/startsAt/endsAt를 포함한다. 공개 API는 활성 상태와 노출 기간 기준 배너만 반환하고, 관리자 API는 전체 배너 조회/등록/수정/비활성화를 제공한다.
 - 상품 운영 UX: v0.3.6 기준 관리자 상품 목록은 카테고리/재고/판매 기간 필터를 지원한다. `PATCH /api/admin/products/bulk-status`는 선택 상품의 판매/전시 상태를 일괄 변경하며, 실제 상태 변경은 `ProductStatusHistory`에 기록한다. 운영 메모는 `ProductOperationNote`에 누적 기록하고 상태 변경/대량 변경/메모 작성은 `AuditLog`에도 요약 저장한다.
+- HR 조직 기반: v0.4.1 기준 `Department`, `Position`, `StaffProfile`을 추가했다. 직원 프로필은 `User`와 1:1로 연결되며, 부서/직급은 nullable로 시작한다. 생성/수정 API와 관리자 화면은 v0.4.2 이후 범위다.
 
 ## 환경 프로파일
 

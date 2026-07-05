@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.3.6`
+기준 버전: `v0.4.1`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -28,6 +28,7 @@
 | `/api/admin/inquiries/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/reviews/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/audit-logs/**` | `ADMIN`, `SUPER_ADMIN` |
+| `GET /api/admin/hr/**` | `ADMIN`, `SUPER_ADMIN` |
 | `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/categories/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/products/**`, `/api/admin/categories/**`, `/api/admin/banners/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
@@ -44,6 +45,9 @@
 | Auth | POST | `/api/auth/refresh` | `RefreshTokenRequest` | `RefreshTokenResponse` | 공개 |
 | Auth | POST | `/api/auth/logout` | - | `null` | 공개 |
 | Auth | GET | `/api/auth/me` | - | `MeResponse` | 인증 |
+| HR Admin | GET | `/api/admin/hr/departments` | - | `List<DepartmentResponse>` | ADMIN/SUPER_ADMIN |
+| HR Admin | GET | `/api/admin/hr/positions` | - | `List<PositionResponse>` | ADMIN/SUPER_ADMIN |
+| HR Admin | GET | `/api/admin/hr/staff-profiles` | - | `List<StaffProfileResponse>` | ADMIN/SUPER_ADMIN |
 | Category | GET | `/api/categories` | - | `List<CategoryResponse>` | 공개 |
 | Category | GET | `/api/categories/navigation` | - | `List<CategoryTreeResponse>` | 공개 |
 | Category Admin | GET | `/api/admin/categories/tree` | - | `List<CategoryTreeResponse>` | 관리자 |
