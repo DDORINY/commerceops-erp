@@ -56,7 +56,8 @@ const SETTING_CARDS: SettingCard[] = [
   {
     title: '권한 그룹 관리',
     description: '권한 그룹, 메뉴별 권한, 기능별 권한 매트릭스를 관리합니다.',
-    status: 'v0.4.3 ~ v0.4.4 구현 예정',
+    href: '/admin/settings/permission-groups',
+    status: 'v0.4.3 권한 그룹 관리 연결',
     fields: ['권한 그룹', '역할/권한', '메뉴 권한', '기능 권한'],
   },
 ];

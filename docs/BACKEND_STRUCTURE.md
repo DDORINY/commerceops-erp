@@ -33,6 +33,7 @@ com.commerceops.erp
 │   ├── ops
 │   ├── order
 │   ├── payment
+│   ├── permission
 │   ├── product
 │   ├── returns
 │   ├── review
@@ -68,6 +69,7 @@ com.commerceops.erp
 | ops | `AdminOpsAnalyticsController` | `OpsAnalyticsService` | 회계/주문/결제/창고 repository 사용 | - |
 | order | `OrderController`, `AdminOrderController` | `OrderService`, `OrderCancellationService` | `OrderRepository`, `OrderItemRepository` | `Order`, `OrderItem` |
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
+| permission | `AdminPermissionGroupController` | `PermissionGroupService` | `PermissionGroupRepository`, `UserPermissionGroupRepository`, `UserRepository` | `PermissionGroup`, `UserPermissionGroup` |
 | product | `ProductController`, `AdminProductController` | `ProductService`, `ProductDetailBlockService` | `ProductRepository`, `ProductDetailBlockRepository`, `ProductStatusHistoryRepository`, `ProductOperationNoteRepository` | `Product`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote` |
 | returns | `ReturnController`, `AdminReturnController` | `ReturnService` | `ReturnRequestRepository` | `ReturnRequest` |
 | review | `ReviewController`, `AdminReviewController` | `ReviewService` | `ReviewRepository` | `Review` |
@@ -99,6 +101,7 @@ com.commerceops.erp
 - 상품 운영 UX: v0.3.6 기준 관리자 상품 목록은 카테고리/재고/판매 기간 필터를 지원한다. `PATCH /api/admin/products/bulk-status`는 선택 상품의 판매/전시 상태를 일괄 변경하며, 실제 상태 변경은 `ProductStatusHistory`에 기록한다. 운영 메모는 `ProductOperationNote`에 누적 기록하고 상태 변경/대량 변경/메모 작성은 `AuditLog`에도 요약 저장한다.
 - HR 조직 기반: v0.4.1 기준 `Department`, `Position`, `StaffProfile`을 추가했다. 직원 프로필은 `User`와 1:1로 연결되며, 부서/직급은 nullable로 시작한다. 생성/수정 API와 관리자 화면은 v0.4.2 이후 범위다.
 - 직원 관리: v0.4.2 기준 `AdminStaffController`가 `/api/admin/staff` 목록/상세/등록/수정/재직 상태/활성 상태 변경 API를 제공한다. 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN` 기준으로 제한한다. 직원 생성/수정/상태 변경/활성 변경은 `AuditLog`에 기록한다.
+- 권한 그룹 관리: v0.4.3 기준 `AdminPermissionGroupController`가 `/api/admin/permission-groups` 목록/상세/생성/수정/활성 상태 변경 API와 `/api/admin/users/{userId}/permission-groups` 조회/할당 API를 제공한다. 기존 role 기반 접근 제어는 유지하고, 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN`으로 제한한다. 권한 그룹 작업은 `AuditLog`에 기록한다.
 
 ## 환경 프로파일
 
@@ -119,7 +122,7 @@ com.commerceops.erp
 ## 명시적 미구현
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 `PaymentController`는 `/api/payments/approve`, `/api/payments/{paymentId}/cancel`, 하위 호환 `/api/payments/mock/complete`를 제공하며 `MOCK_PROVIDER` 기반으로 동작한다.
-- 전체 관리자 기능 감사 로그. 현재는 리뷰 숨김/해제/삭제와 상품 상태 변경/대량 변경/운영 메모 작성만 `audit_logs`에 기록한다.
+- 전체 관리자 기능 감사 로그. 현재는 리뷰 숨김/해제/삭제, 상품 상태 변경/대량 변경/운영 메모 작성, 직원 관리, 권한 그룹 관리 작업을 `audit_logs`에 기록한다.
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.

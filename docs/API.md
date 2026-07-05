@@ -31,6 +31,8 @@
 | `GET /api/admin/hr/**` | `ADMIN`, `SUPER_ADMIN` |
 | `GET /api/admin/staff/**` | `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/staff/**` | `SUPER_ADMIN` |
+| `GET /api/admin/permission-groups/**`, `GET /api/admin/users/{userId}/permission-groups` | `ADMIN`, `SUPER_ADMIN` |
+| 변경성 `/api/admin/permission-groups/**`, `PUT /api/admin/users/{userId}/permission-groups` | `SUPER_ADMIN` |
 | `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/categories/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/products/**`, `/api/admin/categories/**`, `/api/admin/banners/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
@@ -56,6 +58,13 @@
 | Staff Admin | PATCH | `/api/admin/staff/{staffId}` | `StaffUpdateRequest` | `StaffProfileResponse` | SUPER_ADMIN |
 | Staff Admin | PATCH | `/api/admin/staff/{staffId}/status` | `StaffStatusUpdateRequest` | `StaffProfileResponse` | SUPER_ADMIN |
 | Staff Admin | PATCH | `/api/admin/staff/{staffId}/active` | `StaffActiveUpdateRequest` | `StaffProfileResponse` | SUPER_ADMIN |
+| Permission Admin | GET | `/api/admin/permission-groups` | - | `List<PermissionGroupResponse>` | ADMIN/SUPER_ADMIN |
+| Permission Admin | GET | `/api/admin/permission-groups/{groupId}` | - | `PermissionGroupResponse` | ADMIN/SUPER_ADMIN |
+| Permission Admin | POST | `/api/admin/permission-groups` | `PermissionGroupCreateRequest` | `PermissionGroupResponse` | SUPER_ADMIN |
+| Permission Admin | PATCH | `/api/admin/permission-groups/{groupId}` | `PermissionGroupUpdateRequest` | `PermissionGroupResponse` | SUPER_ADMIN |
+| Permission Admin | PATCH | `/api/admin/permission-groups/{groupId}/active` | `PermissionGroupActiveUpdateRequest` | `PermissionGroupResponse` | SUPER_ADMIN |
+| Permission Admin | GET | `/api/admin/users/{userId}/permission-groups` | - | `List<UserPermissionGroupResponse>` | ADMIN/SUPER_ADMIN |
+| Permission Admin | PUT | `/api/admin/users/{userId}/permission-groups` | `UserPermissionGroupUpdateRequest` | `List<UserPermissionGroupResponse>` | SUPER_ADMIN |
 | Category | GET | `/api/categories` | - | `List<CategoryResponse>` | 공개 |
 | Category | GET | `/api/categories/navigation` | - | `List<CategoryTreeResponse>` | 공개 |
 | Category Admin | GET | `/api/admin/categories/tree` | - | `List<CategoryTreeResponse>` | 관리자 |

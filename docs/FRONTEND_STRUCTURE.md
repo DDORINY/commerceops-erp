@@ -50,6 +50,11 @@
 | `/admin/returns` | `app/admin/returns/page.tsx` | `returnService` |
 | `/admin/coupons` | `app/admin/coupons/page.tsx` | `couponService` |
 | `/admin/warehouses` | `app/admin/warehouses/page.tsx` | `warehouseService` |
+| `/admin/settings` | `app/admin/settings/page.tsx` | 시스템 설정 진입점 |
+| `/admin/settings/audit-logs` | `app/admin/settings/audit-logs/page.tsx` | `auditService.getAuditLogs` |
+| `/admin/settings/staff` | `app/admin/settings/staff/page.tsx` | `staffService`, 직원 목록/등록/수정/상태 변경 |
+| `/admin/settings/permission-groups` | `app/admin/settings/permission-groups/page.tsx` | `permissionGroupService`, 권한 그룹 CRUD, 직원별 권한 그룹 할당 |
+| `/admin/settings/roles` | `app/admin/settings/roles/page.tsx` | 기존 role과 permission group 병행 운영 안내 |
 
 ## 서비스 레이어
 
@@ -78,6 +83,7 @@
 | `warehouseService.ts` | 창고, 창고별 재고, 이동, 할당 |
 | `userService.ts` | 관리자 고객 목록/권한 변경 |
 | `staffService.ts` | 관리자 직원 목록/상세/등록/수정, 부서/직급 조회, 직원 상태 변경 |
+| `permissionGroupService.ts` | 권한 그룹 목록/상세/생성/수정/활성 변경, 사용자 권한 그룹 조회/할당 |
 
 ## 타입 구조
 
@@ -151,3 +157,10 @@
 - `frontend/src/lib/services/staffService.ts`: `/api/admin/staff`와 `/api/admin/hr/departments`, `/api/admin/hr/positions` 호출 타입과 API 함수.
 - `frontend/src/components/admin/AdminSidebarV2.tsx`: 인사/권한 관리 그룹의 직원 관리 메뉴를 `/admin/settings/staff`로 연결한다.
 - 직원 관리 화면은 `SUPER_ADMIN` 메뉴로 노출되며, API 기준으로 조회는 `ADMIN/SUPER_ADMIN`, 변경은 `SUPER_ADMIN` 권한을 따른다.
+
+## v0.4.3 Permission Group UI
+
+- `frontend/src/app/admin/settings/permission-groups/page.tsx`: 권한 그룹 목록, 생성/수정, 활성/비활성, 직원별 권한 그룹 할당 화면.
+- `frontend/src/app/admin/settings/roles/page.tsx`: 기존 `USER/MANAGER/ADMIN/SUPER_ADMIN` role과 permission group 병행 운영 정책 안내.
+- `frontend/src/lib/services/permissionGroupService.ts`: `/api/admin/permission-groups`와 `/api/admin/users/{userId}/permission-groups` 타입과 API 함수.
+- `frontend/src/components/admin/AdminSidebarV2.tsx`: 인사/권한 관리 그룹의 권한 그룹 관리와 역할/권한 설정 메뉴를 실제 페이지 경로로 연결한다.
