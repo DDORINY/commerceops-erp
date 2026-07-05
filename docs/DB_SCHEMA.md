@@ -10,6 +10,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 상품 마스터 확장 마이그레이션: `backend/src/main/resources/db/migration/V3__extend_product_catalog_master.sql`
 - 상품 상세 블록 마이그레이션: `backend/src/main/resources/db/migration/V4__create_product_detail_blocks.sql`
 - 카테고리 네비 확장 마이그레이션: `backend/src/main/resources/db/migration/V5__extend_categories_navigation.sql`
+- 메인 배너 CMS 마이그레이션: `backend/src/main/resources/db/migration/V6__create_main_banners.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -23,6 +24,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `categories` | `Category` | `name`, `parent_id`, `depth`, `sort_order`, `active`, `visible_in_nav`, `slug`, timestamps |
 | `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, `status`, `options`, timestamps |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
+| `main_banners` | `MainBanner` | `title`, `subtitle`, `description`, `image_url`, `link_url`, `position`, `sort_order`, `active`, `starts_at`, `ends_at`, timestamps |
 | `media_files` | `MediaFile` | `original_filename`, `stored_filename`, `storage_path`, `public_url`, `content_type`, `size`, `media_type`, `created_at` |
 | `carts` | `Cart` | `user_id`, `product_id`, `quantity`, `selected_options`, timestamps |
 | `orders` | `Order` | `user_id`, `order_number`, `total_price`, `discount_amount`, `coupon_code`, `status`, receiver fields, `payment_status`, timestamps |
@@ -51,6 +53,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `UserStatus` | `ACTIVE`, `INACTIVE`, `BLOCKED` |
 | `ProductStatus` | `ON_SALE`, `SOLD_OUT`, `HIDDEN`, `DELETED` |
 | `ProductDetailBlockType` | `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` |
+| `BannerPosition` | `MAIN_TOP`, `MAIN_MIDDLE`, `MAIN_BOTTOM` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
 | `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |

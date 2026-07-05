@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.3.1`
+기준 버전: `v0.3.4`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -18,7 +18,7 @@
 | --- | --- |
 | `GET /api/health` | 공개 |
 | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` | 공개 |
-| `GET /api/categories/**`, `GET /api/products/**` | 공개 |
+| `GET /api/banners/**`, `GET /api/categories/**`, `GET /api/products/**` | 공개 |
 | `/api/admin/users/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/orders/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/dashboard/**` | `ADMIN`, `SUPER_ADMIN` |
@@ -30,7 +30,7 @@
 | `/api/admin/audit-logs/**` | `ADMIN`, `SUPER_ADMIN` |
 | `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/categories/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
-| 변경성 `/api/admin/products/**`, `/api/admin/categories/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
+| 변경성 `/api/admin/products/**`, `/api/admin/categories/**`, `/api/admin/banners/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/uploads/**` | 공개 정적 파일 |
 | 기타 인증 API | 로그인 사용자 |
 
@@ -49,6 +49,12 @@
 | Category Admin | GET | `/api/admin/categories/tree` | - | `List<CategoryTreeResponse>` | 관리자 |
 | Category | POST | `/api/admin/categories` | `CategoryCreateRequest` | `CategoryResponse` | 관리자 |
 | Category Admin | PATCH | `/api/admin/categories/{categoryId}` | `CategoryUpdateRequest` | `CategoryResponse` | 관리자 |
+| Banner | GET | `/api/banners` | - | `List<MainBannerResponse>` | 공개 |
+| Banner Admin | GET | `/api/admin/banners` | - | `List<MainBannerResponse>` | 관리자 |
+| Banner Admin | GET | `/api/admin/banners/{bannerId}` | - | `MainBannerResponse` | 관리자 |
+| Banner Admin | POST | `/api/admin/banners` | `MainBannerRequest` | `MainBannerResponse` | 관리자 |
+| Banner Admin | PATCH | `/api/admin/banners/{bannerId}` | `MainBannerRequest` | `MainBannerResponse` | 관리자 |
+| Banner Admin | DELETE | `/api/admin/banners/{bannerId}` | - | `null` | 관리자, active=false 비활성화 |
 | Product | GET | `/api/products` | `categoryId`, `keyword`, `sort`, `minPrice`, `maxPrice`, `inStock`, `page`, `size` | `PageResponse<ProductListResponse>` | 공개 |
 | Product | GET | `/api/products/{productId}` | - | `ProductResponse` | 공개 |
 | Product | GET | `/api/admin/products` | `status`, `keyword`, `page`, `size` | `PageResponse<AdminProductListResponse>` | 관리자 |

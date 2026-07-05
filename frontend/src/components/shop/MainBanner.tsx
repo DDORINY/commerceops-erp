@@ -1,86 +1,92 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { bannerService, type ApiMainBanner } from '@/lib/services/bannerService';
 
-const BANNERS = [
+const FALLBACK_BANNERS: ApiMainBanner[] = [
   {
-    id: 1,
-    headline: '새 시즌',
-    subline: '2026 S/S 신상품 출시',
-    description: '봄/여름 시즌 신규 컬렉션을 만나보세요',
-    ctaText: '신상품 보러가기',
-    ctaHref: `/products?category=${encodeURIComponent('신상품')}`,
-    bgColor: 'bg-[#f9f0f2]',
-    textColor: 'text-[#3a1a22]',
-    accentColor: 'bg-[#c4788a]',
-  },
-  {
-    id: 2,
-    headline: '베스트 픽',
-    subline: '이번 시즌 베스트 아이템',
-    description: '고객님이 가장 많이 선택한 상품을 소개합니다',
-    ctaText: '베스트 상품 보기',
-    ctaHref: `/products?category=${encodeURIComponent('베스트')}`,
-    bgColor: 'bg-[#f0f4f9]',
-    textColor: 'text-[#1a2a3a]',
-    accentColor: 'bg-[#7899c4]',
-  },
-  {
-    id: 3,
-    headline: '여름 세일',
-    subline: '최대 30% 할인',
-    description: '한정 수량 세일 상품, 지금 바로 확인하세요',
-    ctaText: '세일 상품 보기',
-    ctaHref: `/products?category=${encodeURIComponent('세일')}`,
-    bgColor: 'bg-[#f5f0eb]',
-    textColor: 'text-[#3a2a1a]',
-    accentColor: 'bg-[#c4a278]',
+    id: 0,
+    title: '새 시즌 컬렉션',
+    subtitle: 'CommerceOps 추천 기획전',
+    description: '관리자 배너가 없을 때 표시되는 기본 배너입니다.',
+    imageUrl: null,
+    linkUrl: '/products',
+    position: 'MAIN_TOP',
+    sortOrder: 0,
+    active: true,
+    startsAt: null,
+    endsAt: null,
+    createdAt: '',
+    updatedAt: '',
   },
 ];
 
 export default function MainBanner() {
+  const [banners, setBanners] = useState<ApiMainBanner[]>(FALLBACK_BANNERS);
   const [active, setActive] = useState(0);
-  const banner = BANNERS[active];
 
-  return (
-    <section className={`w-full ${banner.bgColor} transition-colors duration-500`}>
-      <div className="max-w-[1200px] mx-auto px-4">
-        <div className="flex items-center justify-between py-20 md:py-28 gap-8">
-          {/* 텍스트 */}
-          <div className="flex-1">
-            <p className="text-xs font-semibold tracking-[0.3em] text-[#999] mb-3 uppercase">
-              CommerceOps 컬렉션
-            </p>
-            <h2 className={`text-5xl md:text-6xl font-bold tracking-tight mb-4 ${banner.textColor}`}>
-              {banner.headline}
-            </h2>
-            <p className={`text-xl font-medium mb-3 ${banner.textColor}`}>{banner.subline}</p>
-            <p className="text-sm text-[#777] mb-8">{banner.description}</p>
-            <Link
-              href={banner.ctaHref}
-              className={`inline-flex items-center gap-2 ${banner.accentColor} text-white text-sm font-medium px-8 py-3 hover:opacity-90 transition-opacity`}
-            >
-              {banner.ctaText}
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
+  useEffect(() => {
+    let mounted = true;
+    bannerService
+      .getBanners()
+      .then((items) => {
+        if (!mounted) return;
+        setBanners(items.length > 0 ? items : FALLBACK_BANNERS);
+        setActive(0);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setBanners(FALLBACK_BANNERS);
+        setActive(0);
+      });
 
-          {/* 배너 이미지 플레이스홀더 */}
-          <div className="hidden md:block w-[360px] h-[440px] bg-white/40 flex-shrink-0 flex items-center justify-center">
-            <div className="w-full h-full flex items-center justify-center text-[#bbb] text-sm">
-              배너 이미지
-            </div>
-          </div>
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const banner = banners[Math.min(active, banners.length - 1)] ?? FALLBACK_BANNERS[0];
+  const content = (
+    <div className="max-w-[1200px] mx-auto px-4">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] items-center py-16 md:py-24 gap-8">
+        <div>
+          <p className="text-xs font-semibold tracking-[0.3em] text-[#999] mb-3 uppercase">
+            CommerceOps 배너
+          </p>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[#222]">
+            {banner.title}
+          </h2>
+          {banner.subtitle && (
+            <p className="text-lg font-medium mb-3 text-[#444]">{banner.subtitle}</p>
+          )}
+          {banner.description && (
+            <p className="text-sm text-[#777] mb-8 leading-6">{banner.description}</p>
+          )}
+          {banner.linkUrl && (
+            <span className="inline-flex items-center gap-2 bg-[#222] text-white text-sm font-medium px-8 py-3 hover:bg-[#444] transition-colors">
+              자세히 보기
+            </span>
+          )}
         </div>
 
-        {/* 인디케이터 */}
+        <div className="hidden md:flex w-full aspect-[4/5] bg-[#f7f8fc] border border-[#e8eaf0] items-center justify-center overflow-hidden">
+          {banner.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={banner.imageUrl} alt={banner.title} className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-sm text-[#8a9bb5]">배너 이미지</span>
+          )}
+        </div>
+      </div>
+
+      {banners.length > 1 && (
         <div className="flex items-center justify-center gap-2 pb-8">
-          {BANNERS.map((_, i) => (
+          {banners.map((item, i) => (
             <button
-              key={i}
+              key={item.id}
+              type="button"
+              aria-label={`${i + 1}번 배너 보기`}
               onClick={() => setActive(i)}
               className={[
                 'h-[3px] transition-all duration-300',
@@ -89,7 +95,19 @@ export default function MainBanner() {
             />
           ))}
         </div>
-      </div>
+      )}
+    </div>
+  );
+
+  return (
+    <section className="w-full bg-[#f9f0f2] transition-colors duration-500">
+      {banner.linkUrl ? (
+        <Link href={banner.linkUrl} className="block">
+          {content}
+        </Link>
+      ) : (
+        content
+      )}
     </section>
   );
 }

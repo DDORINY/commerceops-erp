@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ const NAV_ITEMS: Array<{ label: string; href: string; adminOnly?: boolean }> = [
   { label: '대시보드', href: '/admin' },
   { label: '상품 관리', href: '/admin/products' },
   { label: '카테고리 관리', href: '/admin/categories', adminOnly: true },
+  { label: '배너 관리', href: '/admin/banners', adminOnly: true },
   { label: '주문 관리', href: '/admin/orders' },
   { label: '재고 관리', href: '/admin/inventory' },
   { label: '배송 관리', href: '/admin/shipments' },

@@ -21,6 +21,7 @@ com.commerceops.erp
 │   ├── accounting
 │   ├── auth
 │   ├── audit
+│   ├── banner
 │   ├── cart
 │   ├── category
 │   ├── coupon
@@ -54,6 +55,7 @@ com.commerceops.erp
 | accounting | `AdminAccountingController` | `AccountingService` | `AccountingEntryRepository` | `AccountingEntry` |
 | audit | `AdminAuditLogController` | `AuditLogService` | `AuditLogRepository` | `AuditLog` |
 | auth | `AuthController` | `AuthService` | `UserRepository` 사용 | `User` |
+| banner | `BannerController`, `AdminBannerController` | `MainBannerService` | `MainBannerRepository` | `MainBanner` |
 | cart | `CartController` | `CartService` | `CartRepository` | `Cart` |
 | category | `CategoryController`, `AdminCategoryController` | `CategoryService` | `CategoryRepository` | `Category` |
 | coupon | `CouponController`, `AdminCouponController` | `CouponService` | `CouponRepository` | `Coupon` |
@@ -91,6 +93,7 @@ com.commerceops.erp
 - 상품 마스터: v0.3.1 기준 `Product`는 상품코드, 브랜드, 제조사, 모델명, 원산지, 정상가/할인금액/매입가, 검색 키워드, 태그, 판매 기간, 배송/SEO 필드를 포함한다. 사용자 응답은 원가/마진을 제외하고, 관리자 응답은 `AdminProductResponse` 계열 DTO로 내부 운영 필드를 포함한다.
 - 상품 상세 CMS: v0.3.2 기준 `ProductDetailBlock`은 상품별 상세 블록을 `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` 타입으로 저장한다. 관리자 API는 전체 블록을 조회/교체 저장하고, 사용자 상품 상세 응답은 visible 블록만 sortOrder 순서로 포함한다.
 - 카테고리 네비: v0.3.3 기준 `Category`는 parent/depth/sortOrder/active/visibleInNav/slug를 포함한다. 공개 네비 API는 active=true, visibleInNav=true 카테고리만 트리로 반환하고, 관리자 API는 전체 트리를 조회/생성/수정한다.
+- 메인 배너 CMS: v0.3.4 기준 `MainBanner`는 title/subtitle/description/imageUrl/linkUrl/position/sortOrder/active/startsAt/endsAt를 포함한다. 공개 API는 활성 상태와 노출 기간 기준 배너만 반환하고, 관리자 API는 전체 배너 조회/등록/수정/비활성화를 제공한다.
 
 ## 환경 프로파일
 

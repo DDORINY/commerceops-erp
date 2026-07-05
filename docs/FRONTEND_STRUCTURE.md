@@ -38,6 +38,7 @@
 | `/admin/orders` | `app/admin/orders/page.tsx` | `orderService.getAdminOrders`, `updateOrderStatus` |
 | `/admin/products` | `app/admin/products/page.tsx` | `productService.getAdminProducts`, 상품코드/브랜드/매입가/마진율 표시 |
 | `/admin/categories` | `app/admin/categories/page.tsx` | `categoryService.getAdminCategoryTree`, create/update |
+| `/admin/banners` | `app/admin/banners/page.tsx` | `bannerService.getAdminBanners`, create/update/deactivate |
 | `/admin/products/new` | `app/admin/products/new/page.tsx` | `productService.createProduct`, getCategories, 이미지 업로드, 상품 마스터 입력 |
 | `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, 이미지 업로드, 상품 마스터 수정, 상세 블록 편집 |
 | `/admin/inquiries` | `app/admin/inquiries/page.tsx` | `inquiryService.getAdminInquiries`, answer/close |
@@ -58,6 +59,7 @@
 | `authService.ts` | 로그인, 회원가입, 내 정보, 토큰 갱신, 로그아웃 |
 | `productService.ts` | 사용자/관리자 상품, 카테고리, 상품 CRUD, 상품 마스터 타입, 상세 블록 타입/API. 관리자 타입은 매입가/마진율을 포함하고 사용자 타입은 내부 운영 필드를 제외 |
 | `categoryService.ts` | 사용자 네비 카테고리, 관리자 카테고리 트리, 생성/수정 |
+| `bannerService.ts` | 공개 메인 배너 조회, 관리자 배너 목록/상세/등록/수정/비활성화 |
 | `mediaService.ts` | 관리자 상품 이미지 multipart 업로드 |
 | `cartService.ts` | 장바구니 조회/추가/수량변경/삭제 |
 | `orderService.ts` | 주문 생성/조회/상세/취소, 관리자 주문 목록/상태 변경 |
