@@ -1,23 +1,11 @@
-export type ProductStatus = 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN' | 'DELETED';
+﻿export type ProductStatus = 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN' | 'DELETED';
 export type ProductSalesStatus = 'DRAFT' | 'ON_SALE' | 'PAUSED' | 'SOLD_OUT' | 'DISCONTINUED';
 export type StockDisplayStatus = 'IN_STOCK' | 'LOW_STOCK' | 'SOLD_OUT';
-
-export type ProductCategory =
-  | 'BEST'
-  | 'NEW'
-  | '원피스'
-  | '블라우스'
-  | '아우터'
-  | '니트'
-  | '티셔츠'
-  | '스커트'
-  | '팬츠'
-  | 'SALE';
 
 export interface Product {
   id: number;
   categoryId: number;
-  categoryName: ProductCategory;
+  categoryName: string;
   name: string;
   description: string;
   price: number;
@@ -27,6 +15,8 @@ export interface Product {
   imageUrl: string;
   status: ProductStatus;
   salesStatus?: ProductSalesStatus;
+  brand?: string | null;
+  tags?: string | null;
   purchasable?: boolean;
   stockDisplayStatus?: StockDisplayStatus;
   stockDisplayText?: string;
@@ -40,7 +30,7 @@ export interface Product {
 export interface ProductListItem {
   id: number;
   categoryId: number;
-  categoryName: ProductCategory;
+  categoryName: string;
   name: string;
   price: number;
   originalPrice: number;
@@ -49,6 +39,8 @@ export interface ProductListItem {
   imageUrl: string;
   status: ProductStatus;
   salesStatus?: ProductSalesStatus;
+  brand?: string | null;
+  tags?: string | null;
   purchasable?: boolean;
   stockDisplayStatus?: StockDisplayStatus;
   stockDisplayText?: string;
@@ -58,7 +50,7 @@ export interface ProductListItem {
 }
 
 export interface ProductFilter {
-  category?: ProductCategory;
+  categoryId?: number;
   status?: ProductStatus;
   keyword?: string;
   page?: number;

@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.3.6`
+기준 버전: `v0.3.7`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -17,9 +17,9 @@
 
 | Route | 파일 | 실제 데이터 소스 |
 | --- | --- | --- |
-| `/` | `app/page.tsx` | `productService.getProducts` |
-| `/products` | `app/products/page.tsx` | `productService.getProducts`, `getCategories` |
-| `/products/[id]` | `app/products/[id]/page.tsx` | 상품 상세, 상세 블록 렌더러, 장바구니, 위시리스트, 문의, 리뷰 service |
+| `/` | `app/page.tsx` | `bannerService.getBanners`, `categoryService.getNavigationCategories`, `productService.getProducts` |
+| `/products` | `app/products/page.tsx` | `productService.getProducts`, `getCategories`, URL category/keyword query |
+| `/products/[id]` | `app/products/[id]/page.tsx` | 상품 상세, 상품 마스터 공개 필드, 상세 블록 렌더러, 구매 가능 여부, 장바구니, 위시리스트, 문의, 리뷰 service |
 | `/cart` | `app/cart/page.tsx` | `cartService` |
 | `/orders` | `app/orders/page.tsx` | `orderService.getOrders` |
 | `/orders/checkout` | `app/orders/checkout/page.tsx` | `cartService`, `orderService`, `paymentService`, `couponService` |
@@ -133,3 +133,13 @@
 - 상품 목록 행 체크박스와 현재 페이지 전체 선택을 제공하며, 선택 상품에 대해 판매 상태/전시 상태 대량 변경과 변경 사유 입력을 지원한다.
 - DataTable render 전용 컬럼은 `select`, `stockSummary`, `statusBadge`, `actions`처럼 고유 key를 사용한다.
 - `frontend/src/app/admin/products/[id]/page.tsx`: 상품 운영 메모 작성/조회와 상태 변경 이력 조회 패널을 제공한다.
+
+## v0.3.7 Commerce Display Frontend
+
+- `frontend/src/app/page.tsx`: CMS 배너 컴포넌트를 유지하고, 메인 카테고리 바로가기를 관리자 네비 카테고리 API 기준으로 표시한다.
+- `frontend/src/components/shop/DynamicCategoryNav.tsx`: `/api/categories/navigation` 결과를 상단 네비에 사용하며 실패 시 최소 fallback을 표시한다.
+- `frontend/src/components/shop/ShopHeader.tsx`: 사용자 화면 문구를 한국어로 정리하고 관리자 버튼은 `MANAGER`, `ADMIN`, `SUPER_ADMIN`에게만 노출한다.
+- `frontend/src/app/products/page.tsx`: URL `category`, `keyword` query와 가격/재고 필터를 공개 상품 API에 연결한다.
+- `frontend/src/components/shop/ProductCard.tsx`: 브랜드, 태그, 정상가/판매가, 할인, 재고 상태, 구매 불가 상태를 표시한다.
+- `frontend/src/app/products/[id]/page.tsx`: 브랜드/제조사/원산지/배송 정보, 태그, 상세 블록, 재고 상태와 구매 불가 사유를 표시한다.
+- 사용자 화면 타입은 공개 API 필드만 포함하며 `purchasePrice`, `marginRate` 같은 내부 운영 필드는 포함하지 않는다.
