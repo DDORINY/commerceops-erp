@@ -40,7 +40,7 @@ export default function AdminCategoriesPage() {
       setTree(res);
     } catch (err) {
       setTree([]);
-      setError(err instanceof Error ? err.message : 'Failed to load categories.');
+      setError(err instanceof Error ? err.message : '카테고리 목록을 불러오지 못했습니다.');
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ export default function AdminCategoriesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      setMessage('Category name is required.');
+      setMessage('카테고리명을 입력해주세요.');
       return;
     }
 
@@ -96,15 +96,15 @@ export default function AdminCategoriesPage() {
       const payload = buildPayload();
       if (editingId) {
         await categoryService.updateCategory(editingId, payload);
-        setMessage('Category updated.');
+        setMessage('카테고리가 수정되었습니다.');
       } else {
         await categoryService.createCategory(payload);
-        setMessage('Category created.');
+        setMessage('카테고리가 생성되었습니다.');
       }
       resetForm();
       await loadCategories();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Failed to save category.');
+      setMessage(err instanceof Error ? err.message : '카테고리 저장에 실패했습니다.');
     } finally {
       setSaving(false);
     }
@@ -113,15 +113,15 @@ export default function AdminCategoriesPage() {
   const parentOptions = categories.filter((category) => category.id !== editingId);
 
   return (
-    <AdminLayout title="Category Management">
+    <AdminLayout title="카테고리 관리">
       <div className="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-5">
         <form onSubmit={handleSubmit} className="bg-white border border-[#e8eaf0] p-5 space-y-4">
           <div>
             <h2 className="text-sm font-bold text-[#1a1f2e]">
-              {editingId ? 'Edit Category' : 'Create Category'}
+              {editingId ? '카테고리 수정' : '카테고리 생성'}
             </h2>
             <p className="mt-1 text-xs text-[#8a9bb5]">
-              Active and nav-visible categories appear in the shop header.
+              활성 상태이고 네비에 노출되는 카테고리만 쇼핑몰 상단에 표시됩니다.
             </p>
           </div>
 
@@ -132,20 +132,20 @@ export default function AdminCategoriesPage() {
           )}
 
           <Input
-            label="Name"
+            label="이름"
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             fullWidth
           />
 
           <div>
-            <label className="block text-sm font-medium text-[#444] mb-1">Parent</label>
+            <label className="block text-sm font-medium text-[#444] mb-1">상위 카테고리</label>
             <select
               value={form.parentId}
               onChange={(e) => set('parentId', e.target.value)}
               className="border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] w-full"
             >
-              <option value="">Root category</option>
+              <option value="">최상위 카테고리</option>
               {parentOptions.map((category) => (
                 <option key={category.id} value={category.id}>
                   {'-'.repeat(category.depth)} {category.name}
@@ -156,17 +156,17 @@ export default function AdminCategoriesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Sort Order"
+              label="정렬 순서"
               type="number"
               value={form.sortOrder}
               onChange={(e) => set('sortOrder', e.target.value)}
               fullWidth
             />
             <Input
-              label="Slug"
+              label="슬러그"
               value={form.slug}
               onChange={(e) => set('slug', e.target.value)}
-              placeholder="optional"
+              placeholder="선택 입력"
               fullWidth
             />
           </div>
@@ -179,7 +179,7 @@ export default function AdminCategoriesPage() {
                 onChange={(e) => set('active', e.target.checked)}
                 className="accent-[#222]"
               />
-              Active
+              활성
             </label>
             <label className="flex items-center gap-2 text-sm text-[#555]">
               <input
@@ -188,66 +188,66 @@ export default function AdminCategoriesPage() {
                 onChange={(e) => set('visibleInNav', e.target.checked)}
                 className="accent-[#222]"
               />
-              Visible in shop navigation
+              쇼핑몰 네비에 노출
             </label>
           </div>
 
           <div className="flex justify-end gap-2">
             {editingId && (
               <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel
+                취소
               </Button>
             )}
             <Button type="submit" variant="primary" disabled={saving}>
-              {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+              {saving ? '저장 중...' : editingId ? '수정' : '생성'}
             </Button>
           </div>
         </form>
 
         <div>
           {loading ? (
-            <div className="py-12 text-center text-[#bbb] text-sm">Loading categories...</div>
+            <div className="py-12 text-center text-[#bbb] text-sm">카테고리를 불러오는 중...</div>
           ) : error ? (
             <div className="bg-white border border-[#f1c7c7] px-5 py-12 text-center">
               <p className="text-sm text-[#c43a3a]">{error}</p>
               <Button variant="outline" size="sm" onClick={loadCategories} className="mt-4">
-                Retry
+                다시 불러오기
               </Button>
             </div>
           ) : (
             <DataTable<ApiCategoryNode>
               keyField="id"
               data={categories}
-              emptyMessage="No categories."
+              emptyMessage="카테고리가 없습니다."
               columns={[
                 {
                   key: 'name',
-                  header: 'Name',
+                  header: '이름',
                   render: (row) => (
                     <span className="font-medium text-[#222]">
                       {'-'.repeat(row.depth)} {row.name}
                     </span>
                   ),
                 },
-                { key: 'parentId', header: 'Parent ID', render: (row) => row.parentId ?? '-' },
-                { key: 'sortOrder', header: 'Sort' },
+                { key: 'parentId', header: '상위 ID', render: (row) => row.parentId ?? '-' },
+                { key: 'sortOrder', header: '정렬' },
                 {
                   key: 'active',
-                  header: 'Active',
+                  header: '활성',
                   render: (row) => row.active ? 'Y' : 'N',
                 },
                 {
                   key: 'visibleInNav',
-                  header: 'Nav',
+                  header: '네비',
                   render: (row) => row.visibleInNav ? 'Y' : 'N',
                 },
-                { key: 'slug', header: 'Slug', render: (row) => row.slug || '-' },
+                { key: 'slug', header: '슬러그', render: (row) => row.slug || '-' },
                 {
                   key: 'actions',
-                  header: 'Manage',
+                  header: '관리',
                   render: (row) => (
                     <Button variant="outline" size="sm" onClick={() => handleEdit(row)}>
-                      Edit
+                      수정
                     </Button>
                   ),
                 },

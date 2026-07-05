@@ -149,7 +149,7 @@ export default function AdminProductsPage() {
                 <div>
                   <p className="font-medium text-[#222] text-sm">{row.name}</p>
                   <p className="text-xs text-[#999] mt-0.5">
-                    {row.productCode || 'No code'} · {row.brand || row.categoryName}
+                    {row.productCode || '상품코드 없음'} · {row.brand || row.categoryName}
                   </p>
                 </div>
               ),

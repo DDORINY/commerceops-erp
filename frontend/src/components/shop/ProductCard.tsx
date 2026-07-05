@@ -11,7 +11,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const isSoldOut = product.status === 'SOLD_OUT' || product.stockQuantity === 0;
-  const imageSrc = product.imageUrl || 'https://placehold.co/600x750?text=No+Image';
+  const imageSrc = product.imageUrl || 'https://placehold.co/600x750?text=Image';
 
   return (
     <Link href={`/products/${product.id}`} className="group block">
@@ -32,12 +32,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {product.isNew && !isSoldOut && (
             <span className="bg-[#222] text-white text-[10px] font-medium px-2 py-0.5 tracking-widest">
-              NEW
+              신상품
             </span>
           )}
           {product.isBest && !isSoldOut && (
             <span className="bg-[#f3a6b8] text-white text-[10px] font-medium px-2 py-0.5 tracking-widest">
-              BEST
+              베스트
             </span>
           )}
           {product.discountRate > 0 && !isSoldOut && (
@@ -47,7 +47,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
           {isSoldOut && (
             <span className="bg-[#777] text-white text-[10px] font-medium px-2 py-0.5 tracking-widest">
-              SOLD OUT
+              품절
             </span>
           )}
         </div>
@@ -61,7 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             }}
             className="absolute bottom-0 left-0 right-0 bg-[#222]/90 text-white text-xs py-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 tracking-widest"
           >
-            ADD TO CART
+            장바구니 담기
           </button>
         )}
       </div>

@@ -22,6 +22,15 @@ interface OptionGroupDraft {
   values: string[];
 }
 
+const DETAIL_BLOCK_TYPE_LABEL: Record<ProductDetailBlockType, string> = {
+  HEADING: '제목',
+  TEXT: '텍스트',
+  IMAGE: '이미지',
+  NOTICE: '안내 박스',
+  SPEC_TABLE: '스펙표',
+  HTML: 'HTML',
+};
+
 export default function AdminProductEditPage({
   params,
 }: {
@@ -189,9 +198,9 @@ const { id } = use(params);
         }))
       );
       setDetailBlocks(saved.map((block, index) => ({ ...block, sortOrder: index })));
-      setBlockMessage('Detail blocks saved.');
+      setBlockMessage('상세 블록이 저장되었습니다.');
     } catch (err) {
-      setBlockMessage(err instanceof Error ? err.message : 'Failed to save detail blocks.');
+      setBlockMessage(err instanceof Error ? err.message : '상세 블록 저장에 실패했습니다.');
     } finally {
       setSavingBlocks(false);
     }
@@ -320,33 +329,33 @@ const { id } = use(params);
             </div>
 
             <div className="pt-2 space-y-4">
-              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">Catalog Master</h2>
+              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">상품 마스터</h2>
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Product Code" value={form.productCode} onChange={(e) => set('productCode', e.target.value)} placeholder="SKU-001" fullWidth />
-                <Input label="Brand" value={form.brand} onChange={(e) => set('brand', e.target.value)} placeholder="Brand" fullWidth />
-                <Input label="Manufacturer" value={form.manufacturer} onChange={(e) => set('manufacturer', e.target.value)} placeholder="Manufacturer" fullWidth />
-                <Input label="Model Name" value={form.modelName} onChange={(e) => set('modelName', e.target.value)} placeholder="Model" fullWidth />
-                <Input label="Origin" value={form.origin} onChange={(e) => set('origin', e.target.value)} placeholder="Korea" fullWidth />
+                <Input label="상품코드" value={form.productCode} onChange={(e) => set('productCode', e.target.value)} placeholder="SKU-001" fullWidth />
+                <Input label="브랜드" value={form.brand} onChange={(e) => set('brand', e.target.value)} placeholder="브랜드명" fullWidth />
+                <Input label="제조사" value={form.manufacturer} onChange={(e) => set('manufacturer', e.target.value)} placeholder="제조사" fullWidth />
+                <Input label="모델명" value={form.modelName} onChange={(e) => set('modelName', e.target.value)} placeholder="모델명" fullWidth />
+                <Input label="원산지" value={form.origin} onChange={(e) => set('origin', e.target.value)} placeholder="대한민국" fullWidth />
               </div>
             </div>
 
             <div className="pt-2 space-y-4">
-              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">Price / Search / SEO</h2>
+              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">가격 / 검색 / SEO</h2>
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Original Price" type="number" value={form.originalPrice} onChange={(e) => set('originalPrice', e.target.value)} placeholder="50000" fullWidth />
-                <Input label="Discount Amount" type="number" value={form.discountPrice} onChange={(e) => set('discountPrice', e.target.value)} placeholder="5000" fullWidth />
-                <Input label="Purchase Price" type="number" value={form.purchasePrice} onChange={(e) => set('purchasePrice', e.target.value)} placeholder="25000" fullWidth />
+                <Input label="정상가" type="number" value={form.originalPrice} onChange={(e) => set('originalPrice', e.target.value)} placeholder="50000" fullWidth />
+                <Input label="할인 금액" type="number" value={form.discountPrice} onChange={(e) => set('discountPrice', e.target.value)} placeholder="5000" fullWidth />
+                <Input label="매입가" type="number" value={form.purchasePrice} onChange={(e) => set('purchasePrice', e.target.value)} placeholder="25000" fullWidth />
               </div>
-              <Input label="Search Keywords" value={form.searchKeywords} onChange={(e) => set('searchKeywords', e.target.value)} placeholder="comma separated keywords" fullWidth />
-              <Input label="Tags" value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="comma separated tags" fullWidth />
+              <Input label="검색 키워드" value={form.searchKeywords} onChange={(e) => set('searchKeywords', e.target.value)} placeholder="쉼표로 구분해 입력" fullWidth />
+              <Input label="태그" value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="쉼표로 구분해 입력" fullWidth />
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Sale Start" type="datetime-local" value={form.saleStartAt} onChange={(e) => set('saleStartAt', e.target.value)} fullWidth />
-                <Input label="Sale End" type="datetime-local" value={form.saleEndAt} onChange={(e) => set('saleEndAt', e.target.value)} fullWidth />
+                <Input label="판매 시작일" type="datetime-local" value={form.saleStartAt} onChange={(e) => set('saleStartAt', e.target.value)} fullWidth />
+                <Input label="판매 종료일" type="datetime-local" value={form.saleEndAt} onChange={(e) => set('saleEndAt', e.target.value)} fullWidth />
               </div>
-              <Input label="Delivery Info" value={form.deliveryInfo} onChange={(e) => set('deliveryInfo', e.target.value)} placeholder="Shipping notes" fullWidth />
-              <Input label="SEO Title" value={form.seoTitle} onChange={(e) => set('seoTitle', e.target.value)} placeholder="SEO title" fullWidth />
-              <Input label="SEO Description" value={form.seoDescription} onChange={(e) => set('seoDescription', e.target.value)} placeholder="SEO description" fullWidth />
-              <Input label="SEO Keywords" value={form.seoKeywords} onChange={(e) => set('seoKeywords', e.target.value)} placeholder="SEO keywords" fullWidth />
+              <Input label="배송 정보" value={form.deliveryInfo} onChange={(e) => set('deliveryInfo', e.target.value)} placeholder="배송 안내" fullWidth />
+              <Input label="SEO 제목" value={form.seoTitle} onChange={(e) => set('seoTitle', e.target.value)} placeholder="SEO 제목" fullWidth />
+              <Input label="SEO 설명" value={form.seoDescription} onChange={(e) => set('seoDescription', e.target.value)} placeholder="SEO 설명" fullWidth />
+              <Input label="SEO 키워드" value={form.seoKeywords} onChange={(e) => set('seoKeywords', e.target.value)} placeholder="SEO 키워드" fullWidth />
             </div>
 
             <ProductImageUpload
@@ -391,13 +400,13 @@ const { id } = use(params);
             <div className="pt-2 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-[#f0f1f5]">
                 <div>
-                  <h2 className="text-sm font-bold text-[#1a1f2e]">Detail Page Blocks</h2>
+                  <h2 className="text-sm font-bold text-[#1a1f2e]">상세페이지 블록</h2>
                   <p className="mt-1 text-xs text-[#8a9bb5]">
-                    Visible blocks are shown on the customer product detail page in this order.
+                    노출 상태인 블록만 사용자 상품 상세 페이지에 이 순서대로 표시됩니다.
                   </p>
                 </div>
                 <Button variant="outline" size="sm" type="button" onClick={() => addDetailBlock()}>
-                  Add Block
+                  블록 추가
                 </Button>
               </div>
 
@@ -409,7 +418,7 @@ const { id } = use(params);
 
               {detailBlocks.length === 0 ? (
                 <div className="border border-dashed border-[#d8dce6] bg-[#fafbfe] px-4 py-6 text-center text-sm text-[#8a9bb5]">
-                  No detail blocks yet.
+                  아직 등록된 상세 블록이 없습니다.
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -417,22 +426,22 @@ const { id } = use(params);
                     <div key={`${block.id ?? 'new'}-${idx}`} className="border border-[#e8eaf0] p-4 space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-[#444] mb-1">Block Type</label>
+                          <label className="block text-sm font-medium text-[#444] mb-1">블록 유형</label>
                           <select
                             value={block.blockType}
                             onChange={(e) => updateDetailBlock(idx, { blockType: e.target.value as ProductDetailBlockType })}
                             className="border border-[#ddd] bg-white text-[#222] text-sm px-3 py-2.5 outline-none focus:border-[#222] w-full"
                           >
                             {(['HEADING', 'TEXT', 'IMAGE', 'NOTICE', 'SPEC_TABLE', 'HTML'] as ProductDetailBlockType[]).map((type) => (
-                              <option key={type} value={type}>{type}</option>
+                              <option key={type} value={type}>{DETAIL_BLOCK_TYPE_LABEL[type]}</option>
                             ))}
                           </select>
                         </div>
                         <Input
-                          label="Title"
+                          label="제목"
                           value={block.title ?? ''}
                           onChange={(e) => updateDetailBlock(idx, { title: e.target.value })}
-                          placeholder="Optional title"
+                          placeholder="선택 입력"
                           fullWidth
                         />
                       </div>
@@ -440,7 +449,7 @@ const { id } = use(params);
                       {(block.blockType === 'TEXT' || block.blockType === 'NOTICE' || block.blockType === 'HTML' || block.blockType === 'HEADING') && (
                         <div>
                           <label className="block text-sm font-medium text-[#444] mb-1">
-                            {block.blockType === 'HTML' ? 'HTML' : 'Content'}
+                            {block.blockType === 'HTML' ? 'HTML' : '내용'}
                           </label>
                           <textarea
                             value={block.content ?? ''}
@@ -453,7 +462,7 @@ const { id } = use(params);
 
                       {block.blockType === 'IMAGE' && (
                         <Input
-                          label="Image URL"
+                          label="이미지 URL"
                           value={block.imageUrl ?? ''}
                           onChange={(e) => updateDetailBlock(idx, { imageUrl: e.target.value })}
                           placeholder="https://..."
@@ -463,7 +472,7 @@ const { id } = use(params);
 
                       {block.blockType === 'SPEC_TABLE' && (
                         <div>
-                          <label className="block text-sm font-medium text-[#444] mb-1">Spec JSON</label>
+                          <label className="block text-sm font-medium text-[#444] mb-1">스펙 JSON</label>
                           <textarea
                             value={block.specJson ?? ''}
                             onChange={(e) => updateDetailBlock(idx, { specJson: e.target.value })}
@@ -482,17 +491,17 @@ const { id } = use(params);
                             onChange={(e) => updateDetailBlock(idx, { visible: e.target.checked })}
                             className="accent-[#222]"
                           />
-                          Visible
+                          노출
                         </label>
                         <div className="flex gap-2">
                           <Button variant="ghost" size="sm" type="button" onClick={() => moveDetailBlock(idx, -1)} disabled={idx === 0}>
-                            Up
+                            위로
                           </Button>
                           <Button variant="ghost" size="sm" type="button" onClick={() => moveDetailBlock(idx, 1)} disabled={idx === detailBlocks.length - 1}>
-                            Down
+                            아래로
                           </Button>
                           <Button variant="danger" size="sm" type="button" onClick={() => removeDetailBlock(idx)}>
-                            Delete
+                            삭제
                           </Button>
                         </div>
                       </div>
@@ -503,7 +512,7 @@ const { id } = use(params);
 
               <div className="flex justify-end">
                 <Button variant="secondary" type="button" disabled={savingBlocks} onClick={handleSaveDetailBlocks}>
-                  {savingBlocks ? 'Saving...' : 'Save Detail Blocks'}
+                  {savingBlocks ? '저장 중...' : '상세 블록 저장'}
                 </Button>
               </div>
             </div>

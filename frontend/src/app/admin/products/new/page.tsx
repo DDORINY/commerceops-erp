@@ -183,33 +183,33 @@ export default function AdminProductNewPage() {
             </div>
 
             <div className="pt-2 space-y-4">
-              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">Catalog Master</h2>
+              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">상품 마스터</h2>
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Product Code" value={form.productCode} onChange={(e) => set('productCode', e.target.value)} placeholder="SKU-001" fullWidth />
-                <Input label="Brand" value={form.brand} onChange={(e) => set('brand', e.target.value)} placeholder="Brand" fullWidth />
-                <Input label="Manufacturer" value={form.manufacturer} onChange={(e) => set('manufacturer', e.target.value)} placeholder="Manufacturer" fullWidth />
-                <Input label="Model Name" value={form.modelName} onChange={(e) => set('modelName', e.target.value)} placeholder="Model" fullWidth />
-                <Input label="Origin" value={form.origin} onChange={(e) => set('origin', e.target.value)} placeholder="Korea" fullWidth />
+                <Input label="상품코드" value={form.productCode} onChange={(e) => set('productCode', e.target.value)} placeholder="SKU-001" fullWidth />
+                <Input label="브랜드" value={form.brand} onChange={(e) => set('brand', e.target.value)} placeholder="브랜드명" fullWidth />
+                <Input label="제조사" value={form.manufacturer} onChange={(e) => set('manufacturer', e.target.value)} placeholder="제조사" fullWidth />
+                <Input label="모델명" value={form.modelName} onChange={(e) => set('modelName', e.target.value)} placeholder="모델명" fullWidth />
+                <Input label="원산지" value={form.origin} onChange={(e) => set('origin', e.target.value)} placeholder="대한민국" fullWidth />
               </div>
             </div>
 
             <div className="pt-2 space-y-4">
-              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">Price / Search / SEO</h2>
+              <h2 className="text-sm font-bold text-[#1a1f2e] pb-3 border-b border-[#f0f1f5]">가격 / 검색 / SEO</h2>
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Original Price" type="number" value={form.originalPrice} onChange={(e) => set('originalPrice', e.target.value)} placeholder="50000" fullWidth />
-                <Input label="Discount Amount" type="number" value={form.discountPrice} onChange={(e) => set('discountPrice', e.target.value)} placeholder="5000" fullWidth />
-                <Input label="Purchase Price" type="number" value={form.purchasePrice} onChange={(e) => set('purchasePrice', e.target.value)} placeholder="25000" fullWidth />
+                <Input label="정상가" type="number" value={form.originalPrice} onChange={(e) => set('originalPrice', e.target.value)} placeholder="50000" fullWidth />
+                <Input label="할인 금액" type="number" value={form.discountPrice} onChange={(e) => set('discountPrice', e.target.value)} placeholder="5000" fullWidth />
+                <Input label="매입가" type="number" value={form.purchasePrice} onChange={(e) => set('purchasePrice', e.target.value)} placeholder="25000" fullWidth />
               </div>
-              <Input label="Search Keywords" value={form.searchKeywords} onChange={(e) => set('searchKeywords', e.target.value)} placeholder="comma separated keywords" fullWidth />
-              <Input label="Tags" value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="comma separated tags" fullWidth />
+              <Input label="검색 키워드" value={form.searchKeywords} onChange={(e) => set('searchKeywords', e.target.value)} placeholder="쉼표로 구분해 입력" fullWidth />
+              <Input label="태그" value={form.tags} onChange={(e) => set('tags', e.target.value)} placeholder="쉼표로 구분해 입력" fullWidth />
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Sale Start" type="datetime-local" value={form.saleStartAt} onChange={(e) => set('saleStartAt', e.target.value)} fullWidth />
-                <Input label="Sale End" type="datetime-local" value={form.saleEndAt} onChange={(e) => set('saleEndAt', e.target.value)} fullWidth />
+                <Input label="판매 시작일" type="datetime-local" value={form.saleStartAt} onChange={(e) => set('saleStartAt', e.target.value)} fullWidth />
+                <Input label="판매 종료일" type="datetime-local" value={form.saleEndAt} onChange={(e) => set('saleEndAt', e.target.value)} fullWidth />
               </div>
-              <Input label="Delivery Info" value={form.deliveryInfo} onChange={(e) => set('deliveryInfo', e.target.value)} placeholder="Shipping notes" fullWidth />
-              <Input label="SEO Title" value={form.seoTitle} onChange={(e) => set('seoTitle', e.target.value)} placeholder="SEO title" fullWidth />
-              <Input label="SEO Description" value={form.seoDescription} onChange={(e) => set('seoDescription', e.target.value)} placeholder="SEO description" fullWidth />
-              <Input label="SEO Keywords" value={form.seoKeywords} onChange={(e) => set('seoKeywords', e.target.value)} placeholder="SEO keywords" fullWidth />
+              <Input label="배송 정보" value={form.deliveryInfo} onChange={(e) => set('deliveryInfo', e.target.value)} placeholder="배송 안내" fullWidth />
+              <Input label="SEO 제목" value={form.seoTitle} onChange={(e) => set('seoTitle', e.target.value)} placeholder="SEO 제목" fullWidth />
+              <Input label="SEO 설명" value={form.seoDescription} onChange={(e) => set('seoDescription', e.target.value)} placeholder="SEO 설명" fullWidth />
+              <Input label="SEO 키워드" value={form.seoKeywords} onChange={(e) => set('seoKeywords', e.target.value)} placeholder="SEO 키워드" fullWidth />
             </div>
 
             <ProductImageUpload

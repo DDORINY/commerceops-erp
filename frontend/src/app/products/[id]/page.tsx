@@ -53,7 +53,7 @@ function ProductDetailBlockView({ block }: { block: ProductDetailBlock }) {
       <section>
         {block.title && <h3 className="text-base font-bold text-[#222] mb-3">{block.title}</h3>}
         <div className="relative aspect-[16/10] bg-[#f7f7f7]">
-          <Image src={src} alt={block.title || 'Product detail image'} fill className="object-cover" sizes="100vw" />
+          <Image src={src} alt={block.title || '상품 상세 이미지'} fill className="object-cover" sizes="100vw" />
         </div>
       </section>
     );
@@ -294,7 +294,7 @@ export default function ProductDetailPage({
             {isSoldOut && (
               <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
                 <span className="bg-[#777] text-white text-sm font-medium px-6 py-2 tracking-widest">
-                  SOLD OUT
+                  품절
                 </span>
               </div>
             )}

@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import { categoryService, flattenCategoryTree, type ApiCategoryNode } from '@/lib/services/categoryService';
 
 const FALLBACK_CATEGORIES = [
-  { id: 0, name: 'BEST', href: '/products?category=BEST' },
-  { id: -1, name: 'NEW', href: '/products?category=NEW' },
-  { id: -2, name: 'SALE', href: '/products?category=SALE' },
+  { id: 0, name: '베스트', href: `/products?category=${encodeURIComponent('베스트')}` },
+  { id: -1, name: '신상품', href: `/products?category=${encodeURIComponent('신상품')}` },
+  { id: -2, name: '세일', href: `/products?category=${encodeURIComponent('세일')}` },
 ];
 
 export default function DynamicCategoryNav() {
@@ -65,8 +65,8 @@ export default function DynamicCategoryNav() {
         <ul className="flex items-center justify-center overflow-x-auto scrollbar-none">
           {navItems.map((cat) => {
             const isActive = pathname === '/products' && currentCategory === cat.name;
-            const isSale = cat.name === 'SALE';
-            const isEmphasis = cat.name === 'BEST' || cat.name === 'NEW';
+            const isSale = cat.name === '세일';
+            const isEmphasis = cat.name === '베스트' || cat.name === '신상품';
 
             return (
               <li key={cat.id}>

@@ -6,20 +6,20 @@ import { usePathname } from 'next/navigation';
 import { getUserRole } from '@/lib/auth';
 
 const NAV_ITEMS: Array<{ label: string; href: string; adminOnly?: boolean }> = [
-  { label: 'Dashboard', href: '/admin' },
-  { label: 'Products', href: '/admin/products' },
-  { label: 'Categories', href: '/admin/categories', adminOnly: true },
-  { label: 'Orders', href: '/admin/orders' },
-  { label: 'Inventory', href: '/admin/inventory' },
-  { label: 'Shipments', href: '/admin/shipments' },
-  { label: 'Warehouses', href: '/admin/warehouses' },
-  { label: 'Returns', href: '/admin/returns' },
-  { label: 'Inquiries', href: '/admin/inquiries' },
-  { label: 'Reviews', href: '/admin/reviews', adminOnly: true },
-  { label: 'Accounting', href: '/admin/accounting', adminOnly: true },
-  { label: 'Customers', href: '/admin/customers', adminOnly: true },
-  { label: 'Sales', href: '/admin/sales' },
-  { label: 'Coupons', href: '/admin/coupons', adminOnly: true },
+  { label: '대시보드', href: '/admin' },
+  { label: '상품 관리', href: '/admin/products' },
+  { label: '카테고리 관리', href: '/admin/categories', adminOnly: true },
+  { label: '주문 관리', href: '/admin/orders' },
+  { label: '재고 관리', href: '/admin/inventory' },
+  { label: '배송 관리', href: '/admin/shipments' },
+  { label: '창고 관리', href: '/admin/warehouses' },
+  { label: '반품 관리', href: '/admin/returns' },
+  { label: '문의 관리', href: '/admin/inquiries' },
+  { label: '리뷰 관리', href: '/admin/reviews', adminOnly: true },
+  { label: '회계 관리', href: '/admin/accounting', adminOnly: true },
+  { label: '고객 관리', href: '/admin/customers', adminOnly: true },
+  { label: '매출 통계', href: '/admin/sales' },
+  { label: '쿠폰 관리', href: '/admin/coupons', adminOnly: true },
 ];
 
 export default function AdminSidebarV2() {
@@ -51,7 +51,7 @@ export default function AdminSidebarV2() {
 
       {userRole && !isAdminRole && (
         <div className="px-6 py-2 border-b border-white/10">
-          <span className="text-xs text-amber-400 font-semibold tracking-wide">MANAGER</span>
+          <span className="text-xs text-amber-400 font-semibold tracking-wide">매니저</span>
         </div>
       )}
 
@@ -81,7 +81,7 @@ export default function AdminSidebarV2() {
           href="/"
           className="flex items-center gap-2 text-xs text-[#8a9bb5] hover:text-white transition-colors"
         >
-          Shop Home
+          쇼핑몰 바로가기
         </Link>
       </div>
     </aside>

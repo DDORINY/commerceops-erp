@@ -27,7 +27,7 @@ const QUICK_CATEGORIES = [
   { label: '티셔츠', href: '/products?category=티셔츠' },
   { label: '스커트', href: '/products?category=스커트' },
   { label: '팬츠', href: '/products?category=팬츠' },
-  { label: 'SALE', href: '/products?category=SALE' },
+  { label: '세일', href: `/products?category=${encodeURIComponent('세일')}` },
 ];
 
 export default function HomePage() {
@@ -99,7 +99,7 @@ export default function HomePage() {
           <section className="py-14">
             <div className="flex items-end justify-between mb-8">
               <div>
-                <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">New Arrivals</p>
+                <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">신상품</p>
                 <h2 className="text-2xl font-bold text-[#222] tracking-tight">신상품</h2>
               </div>
               <Link href="/products" className="text-xs text-[#777] hover:text-[#222] underline underline-offset-2 transition-colors">
@@ -112,7 +112,7 @@ export default function HomePage() {
           <section className="py-14 border-t border-[#f0f0f0]">
             <div className="flex items-end justify-between mb-8">
               <div>
-                <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">Best Products</p>
+                <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">베스트 상품</p>
                 <h2 className="text-2xl font-bold text-[#222] tracking-tight">베스트 상품</h2>
               </div>
               <Link href="/products" className="text-xs text-[#777] hover:text-[#222] underline underline-offset-2 transition-colors">
@@ -125,7 +125,7 @@ export default function HomePage() {
           <section className="py-14 border-t border-[#f0f0f0]">
             <div className="flex items-end justify-between mb-8">
               <div>
-                <p className="text-xs tracking-[0.25em] text-[#d94f4f] mb-1 uppercase font-semibold">Today Sale</p>
+              <p className="text-xs tracking-[0.25em] text-[#d94f4f] mb-1 uppercase font-semibold">오늘의 할인</p>
                 <h2 className="text-2xl font-bold text-[#222] tracking-tight">오늘의 할인</h2>
               </div>
               <Link href="/products" className="text-xs text-[#d94f4f] hover:text-[#c43a3a] underline underline-offset-2 transition-colors">
@@ -137,14 +137,14 @@ export default function HomePage() {
 
           <section className="py-14 border-t border-[#f0f0f0]">
             <div className="text-center mb-10">
-              <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">Theme Look</p>
+              <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">테마 룩</p>
               <h2 className="text-2xl font-bold text-[#222] tracking-tight">테마 룩</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { title: 'Daily Casual', desc: '편안하고 세련된 일상룩', bg: 'bg-[#f0f4f9]', color: 'text-[#3a5a7a]' },
-                { title: 'Office Chic', desc: '깔끔한 오피스 코디', bg: 'bg-[#f9f0f2]', color: 'text-[#7a3a5a]' },
-                { title: 'Weekend Date', desc: '데이트룩 제안', bg: 'bg-[#f5f0eb]', color: 'text-[#7a5a3a]' },
+                { title: '데일리 캐주얼', desc: '편안하고 세련된 일상룩', bg: 'bg-[#f0f4f9]', color: 'text-[#3a5a7a]' },
+                { title: '오피스 시크', desc: '깔끔한 오피스 코디', bg: 'bg-[#f9f0f2]', color: 'text-[#7a3a5a]' },
+                { title: '주말 데이트', desc: '데이트룩 제안', bg: 'bg-[#f5f0eb]', color: 'text-[#7a5a3a]' },
               ].map((theme) => (
                 <Link
                   key={theme.title}
@@ -162,7 +162,7 @@ export default function HomePage() {
             <section className="py-14 border-t border-[#f0f0f0]">
               <div className="flex items-end justify-between mb-8">
                 <div>
-                  <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">Recently Viewed</p>
+                  <p className="text-xs tracking-[0.25em] text-[#999] mb-1 uppercase">최근 본 상품</p>
                   <h2 className="text-2xl font-bold text-[#222] tracking-tight">최근 본 상품</h2>
                 </div>
               </div>

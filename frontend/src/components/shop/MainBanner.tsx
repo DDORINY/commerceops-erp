@@ -6,33 +6,33 @@ import Link from 'next/link';
 const BANNERS = [
   {
     id: 1,
-    headline: 'NEW SEASON',
+    headline: '새 시즌',
     subline: '2026 S/S 신상품 출시',
     description: '봄/여름 시즌 신규 컬렉션을 만나보세요',
     ctaText: '신상품 보러가기',
-    ctaHref: '/products?category=NEW',
+    ctaHref: `/products?category=${encodeURIComponent('신상품')}`,
     bgColor: 'bg-[#f9f0f2]',
     textColor: 'text-[#3a1a22]',
     accentColor: 'bg-[#c4788a]',
   },
   {
     id: 2,
-    headline: 'BEST PICKS',
+    headline: '베스트 픽',
     subline: '이번 시즌 베스트 아이템',
     description: '고객님이 가장 많이 선택한 상품을 소개합니다',
     ctaText: '베스트 상품 보기',
-    ctaHref: '/products?category=BEST',
+    ctaHref: `/products?category=${encodeURIComponent('베스트')}`,
     bgColor: 'bg-[#f0f4f9]',
     textColor: 'text-[#1a2a3a]',
     accentColor: 'bg-[#7899c4]',
   },
   {
     id: 3,
-    headline: 'SUMMER SALE',
+    headline: '여름 세일',
     subline: '최대 30% 할인',
     description: '한정 수량 세일 상품, 지금 바로 확인하세요',
     ctaText: '세일 상품 보기',
-    ctaHref: '/products?category=SALE',
+    ctaHref: `/products?category=${encodeURIComponent('세일')}`,
     bgColor: 'bg-[#f5f0eb]',
     textColor: 'text-[#3a2a1a]',
     accentColor: 'bg-[#c4a278]',
@@ -50,7 +50,7 @@ export default function MainBanner() {
           {/* 텍스트 */}
           <div className="flex-1">
             <p className="text-xs font-semibold tracking-[0.3em] text-[#999] mb-3 uppercase">
-              CommerceOps Collection
+              CommerceOps 컬렉션
             </p>
             <h2 className={`text-5xl md:text-6xl font-bold tracking-tight mb-4 ${banner.textColor}`}>
               {banner.headline}
@@ -71,7 +71,7 @@ export default function MainBanner() {
           {/* 배너 이미지 플레이스홀더 */}
           <div className="hidden md:block w-[360px] h-[440px] bg-white/40 flex-shrink-0 flex items-center justify-center">
             <div className="w-full h-full flex items-center justify-center text-[#bbb] text-sm">
-              Banner Image
+              배너 이미지
             </div>
           </div>
         </div>
