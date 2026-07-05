@@ -4,7 +4,6 @@ import com.commerceops.erp.domain.cart.dto.*;
 import com.commerceops.erp.domain.cart.entity.Cart;
 import com.commerceops.erp.domain.cart.repository.CartRepository;
 import com.commerceops.erp.domain.product.entity.Product;
-import com.commerceops.erp.domain.product.enums.ProductStatus;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.global.exception.BusinessException;
@@ -40,7 +39,7 @@ public class CartService {
         Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        if (product.getStatus() != ProductStatus.ON_SALE) {
+        if (!product.isPurchasable(java.time.LocalDateTime.now())) {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_AVAILABLE);
         }
 
@@ -101,6 +100,9 @@ public class CartService {
     }
 
     private void validateStock(Product product, int requestedQty) {
+        if (!product.isPurchasable(java.time.LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_AVAILABLE);
+        }
         if (requestedQty > product.getStockQuantity()) {
             throw new BusinessException(ErrorCode.OUT_OF_STOCK);
         }

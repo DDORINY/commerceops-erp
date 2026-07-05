@@ -23,6 +23,12 @@ public record AdminProductListResponse(
         Integer stockQuantity,
         String imageUrl,
         String status,
+        String salesStatus,
+        String displayStatus,
+        Integer safetyStockQuantity,
+        Boolean purchasable,
+        String stockDisplayStatus,
+        String stockDisplayText,
         List<ProductOptionGroup> options,
         LocalDateTime createdAt
 ) {
@@ -43,6 +49,12 @@ public record AdminProductListResponse(
                 product.getStockQuantity(),
                 product.getImageUrl(),
                 product.getStatus().name(),
+                product.getSalesStatus().name(),
+                product.getDisplayStatus().name(),
+                product.getSafetyStockQuantity(),
+                product.isPurchasable(LocalDateTime.now()),
+                product.getStockDisplayStatus().name(),
+                product.getStockDisplayText(),
                 product.getOptions() != null ? product.getOptions() : List.of(),
                 product.getCreatedAt()
         );

@@ -16,7 +16,6 @@ import com.commerceops.erp.domain.payment.entity.Payment;
 import com.commerceops.erp.domain.payment.enums.PaymentStatus;
 import com.commerceops.erp.domain.payment.repository.PaymentRepository;
 import com.commerceops.erp.domain.product.entity.Product;
-import com.commerceops.erp.domain.product.enums.ProductStatus;
 import com.commerceops.erp.domain.shipment.entity.Shipment;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
 import com.commerceops.erp.domain.shipment.repository.ShipmentRepository;
@@ -64,7 +63,7 @@ public class OrderService {
         int totalPrice = 0;
         for (Cart cart : cartItems) {
             Product product = cart.getProduct();
-            if (product.getStatus() != ProductStatus.ON_SALE) {
+            if (!product.isPurchasable(LocalDateTime.now())) {
                 throw new BusinessException(ErrorCode.PRODUCT_NOT_AVAILABLE);
             }
             if (product.getStockQuantity() < cart.getQuantity()) {

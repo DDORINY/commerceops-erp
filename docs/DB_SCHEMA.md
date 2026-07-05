@@ -22,7 +22,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | --- | --- | --- |
 | `users` | `User` | `email`, `password`, `name`, `phone`, `role`, `status`, timestamps |
 | `categories` | `Category` | `name`, `parent_id`, `depth`, `sort_order`, `active`, `visible_in_nav`, `slug`, timestamps |
-| `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, `status`, `options`, timestamps |
+| `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, 호환 상태 `status`, 판매 상태 `sales_status`, 전시 상태 `display_status`, `deleted_at`, `safety_stock_quantity`, `options`, timestamps |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
 | `main_banners` | `MainBanner` | `title`, `subtitle`, `description`, `image_url`, `link_url`, `position`, `sort_order`, `active`, `starts_at`, `ends_at`, timestamps |
 | `media_files` | `MediaFile` | `original_filename`, `stored_filename`, `storage_path`, `public_url`, `content_type`, `size`, `media_type`, `created_at` |
@@ -52,6 +52,9 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `UserRole` | `USER`, `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | `UserStatus` | `ACTIVE`, `INACTIVE`, `BLOCKED` |
 | `ProductStatus` | `ON_SALE`, `SOLD_OUT`, `HIDDEN`, `DELETED` |
+| `ProductSalesStatus` | `DRAFT`, `ON_SALE`, `PAUSED`, `SOLD_OUT`, `DISCONTINUED` |
+| `ProductDisplayStatus` | `VISIBLE`, `HIDDEN` |
+| `StockDisplayStatus` | `IN_STOCK`, `LOW_STOCK`, `SOLD_OUT` |
 | `ProductDetailBlockType` | `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` |
 | `BannerPosition` | `MAIN_TOP`, `MAIN_MIDDLE`, `MAIN_BOTTOM` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
@@ -96,6 +99,9 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `Product.options`, `Cart.selectedOptions`, `OrderItem.selectedOptions`는 JSON 문자열 또는 converter 기반 저장이다.
 - v0.3.1 기준 `Product.price`는 판매가, `originalPrice`는 정상가, `discountPrice`는 할인 금액, `purchasePrice`는 관리자 전용 매입가로 사용한다. 마진율은 저장하지 않고 관리자 응답에서 `(판매가 - 매입가) / 판매가 * 100`으로 계산한다.
 - v0.3.1 기준 `Product.searchKeywords`, `Product.tags`, `Product.seoKeywords`는 TEXT 구분자 문자열로 저장한다. AI 태그 추천과 고급 검색이 필요해지면 별도 테이블로 분리할 수 있다.
+- v0.3.5 기준 상품 운영 상태는 `sales_status`와 `display_status`를 기준으로 판단한다. 기존 `status`는 호환 필드로 유지하며, 삭제는 `deleted_at` soft delete 기준을 함께 사용한다.
+- v0.3.5 기준 사용자 구매 가능 여부는 `sales_status=ON_SALE`, `display_status=VISIBLE`, `deleted_at IS NULL`, 재고 1개 이상, 판매 기간 범위 충족 여부로 계산한다.
+- v0.3.5 기준 `safety_stock_quantity` 이하이면 사용자 응답에서 `LOW_STOCK`/`품절 임박`으로 표시한다.
 - `Product.stockQuantity`와 `WarehouseStock.quantity/reservedQuantity`가 함께 존재한다. 창고 기능에서는 창고별 재고와 예약이 source of truth가 되며, 상품 총 재고는 보조/요약 값으로 함께 갱신된다.
 - 실제 PG 벤더별 거래 원장/웹훅 이벤트 테이블은 아직 없다. v0.2.2에서는 `payments.idempotency_key`, `provider`만 추가했다.
 - `audit_logs`는 리뷰 숨김/해제/삭제 이력부터 기록한다. 전체 관리자 기능 감사 로그는 후속 확장 범위다.

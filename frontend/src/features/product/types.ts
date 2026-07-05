@@ -1,4 +1,6 @@
 export type ProductStatus = 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN' | 'DELETED';
+export type ProductSalesStatus = 'DRAFT' | 'ON_SALE' | 'PAUSED' | 'SOLD_OUT' | 'DISCONTINUED';
+export type StockDisplayStatus = 'IN_STOCK' | 'LOW_STOCK' | 'SOLD_OUT';
 
 export type ProductCategory =
   | 'BEST'
@@ -24,6 +26,11 @@ export interface Product {
   stockQuantity: number;
   imageUrl: string;
   status: ProductStatus;
+  salesStatus?: ProductSalesStatus;
+  purchasable?: boolean;
+  stockDisplayStatus?: StockDisplayStatus;
+  stockDisplayText?: string;
+  remainingStockQuantity?: number;
   isNew: boolean;
   isBest: boolean;
   createdAt: string;
@@ -41,6 +48,11 @@ export interface ProductListItem {
   stockQuantity: number;
   imageUrl: string;
   status: ProductStatus;
+  salesStatus?: ProductSalesStatus;
+  purchasable?: boolean;
+  stockDisplayStatus?: StockDisplayStatus;
+  stockDisplayText?: string;
+  remainingStockQuantity?: number;
   isNew: boolean;
   isBest: boolean;
 }

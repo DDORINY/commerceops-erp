@@ -5,7 +5,10 @@ import com.commerceops.erp.domain.product.dto.AdminProductResponse;
 import com.commerceops.erp.domain.product.dto.ProductCreateRequest;
 import com.commerceops.erp.domain.product.dto.ProductDetailBlockRequest;
 import com.commerceops.erp.domain.product.dto.ProductDetailBlockResponse;
+import com.commerceops.erp.domain.product.dto.ProductStatusUpdateRequest;
 import com.commerceops.erp.domain.product.dto.ProductUpdateRequest;
+import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
+import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
 import com.commerceops.erp.domain.product.enums.ProductStatus;
 import com.commerceops.erp.domain.product.service.ProductDetailBlockService;
 import com.commerceops.erp.domain.product.service.ProductService;
@@ -28,12 +31,14 @@ public class AdminProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminProductListResponse>>> getProducts(
             @RequestParam(required = false) ProductStatus status,
+            @RequestParam(required = false) ProductSalesStatus salesStatus,
+            @RequestParam(required = false) ProductDisplayStatus displayStatus,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(
                 ApiResponse.ok("관리자 상품 목록 조회가 완료되었습니다.",
-                        productService.getAdminProducts(status, keyword, page, size))
+                        productService.getAdminProducts(status, salesStatus, displayStatus, keyword, page, size))
         );
     }
 
@@ -78,6 +83,15 @@ public class AdminProductController {
             @Valid @RequestBody ProductUpdateRequest request) {
         return ResponseEntity.ok(
                 ApiResponse.ok("상품이 수정되었습니다.", productService.updateProduct(productId, request))
+        );
+    }
+
+    @PatchMapping("/{productId}/status")
+    public ResponseEntity<ApiResponse<AdminProductResponse>> updateProductStatus(
+            @PathVariable Long productId,
+            @Valid @RequestBody ProductStatusUpdateRequest request) {
+        return ResponseEntity.ok(
+                ApiResponse.ok("Product operation status updated.", productService.updateProductStatus(productId, request))
         );
     }
 

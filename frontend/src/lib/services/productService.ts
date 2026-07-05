@@ -7,6 +7,9 @@ export interface ProductOptionGroup {
 }
 
 export type ProductDetailBlockType = 'HEADING' | 'TEXT' | 'IMAGE' | 'NOTICE' | 'SPEC_TABLE' | 'HTML';
+export type ProductSalesStatus = 'DRAFT' | 'ON_SALE' | 'PAUSED' | 'SOLD_OUT' | 'DISCONTINUED';
+export type ProductDisplayStatus = 'VISIBLE' | 'HIDDEN';
+export type StockDisplayStatus = 'IN_STOCK' | 'LOW_STOCK' | 'SOLD_OUT';
 
 export interface ProductDetailBlock {
   id?: number;
@@ -35,6 +38,11 @@ export interface ApiProductItem {
   stockQuantity: number;
   imageUrl: string | null;
   status: string;
+  salesStatus: ProductSalesStatus;
+  purchasable: boolean;
+  stockDisplayStatus: StockDisplayStatus;
+  stockDisplayText: string;
+  remainingStockQuantity: number;
   options: ProductOptionGroup[];
   createdAt: string;
 }
@@ -64,6 +72,11 @@ export interface ApiProductDetail {
   stockQuantity: number;
   imageUrl: string | null;
   status: string;
+  salesStatus: ProductSalesStatus;
+  purchasable: boolean;
+  stockDisplayStatus: StockDisplayStatus;
+  stockDisplayText: string;
+  remainingStockQuantity: number;
   options: ProductOptionGroup[];
   detailBlocks: ProductDetailBlock[];
   createdAt: string;
@@ -73,11 +86,16 @@ export interface ApiProductDetail {
 export interface ApiAdminProductItem extends ApiProductItem {
   purchasePrice: number | null;
   marginRate: number;
+  displayStatus: ProductDisplayStatus;
+  safetyStockQuantity: number;
 }
 
 export interface ApiAdminProductDetail extends ApiProductDetail {
   purchasePrice: number | null;
   marginRate: number;
+  displayStatus: ProductDisplayStatus;
+  safetyStockQuantity: number;
+  deletedAt: string | null;
 }
 
 export interface ApiCategory {
@@ -105,6 +123,11 @@ export function toProductListItem(p: ApiProductItem): ProductListItem {
     stockQuantity: p.stockQuantity,
     imageUrl: p.imageUrl ?? 'https://placehold.co/600x750?text=No+Image',
     status: p.status as ProductListItem['status'],
+    salesStatus: p.salesStatus,
+    purchasable: p.purchasable,
+    stockDisplayStatus: p.stockDisplayStatus,
+    stockDisplayText: p.stockDisplayText,
+    remainingStockQuantity: p.remainingStockQuantity,
     isNew: false,
     isBest: false,
   };
@@ -131,6 +154,9 @@ export interface ProductCreatePayload {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
+  salesStatus?: ProductSalesStatus;
+  displayStatus?: ProductDisplayStatus;
+  safetyStockQuantity?: number;
   stockQuantity: number;
   imageUrl?: string;
   status: string;
@@ -158,6 +184,9 @@ export interface ProductUpdatePayload {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
+  salesStatus?: ProductSalesStatus;
+  displayStatus?: ProductDisplayStatus;
+  safetyStockQuantity?: number;
   stockQuantity?: number;
   imageUrl?: string;
   status?: string;
@@ -192,12 +221,16 @@ export const productService = {
 
   getAdminProducts: (params: {
     status?: string;
+    salesStatus?: string;
+    displayStatus?: string;
     keyword?: string;
     page?: number;
     size?: number;
   } = {}) => {
     const qs = new URLSearchParams();
     if (params.status && params.status !== 'ALL') qs.set('status', params.status);
+    if (params.salesStatus && params.salesStatus !== 'ALL') qs.set('salesStatus', params.salesStatus);
+    if (params.displayStatus && params.displayStatus !== 'ALL') qs.set('displayStatus', params.displayStatus);
     if (params.keyword) qs.set('keyword', params.keyword);
     if (params.page !== undefined) qs.set('page', String(params.page));
     if (params.size !== undefined) qs.set('size', String(params.size));
@@ -234,6 +267,19 @@ export const productService = {
 
   updateProduct: (id: number, data: ProductUpdatePayload) =>
     apiClient<ApiAdminProductDetail>(`/admin/products/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  updateProductStatus: (
+    id: number,
+    data: {
+      salesStatus?: ProductSalesStatus;
+      displayStatus?: ProductDisplayStatus;
+      safetyStockQuantity?: number;
+    }
+  ) =>
+    apiClient<ApiAdminProductDetail>(`/admin/products/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
