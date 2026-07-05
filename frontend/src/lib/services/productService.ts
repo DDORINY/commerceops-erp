@@ -142,7 +142,7 @@ export function toProductListItem(p: ApiProductItem): ProductListItem {
   return {
     id: Number(p.id),
     categoryId: Number(p.categoryId),
-    categoryName: p.categoryName as ProductListItem['categoryName'],
+    categoryName: p.categoryName,
     name: p.name,
     price: p.price,
     originalPrice: p.originalPrice ?? p.price,
@@ -153,6 +153,8 @@ export function toProductListItem(p: ApiProductItem): ProductListItem {
     imageUrl: p.imageUrl ?? 'https://placehold.co/600x750?text=No+Image',
     status: p.status as ProductListItem['status'],
     salesStatus: p.salesStatus,
+    brand: p.brand,
+    tags: p.tags,
     purchasable: p.purchasable,
     stockDisplayStatus: p.stockDisplayStatus,
     stockDisplayText: p.stockDisplayText,
