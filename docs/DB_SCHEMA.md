@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.4.8`
+기준 버전: `v0.5.3`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -20,6 +20,9 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 관리자 사이드바 menuKey 보강 마이그레이션: `backend/src/main/resources/db/migration/V13__seed_admin_sidebar_menu_permissions.sql`
 - 감사 로그 컨텍스트 확장 마이그레이션: `backend/src/main/resources/db/migration/V14__extend_audit_logs_context.sql`
 - 사업자/약관 설정 마이그레이션: `backend/src/main/resources/db/migration/V15__create_business_terms_settings.sql`
+- SKU/바코드 마스터 마이그레이션: `backend/src/main/resources/db/migration/V16__create_skus.sql`
+- 생산 입고 마이그레이션: `backend/src/main/resources/db/migration/V17__create_production_receipts.sql`
+- 바코드 라벨 출력 이력 마이그레이션: `backend/src/main/resources/db/migration/V18__create_barcode_labels.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -41,6 +44,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `categories` | `Category` | `name`, `parent_id`, `depth`, `sort_order`, `active`, `visible_in_nav`, `slug`, timestamps |
 | `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, 호환 상태 `status`, 판매 상태 `sales_status`, 전시 상태 `display_status`, `deleted_at`, `safety_stock_quantity`, `options`, timestamps |
 | `skus` | `Sku` | `product_id`, `option_signature`, unique `sku_code`, unique nullable `barcode`, `name`, `safety_stock_quantity`, `active`, timestamps |
+| `barcode_labels` | `BarcodeLabel` | `sku_id`, `barcode`, `label_format`, `print_count`, nullable `last_printed_at`, nullable `created_by`, timestamps |
 | `production_orders` | `ProductionOrder` | unique `production_number`, `status`, `warehouse_id`, `planned_quantity`, `completed_quantity`, `started_at`, `completed_at`, `memo`, `created_by`, `updated_by`, timestamps |
 | `production_order_items` | `ProductionOrderItem` | `production_order_id`, `sku_id`, `product_id`, `planned_quantity`, `completed_quantity` |
 | `production_receipts` | `ProductionReceipt` | `production_order_id`, `sku_id`, `product_id`, `warehouse_id`, `quantity`, nullable `inventory_log_id`, `created_by`, `created_at` |
@@ -84,7 +88,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `ProductDetailBlockType` | `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` |
 | `BannerPosition` | `MAIN_TOP`, `MAIN_MIDDLE`, `MAIN_BOTTOM` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
-| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `BUSINESS_SETTINGS_UPDATED`, `TERMS_VERSION_CREATED`, `POLICY_VERSION_CREATED`, `PERMISSION_DENIED` |
+| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `BUSINESS_SETTINGS_UPDATED`, `TERMS_VERSION_CREATED`, `POLICY_VERSION_CREATED`, `SKU_CREATED`, `SKU_UPDATED`, `SKU_ACTIVE_CHANGED`, `SKU_BARCODE_REGENERATED`, `PRODUCTION_ORDER_CREATED`, `PRODUCTION_ORDER_UPDATED`, `PRODUCTION_ORDER_STARTED`, `PRODUCTION_ORDER_COMPLETED`, `PRODUCTION_ORDER_CANCELLED`, `PRODUCTION_RECEIPT_CREATED`, `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED`, `PERMISSION_DENIED` |
 | `TermsType` | `TERMS_OF_SERVICE`, `PRIVACY_POLICY`, `SHIPPING_RETURN_POLICY` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
@@ -122,6 +126,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `Category`는 `parent_id` 자기 참조로 트리 구조를 구성한다.
 - `Product` 1:N `Cart`, `OrderItem`, `Review`, `Inquiry`, `Wishlist`, `InventoryLog`, `WarehouseStock`, `StockTransfer`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote`.
 - `Product` 1:N `Sku`. v0.5.1 기준 SKU는 재고/입출고/바코드 운영 단위 코드이며, 상품 마스터 코드 `product_code`와 분리한다.
+- `Sku` 1:N `BarcodeLabel`. v0.5.3 기준 라벨 출력 이력은 SKU와 현재 barcode snapshot을 함께 저장한다.
 - `ProductionOrder` 1:N `ProductionOrderItem`; `ProductionOrder` 1:N `ProductionReceipt`.
 - `ProductionOrderItem`은 `Sku`와 `Product`를 참조한다. v0.5.2 기준 BOM/자재 차감 없이 완제품 SKU 입고만 처리한다.
 - `ProductionReceipt`는 생산 완료 입고 이력이며 `Sku`, `Product`, `Warehouse`, 선택 `InventoryLog`를 참조한다.
@@ -155,4 +160,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.4.8 기준 `terms_versions`는 기존 row를 overwrite하지 않고 새 버전을 생성한다. 서비스 레벨에서 type별 active=true 최신 버전을 하나만 유지하고 과거 버전 조회를 허용한다. 삭제 API는 제공하지 않는다.
 - v0.5.1 기준 `skus.sku_code`는 수동 입력 또는 서버 자동 생성 값을 저장한다. `barcode`는 nullable이지만 값이 있으면 unique이며, 비어 있는 생성 요청은 서버가 고유 바코드를 자동 생성한다.
 - v0.5.2 기준 생산 완료 처리는 `Product.stockQuantity`와 `WarehouseStock.quantity`를 함께 증가시키고 `inventory_logs.type=PRODUCTION_RECEIPT`를 생성한다.
+- v0.5.3 기준 `barcode_labels`는 라벨 생성/출력 이력을 저장한다. HTML 미리보기 기반이며 실제 프린터 드라이버/PDF 출력은 아직 제공하지 않는다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.
