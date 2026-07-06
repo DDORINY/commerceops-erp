@@ -47,7 +47,7 @@
 | `/admin/sales` | `app/admin/sales/page.tsx` | `adminService` dashboard sales/top products |
 | `/admin/inventory` | `app/admin/inventory/page.tsx` | `adminService.getInventory`, inbound/adjust |
 | `/admin/shipments` | `app/admin/shipments/page.tsx` | `shipmentService`, 송장번호 수동 입력/자동 생성/수정, 송장 라벨 미리보기/출력 이력, 배송 추적 이력 조회/추가, 배송 상태 변경, 배송완료 처리 |
-| `/admin/returns` | `app/admin/returns/page.tsx` | `returnService` |
+| `/admin/returns` | `app/admin/returns/page.tsx` | `returnService`, 반품 승인/거절, 수거 송장/상태/배송비 관리 |
 | `/admin/coupons` | `app/admin/coupons/page.tsx` | `couponService` |
 | `/admin/warehouses` | `app/admin/warehouses/page.tsx` | `warehouseService` |
 | `/admin/settings` | `app/admin/settings/page.tsx` | `settingsService`, 사업자 설정 저장, 약관/개인정보처리방침/배송반품정책 버전 생성/이력 조회 |

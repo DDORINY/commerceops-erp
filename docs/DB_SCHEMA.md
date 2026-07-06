@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.6.5`
+기준 버전: `v0.6.6`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -30,6 +30,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 송장번호 발급 정보 마이그레이션: `backend/src/main/resources/db/migration/V25__extend_shipments_tracking_number.sql`
 - 송장 라벨 출력 이력 마이그레이션: `backend/src/main/resources/db/migration/V26__create_shipment_labels.sql`
 - 배송 추적 이벤트 마이그레이션: `backend/src/main/resources/db/migration/V27__create_shipment_tracking_events.sql`
+- 반품 배송 정보 마이그레이션: `backend/src/main/resources/db/migration/V28__create_return_shipment_infos.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -74,6 +75,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `shipment_labels` | `ShipmentLabel` | `shipment_id`, `tracking_number`, `carrier`, `label_format`, `print_count`, `last_printed_at`, `created_by`, timestamps |
 | `shipment_tracking_events` | `ShipmentTrackingEvent` | `shipment_id`, `status`, `description`, `event_at`, `raw_payload`, `created_at` |
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
+| `return_shipment_infos` | `ReturnShipmentInfo` | unique `return_request_id`, `carrier`, `tracking_number`, `status`, `shipping_fee`, `fee_payer`, `memo`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `status`, `created_at` |
 | `audit_logs` | `AuditLog` | `actor_id`, `actor_email`, `actor_name`, `action_type`, `target_type`, nullable `target_id`, `before_status`, `after_status`, `summary`, `ip_address`, `user_agent`, `request_method`, `request_path`, `before_json`, `after_json`, `metadata_json`, `created_at` |
 | `business_settings` | `BusinessSettings` | 단일 row 설정, `company_name`, `representative_name`, `business_registration_number`, `mail_order_business_number`, `address`, `customer_service_phone`, `customer_service_email`, `brand_name`, `updated_by`, timestamps |
