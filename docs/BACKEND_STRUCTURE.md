@@ -76,6 +76,7 @@ com.commerceops.erp
 | review | `ReviewController`, `AdminReviewController` | `ReviewService` | `ReviewRepository` | `Review` |
 | settings | `SettingsController`, `AdminSettingsController` | `SettingsService` | `BusinessSettingsRepository`, `TermsVersionRepository` | `BusinessSettings`, `TermsVersion` |
 | shipment | `ShipmentController`, `AdminShipmentController` | `ShipmentService` | `ShipmentRepository` | `Shipment` |
+| sku | `AdminSkuController` | `SkuService` | `SkuRepository` | `Sku` |
 | user | `AdminUserController` | `AdminUserService` | `UserRepository` | `User` |
 | warehouse | `AdminWarehouseController` | `WarehouseService`, `WarehouseFulfillmentService` | `WarehouseRepository`, `WarehouseStockRepository`, `StockReservationRepository`, `StockTransferRepository` | `Warehouse`, `WarehouseStock`, `StockReservation`, `StockTransfer` |
 | wishlist | `WishlistController` | `WishlistService` | `WishlistRepository` | `Wishlist` |
@@ -108,6 +109,7 @@ com.commerceops.erp
 - API permission 정책: v0.4.6 기준 `PermissionChecker`가 Controller method 시작부에서 현재 사용자의 effective permission code를 검증한다. `SecurityConfig`는 `/api/admin/**`에 대한 role 기반 1차 접근을 유지하고, 상품/주문/결제/재고/창고/회계/쿠폰/리뷰/문의/직원/권한/감사 로그 등 주요 관리자 API는 permission code로 세부 실행 권한을 나눈다. 권한 없음은 403과 한국어 안내 메시지로 반환한다.
 - 감사 로그 확장: v0.4.7 기준 `AuditLogService`는 관리자 변경 작업의 action/target/status 요약과 함께 요청 IP, User-Agent, method/path, before/after/metadata JSON을 기록한다. `AdminAuditLogController`는 actor/action/target/date 필터와 상세 조회를 제공하며, `PermissionChecker`는 인증된 관리자의 permission code 부족으로 인한 403을 `PERMISSION_DENIED`로 남긴다.
 - 사업자/약관 설정: v0.4.8 기준 `SettingsService`가 단일 row 사업자 설정과 약관/개인정보처리방침/배송반품정책 버전 이력을 관리한다. 관리자 API는 `SETTINGS_MANAGE` permission을 요구하고 공개 API는 인증 없이 최신 공개 정보만 조회한다.
+- SKU/바코드 재고 마스터: v0.5.1 기준 `SkuService`가 상품별 SKU 코드와 바코드를 관리한다. 조회는 `INVENTORY_READ`, 생성/수정/활성 변경은 `SKU_MANAGE`, 바코드 재발급은 `BARCODE_MANAGE` permission을 요구하며 주요 변경은 audit log에 기록한다.
 
 ## 환경 프로파일
 
