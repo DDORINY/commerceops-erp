@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.5.6`
+기준 버전: `v0.5.7`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -231,3 +231,10 @@
 - `frontend/src/lib/services/warehouseLocationService.ts`: `/api/admin/warehouse-locations`와 위치별 재고 조회 API 호출 타입과 함수.
 - `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `창고 위치 관리` 메뉴를 추가한다.
 - 위치 조회는 `INVENTORY_READ`, 생성/수정/활성 변경 버튼은 `WAREHOUSE_MANAGE` 기준으로 비활성화한다.
+
+## v0.5.7 Inventory Alert Safety Stock UI
+
+- `frontend/src/app/admin/inventory-alerts/page.tsx`: 안전재고 기준 생성/수정, 활성/비활성 변경, 기준 목록 필터, 재고 부족 항목 조회 화면.
+- `frontend/src/lib/services/inventoryAlertService.ts`: `/api/admin/inventory-alert-rules`와 `/api/admin/inventory-alerts/low-stock` 호출 타입과 함수.
+- `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `안전재고 알림` 메뉴를 추가한다.
+- 기준 조회와 재고 부족 조회는 `INVENTORY_READ`, 생성/수정/활성 변경 버튼은 `INVENTORY_WRITE` 기준으로 비활성화한다.
