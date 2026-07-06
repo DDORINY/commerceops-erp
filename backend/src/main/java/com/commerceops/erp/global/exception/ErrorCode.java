@@ -79,6 +79,8 @@ public enum ErrorCode {
     SAME_WAREHOUSE_TRANSFER(400, "WAREHOUSE_007", "같은 창고로 재고를 이동할 수 없습니다."),
     STOCK_TRANSFER_NOT_FOUND(404, "WAREHOUSE_008", "재고 이동 요청을 찾을 수 없습니다."),
     STOCK_TRANSFER_ALREADY_COMPLETED(409, "WAREHOUSE_009", "이미 완료된 재고 이동입니다."),
+    WAREHOUSE_LOCATION_NOT_FOUND(404, "WAREHOUSE_010", "창고 위치를 찾을 수 없습니다."),
+    DUPLICATE_WAREHOUSE_LOCATION_CODE(409, "WAREHOUSE_011", "이미 사용 중인 창고 위치 코드입니다."),
 
     // 쿠폰 (coupon)
     COUPON_NOT_FOUND(404, "COUPON_001", "존재하지 않는 쿠폰 코드입니다."),

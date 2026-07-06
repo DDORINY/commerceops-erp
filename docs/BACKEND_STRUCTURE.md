@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.5.5`
+기준 버전: `v0.5.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -81,7 +81,7 @@ com.commerceops.erp
 | shipment | `ShipmentController`, `AdminShipmentController` | `ShipmentService` | `ShipmentRepository` | `Shipment` |
 | sku | `AdminSkuController` | `SkuService` | `SkuRepository` | `Sku` |
 | user | `AdminUserController` | `AdminUserService` | `UserRepository` | `User` |
-| warehouse | `AdminWarehouseController` | `WarehouseService`, `WarehouseFulfillmentService` | `WarehouseRepository`, `WarehouseStockRepository`, `StockReservationRepository`, `StockTransferRepository` | `Warehouse`, `WarehouseStock`, `StockReservation`, `StockTransfer` |
+| warehouse | `AdminWarehouseController`, `AdminWarehouseLocationController` | `WarehouseService`, `WarehouseLocationService`, `WarehouseFulfillmentService` | `WarehouseRepository`, `WarehouseStockRepository`, `WarehouseLocationRepository`, `WarehouseLocationStockRepository`, `StockReservationRepository`, `StockTransferRepository` | `Warehouse`, `WarehouseStock`, `WarehouseLocation`, `WarehouseLocationStock`, `StockReservation`, `StockTransfer` |
 | wishlist | `WishlistController` | `WishlistService` | `WishlistRepository` | `Wishlist` |
 
 ## 글로벌 구성
@@ -116,6 +116,7 @@ com.commerceops.erp
 - 생산 입고 흐름: v0.5.2 기준 `ProductionService`가 생산 주문 생성/수정/시작/취소/완료를 관리한다. 완료 처리 시 SKU의 상품 재고와 창고 재고를 증가시키고 `ProductionReceipt`, `InventoryLog(PRODUCTION_RECEIPT)`, audit log를 함께 생성한다.
 - 바코드 라벨/입출고: v0.5.4 기준 `BarcodeService`가 바코드/SKU 검색, 바코드 단건 조회, 라벨 HTML 미리보기 생성, 출력 이력 기록, 바코드 기반 재고 조회/입고/출고를 제공한다. 조회는 `INVENTORY_READ`, 라벨 생성/출력 기록은 `BARCODE_MANAGE`, 입고/출고는 `INVENTORY_WRITE` permission을 요구하며 `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED`, `STOCK_INBOUNDED`, `STOCK_OUTBOUNDED` audit log를 남긴다.
 - 재고 실사: v0.5.5 기준 `StockCountService`가 창고별 실사 세션 생성, SKU 품목 저장, 시작/완료/취소를 제공한다. 완료 시 실사 차이를 상품/창고 재고와 `InventoryLog(ADJUST)`에 반영하고 `STOCK_COUNT_*` audit log를 남긴다.
+- 창고 위치: v0.5.6 기준 `WarehouseLocationService`가 창고 위치 목록/생성/수정/활성 상태 변경과 위치별 SKU 재고 조회를 제공한다. 위치별 수량 변경과 위치 간 이동은 v0.5.7 재고 이동 고도화로 이관한다.
 
 ## 환경 프로파일
 
