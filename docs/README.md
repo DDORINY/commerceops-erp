@@ -1,6 +1,6 @@
 # CommerceOps ERP 문서 안내
 
-기준 버전: `v0.6.9`
+기준 버전: `v0.7.0`
 
 CommerceOps ERP 문서는 포트폴리오 검토, 개발 인수인계, 버전 운영, 배포/AI 전략을 빠르게 찾을 수 있도록 목적별 폴더로 정리한다.
 
@@ -67,6 +67,7 @@ docs/
 - [v0.4 체크리스트](./checklists/v0.4/)
 - [v0.5 체크리스트](./checklists/v0.5/)
 - [v0.6 체크리스트](./checklists/v0.6/)
+- [v0.7 체크리스트](./checklists/v0.7/)
 - [hotfix/checklist](./checklists/hotfix/)
 
 ## 전체 인덱스

@@ -57,6 +57,7 @@
 - [v0.4](./checklists/v0.4/)
 - [v0.5](./checklists/v0.5/)
 - [v0.6](./checklists/v0.6/)
+- [v0.7](./checklists/v0.7/)
 - [hotfix](./checklists/hotfix/)
 
 ## References
