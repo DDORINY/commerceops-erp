@@ -8,7 +8,8 @@ CommerceOps ERP 문서는 현재 구현 상태, 버전 계획, 작업 규칙, AP
 2. [버전 계획표](./VERSION_PLAN.md): MVP 이후 `v0.1.0`부터의 버전별 작업 계획과 체크리스트를 확인한다.
 3. [버전 작업 규칙](./VERSION_WORKFLOW.md): 브랜치명, 태그, 검증, 문서 갱신 규칙을 확인한다.
 4. [제품 로드맵](./PRODUCT_ROADMAP.md): 제품이 어떤 방향으로 확장되는지 확인한다.
-5. [문서 운영 기준](./DOCUMENTATION_GUIDE.md): 문서를 언제 어떻게 갱신해야 하는지 확인한다.
+5. [AI 개발/학습/배포 전략](./AI_DEVELOPMENT_DEPLOYMENT_PLAN.md): v0.8/v0.9 AI 기능의 코드 구조, 학습/추론 분리, AWS 배포 기준을 확인한다.
+6. [문서 운영 기준](./DOCUMENTATION_GUIDE.md): 문서를 언제 어떻게 갱신해야 하는지 확인한다.
 
 ## 버전 운영 요약
 
@@ -51,6 +52,7 @@ v0.2.0-advanced-plan
 | [DB 스키마](./DB_SCHEMA.md) | 테이블, 관계, 제약, 데이터 정책 | 엔티티 또는 마이그레이션 변경 |
 | [DB 마이그레이션](./DB_MIGRATION.md) | Flyway 파일 규칙과 운영 반영 기준 | 스키마 변경 또는 운영 DB 반영 |
 | [배포/환경 분리](./DEPLOYMENT_ENV.md) | CI와 환경 변수, 운영 프로파일 기준 | CI/CD 또는 환경 설정 변경 |
+| [AI 개발/학습/배포 전략](./AI_DEVELOPMENT_DEPLOYMENT_PLAN.md) | AI 코드, 데이터셋, 모델, FastAPI 추론 서버, AWS 배포 기준 | AI 개발 구조 또는 배포 전략 변경 |
 | [백엔드 구조](./BACKEND_STRUCTURE.md) | 패키지, 계층, 트랜잭션 구조 | 백엔드 구조 변경 |
 | [프론트엔드 구조](./FRONTEND_STRUCTURE.md) | 라우팅, 컴포넌트, 상태 관리 | 화면 또는 구조 변경 |
 
@@ -101,3 +103,4 @@ cd backend
 - 최초 정리: 2026-07-04
 - 버전 운영 규칙 도입: 2026-07-04
 - 로드맵/인코딩 정합성 재정리: 2026-07-07
+- AI 개발/학습/배포 전략 추가: 2026-07-07
