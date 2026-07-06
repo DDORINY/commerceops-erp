@@ -213,6 +213,12 @@
 | Barcode Stock Admin | GET | `/api/admin/barcodes/{barcode}/stock` | - | `BarcodeStockResponse` | `INVENTORY_READ` |
 | Barcode Stock Admin | POST | `/api/admin/barcodes/{barcode}/inbound` | `BarcodeStockChangeRequest` | `BarcodeStockChangeResponse` | `INVENTORY_WRITE` |
 | Barcode Stock Admin | POST | `/api/admin/barcodes/{barcode}/outbound` | `BarcodeStockChangeRequest` | `BarcodeStockChangeResponse` | `INVENTORY_WRITE` |
+| Outbound Admin | GET | `/api/admin/outbound-orders` | `status`, `warehouseId`, `orderId`, `keyword`, `page`, `size` | `PageResponse<OutboundOrderResponse>` | `OUTBOUND_READ` |
+| Outbound Admin | GET | `/api/admin/outbound-orders/{outboundOrderId}` | - | `OutboundOrderResponse` | `OUTBOUND_READ` |
+| Outbound Admin | POST | `/api/admin/outbound-orders` | `OutboundOrderCreateRequest` | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
+| Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}` | `OutboundOrderUpdateRequest` | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
+| Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}/pick` | - | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
+| Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}/cancel` | - | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Stock Count Admin | GET | `/api/admin/stock-counts` | `status`, `page`, `size` | `PageResponse<StockCountResponse>` | `INVENTORY_READ` |
 | Stock Count Admin | GET | `/api/admin/stock-counts/{stockCountId}` | - | `StockCountResponse` | `INVENTORY_READ` |
 | Stock Count Admin | POST | `/api/admin/stock-counts` | `StockCountCreateRequest` | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
@@ -291,6 +297,10 @@
 - `BarcodeStockResponse`: SKU/상품 요약, `productStockQuantity`, `safetyStockQuantity`, `warehouseStocks`.
 - `BarcodeStockChangeRequest`: `warehouseId`, `quantity`, `memo`.
 - `BarcodeStockChangeResponse`: 바코드/SKU/상품/창고 요약, 처리 수량, 상품/창고 재고 변경 전후, `type`.
+- `OutboundOrderCreateRequest`: `orderId`, `warehouseId`, `memo`.
+- `OutboundOrderUpdateRequest`: `warehouseId`, `memo`.
+- `OutboundOrderResponse`: 출고 지시 ID/번호, 주문/주문자/창고 요약, 상태, 요청/피킹/배송 일시, 메모, 수량 합계, 출고 품목 목록.
+- `OutboundOrderItemResponse`: 주문 품목, SKU/바코드, 상품, 지시 수량, 피킹 수량, 스캔 수량.
 - `StockCountCreateRequest`: `warehouseId`, `memo`.
 - `StockCountItemsUpdateRequest`: `items[{ skuId, countedQuantity, memo }]`.
 - `StockCountResponse`: 실사 세션 요약, 상태, 창고, 시작/완료 시각, 실사 품목 목록.
