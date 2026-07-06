@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.6.3`
+기준 버전: `v0.6.4`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -120,7 +120,7 @@ com.commerceops.erp
 - 안전재고 알림: v0.5.7 기준 `InventoryAlertService`가 SKU 또는 SKU+창고 단위 안전재고 기준을 관리하고 기준 이하 재고 항목을 조회한다. 조회는 `INVENTORY_READ`, 기준 생성/수정/활성 변경은 `INVENTORY_WRITE` permission을 요구한다.
 - 출고 지시: v0.6.1 기준 `OutboundOrderService`가 주문 기준 출고 지시 생성, 목록/상세 조회, 창고/메모 수정, 피킹 완료, 취소를 제공한다. 조회는 `OUTBOUND_READ`, 변경은 `OUTBOUND_MANAGE` permission을 요구하고 출고 생성/수정/피킹/취소는 audit log에 기록한다.
 - 택배사/배송 방법: v0.6.2 기준 `ShippingSettingService`가 택배사와 배송 방법 목록/생성/수정/활성 상태 변경을 제공한다. 모든 API는 `CARRIER_MANAGE` permission을 요구하고 생성/수정/활성 상태 변경은 audit log에 기록한다.
-- 송장번호 관리: v0.6.3 기준 `ShipmentService`가 송장번호 수동 저장/수정과 내부 테스트용 자동 생성을 제공한다. 배송 조회는 `SHIPMENT_READ`, 송장번호 생성/수정/배송완료는 `SHIPMENT_MANAGE` permission을 요구한다. READY 상태에서 최초 송장 등록 시에만 출고 재고 차감과 주문 `SHIPPING` 전환을 수행하며, IN_TRANSIT 송장 수정은 재고 차감을 반복하지 않는다.
+- 송장번호/라벨 관리: v0.6.4 기준 `ShipmentService`가 송장번호 수동 저장/수정, 내부 테스트용 자동 생성, 송장 라벨 HTML 미리보기 생성, 출력 이력 기록을 제공한다. 배송 조회는 `SHIPMENT_READ`, 송장번호 생성/수정/배송완료는 `SHIPMENT_MANAGE`, 라벨 생성/출력은 `SHIPPING_LABEL_PRINT` permission을 요구한다. READY 상태에서 최초 송장 등록 시에만 출고 재고 차감과 주문 `SHIPPING` 전환을 수행하며, IN_TRANSIT 송장 수정은 재고 차감을 반복하지 않는다.
 
 ## 환경 프로파일
 
