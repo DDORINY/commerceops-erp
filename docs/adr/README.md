@@ -1,4 +1,4 @@
-﻿# Architecture Decision Records
+# Architecture Decision Records
 
 ADR은 되돌리기 어렵거나 여러 기능에 영향을 주는 기술 결정을 짧고 명확하게 기록하는 문서다.
 
