@@ -1,106 +1,74 @@
-﻿# CommerceOps ERP 문서 안내
+# CommerceOps ERP 문서 안내
 
-CommerceOps ERP 문서는 현재 구현 상태, 버전 계획, 작업 규칙, API/DB 구조를 함께 관리한다.
+기준 버전: `v0.6.9`
 
-## 먼저 읽을 문서
+CommerceOps ERP 문서는 포트폴리오 검토, 개발 인수인계, 버전 운영, 배포/AI 전략을 빠르게 찾을 수 있도록 목적별 폴더로 정리한다.
 
-1. [현재 구현 현황](./CURRENT_STATE.md): 현재 코드 기준으로 가능한 기능과 남은 이슈를 확인한다.
-2. [버전 계획표](./VERSION_PLAN.md): MVP 이후 `v0.1.0`부터의 버전별 작업 계획과 체크리스트를 확인한다.
-3. [버전 작업 규칙](./VERSION_WORKFLOW.md): 브랜치명, 태그, 검증, 문서 갱신 규칙을 확인한다.
-4. [제품 로드맵](./PRODUCT_ROADMAP.md): 제품이 어떤 방향으로 확장되는지 확인한다.
-5. [AI 개발/학습/배포 전략](./AI_DEVELOPMENT_DEPLOYMENT_PLAN.md): v0.8/v0.9 AI 기능의 코드 구조, 학습/추론 분리, AWS 배포 기준을 확인한다.
-6. [문서 운영 기준](./DOCUMENTATION_GUIDE.md): 문서를 언제 어떻게 갱신해야 하는지 확인한다.
-
-## 버전 운영 요약
-
-현재 `main`에 올라간 상태를 MVP 기준선으로 둔다.
-
-이후 작업은 다음 규칙을 따른다.
-
-- 모든 작업은 버전 브랜치에서 진행한다.
-- 브랜치명은 `v{version}-{work}` 형식을 사용한다.
-- 정식 버전은 `v0.1.0`부터 시작한다.
-- `v0.1.0`은 버전 계획표 문서화 버전이다.
-- `v0.1.1` ~ `v0.1.8`은 개발 및 구현 버전이다.
-- `v0.1.9`는 계획 대비 구현 확인과 테스트 검증 버전이다.
-- `v0.2.0`은 v0.1 완료 이후 고도화 및 추가 기능 계획 문서화 버전이다.
-- 각 버전 완료 후 `main` 병합과 태그 생성을 진행한다.
-
-예시:
+## 문서 폴더 구조
 
 ```text
-v0.1.0-version-plan
-v0.1.1-admin-inquiries-api
-v0.1.9-release-verification
-v0.2.0-advanced-plan
+docs/
+  README.md
+  INDEX.md
+  overview/       # 프로젝트 개요, 기능명세, 기술스택, 포트폴리오 요약
+  architecture/   # 시스템 구조, API, DB, 백엔드/프론트 구조, 보안/권한
+  plans/          # 제품 로드맵, 버전 계획, v0.x 계획 문서
+  ai/             # AI 개발, 데이터셋, 모델, LLM 사용 전략
+  operations/     # 현재 상태, 배포/릴리스/문서 운영 기준
+  checklists/     # 버전별 작업 체크리스트
+  adr/            # 아키텍처 의사결정 기록
+  features/       # 기능별 보충 문서
+  templates/      # 문서 템플릿
 ```
 
-## 체크리스트 운영
+## 처음 읽을 문서 순서
 
-모든 작업은 체크리스트로 진행 흐름을 남긴다.
+1. [프로젝트 요약](./overview/PROJECT_SUMMARY.md)
+2. [기능명세서](./overview/FEATURE_SPECIFICATION.md)
+3. [시스템 아키텍처](./architecture/SYSTEM_ARCHITECTURE.md)
+4. [버전 계획표](./plans/VERSION_PLAN.md)
+5. [현재 구현 현황](./operations/CURRENT_STATE.md)
+6. [AI 개발/학습/배포 전략](./ai/AI_DEVELOPMENT_DEPLOYMENT_PLAN.md)
 
-- 버전별 전체 계획: [VERSION_PLAN.md](./VERSION_PLAN.md)
-- 버전 작업 규칙: [VERSION_WORKFLOW.md](./VERSION_WORKFLOW.md)
-- 작업 체크리스트 템플릿: [VERSION_TASK_CHECKLIST.md](./templates/VERSION_TASK_CHECKLIST.md)
-- 릴리스 체크리스트: [RELEASE_CHECKLIST.md](./templates/RELEASE_CHECKLIST.md)
+## 포트폴리오 검토자 추천 문서
 
-## 상세 기술 문서
+- [프로젝트 개요](./overview/PROJECT_OVERVIEW.md)
+- [프로젝트 요약](./overview/PROJECT_SUMMARY.md)
+- [기능명세서](./overview/FEATURE_SPECIFICATION.md)
+- [기술스택](./overview/TECH_STACK.md)
+- [제품 로드맵](./plans/PRODUCT_ROADMAP.md)
+- [최종 포트폴리오 요약](./overview/PORTFOLIO_SUMMARY.md)
 
-| 문서 | 역할 | 갱신 시점 |
-| --- | --- | --- |
-| [API 명세](./API.md) | 요청, 응답, 권한, 오류 계약 | API 추가 또는 변경 |
-| [DB 스키마](./DB_SCHEMA.md) | 테이블, 관계, 제약, 데이터 정책 | 엔티티 또는 마이그레이션 변경 |
-| [DB 마이그레이션](./DB_MIGRATION.md) | Flyway 파일 규칙과 운영 반영 기준 | 스키마 변경 또는 운영 DB 반영 |
-| [배포/환경 분리](./DEPLOYMENT_ENV.md) | CI와 환경 변수, 운영 프로파일 기준 | CI/CD 또는 환경 설정 변경 |
-| [AI 개발/학습/배포 전략](./AI_DEVELOPMENT_DEPLOYMENT_PLAN.md) | AI 코드, 데이터셋, 모델, FastAPI 추론 서버, AWS 배포 기준 | AI 개발 구조 또는 배포 전략 변경 |
-| [백엔드 구조](./BACKEND_STRUCTURE.md) | 패키지, 계층, 트랜잭션 구조 | 백엔드 구조 변경 |
-| [프론트엔드 구조](./FRONTEND_STRUCTURE.md) | 라우팅, 컴포넌트, 상태 관리 | 화면 또는 구조 변경 |
+## 개발자 추천 문서
 
-## 작업 시 필수 검증
+- [API Reference](./architecture/API_REFERENCE.md)
+- [Database Schema](./architecture/DATABASE_SCHEMA.md)
+- [Backend Structure](./architecture/BACKEND_STRUCTURE.md)
+- [Frontend Structure](./architecture/FRONTEND_STRUCTURE.md)
+- [Security Permission Policy](./architecture/SECURITY_PERMISSION_POLICY.md)
+- [Data Flow](./architecture/DATA_FLOW.md)
+- [Algorithm Structure](./architecture/ALGORITHM_STRUCTURE.md)
 
-프론트엔드:
+## 배포/운영/AI 문서
 
-```powershell
-cd frontend
-npm.cmd run lint
-npm.cmd run build
-```
+- [현재 구현 현황](./operations/CURRENT_STATE.md)
+- [배포/환경 분리](./operations/DEPLOYMENT_ENV.md)
+- [AWS 1대 서버 배포 계획](./operations/AWS_SINGLE_SERVER_DEPLOYMENT_PLAN.md)
+- [릴리스 프로세스](./operations/RELEASE_PROCESS.md)
+- [AI 개발/학습/배포 전략](./ai/AI_DEVELOPMENT_DEPLOYMENT_PLAN.md)
+- [AI 모델 전략](./ai/AI_MODEL_STRATEGY.md)
+- [AI 데이터셋 전략](./ai/AI_DATASET_STRATEGY.md)
 
-백엔드:
+## 체크리스트
 
-```powershell
-cd backend
-.\gradlew.bat test
-```
+- [v0.1 체크리스트](./checklists/v0.1/)
+- [v0.2 체크리스트](./checklists/v0.2/)
+- [v0.3 체크리스트](./checklists/v0.3/)
+- [v0.4 체크리스트](./checklists/v0.4/)
+- [v0.5 체크리스트](./checklists/v0.5/)
+- [v0.6 체크리스트](./checklists/v0.6/)
+- [hotfix/checklist](./checklists/hotfix/)
 
-주의:
+## 전체 인덱스
 
-- 기본 `.next`에서 EPERM 잠금이 발생하면 `NEXT_DIST_DIR`을 별도로 지정해 빌드 검증한다.
-- 임시 빌드 산출물은 검증 후 정리한다.
-- Next가 `tsconfig.json`에 임시 include를 추가하면 원상 복구한다.
-- 검증하지 못한 항목은 이유와 남은 리스크를 기록한다.
-
-## 커밋 제외 원칙
-
-다음 항목은 커밋하지 않는다.
-
-- `.env`, `.env.local`, `application-local.yml`
-- JWT secret, DB password, API key, 개인 토큰
-- `.agents/`, `.claude/`, `.codex/`, `AGENTS.md`, `CLAUDE.md`
-- `node_modules/`, `.next/`, `.gradle/`, `build/`
-
-## 상태 표기
-
-| 표기 | 의미 |
-| --- | --- |
-| `[ ]` | 미완료 |
-| `[x]` | 완료 |
-| `Blocked` | 외부 입력 또는 선행 작업 없이는 진행 불가 |
-| `Deferred` | 이번 버전 범위에서 제외하고 이후 버전으로 이관 |
-
-## 문서 기준일
-
-- 최초 정리: 2026-07-04
-- 버전 운영 규칙 도입: 2026-07-04
-- 로드맵/인코딩 정합성 재정리: 2026-07-07
-- AI 개발/학습/배포 전략 추가: 2026-07-07
+전체 문서 목록은 [INDEX.md](./INDEX.md)를 기준으로 한다.
