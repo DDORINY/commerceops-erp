@@ -116,6 +116,7 @@ public class PaymentService {
         order.markAsPaid();
 
         accountingService.recordSale(order.getOrderNumber(), order.getTotalPrice());
+        accountingService.recognizeOrderRevenue(order, user);
 
         return PaymentResponse.from(payment, order);
     }

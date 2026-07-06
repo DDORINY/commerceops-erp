@@ -4,6 +4,7 @@ import com.commerceops.erp.domain.accounting.dto.AccountingEntryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingLedgerResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
+import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
 import com.commerceops.erp.domain.accounting.enums.AccountingEntryType;
 import com.commerceops.erp.domain.accounting.enums.AccountingLedgerStatus;
 import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
@@ -94,5 +95,33 @@ public class AdminAccountingController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
         return ApiResponse.ok(accountingService.getTransaction(transactionId));
+    }
+
+    @PostMapping("/orders/{orderId}/recognize-revenue")
+    public ApiResponse<OrderRevenueRecognitionResponse> recognizeOrderRevenue(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_MANAGE);
+        return ApiResponse.ok(accountingService.recognizeOrderRevenue(orderId, userDetails.getUser()));
+    }
+
+    @GetMapping("/orders/{orderId}/revenue")
+    public ApiResponse<OrderRevenueRecognitionResponse> getOrderRevenue(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getOrderRevenue(orderId));
+    }
+
+    @GetMapping("/revenue-events")
+    public ApiResponse<PageResponse<AccountingTransactionResponse>> getRevenueEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getRevenueEvents(page, size));
     }
 }

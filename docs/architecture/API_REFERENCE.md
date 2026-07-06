@@ -273,6 +273,9 @@
 | Accounting Admin | GET | `/api/admin/accounting/ledgers/{ledgerId}` | - | `AccountingLedgerResponse` | `ACCOUNTING_READ` |
 | Accounting Admin | GET | `/api/admin/accounting/transactions` | `ledgerId`, `type`, `direction`, `referenceType`, `referenceId`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<AccountingTransactionResponse>` | `ACCOUNTING_READ` |
 | Accounting Admin | GET | `/api/admin/accounting/transactions/{transactionId}` | - | `AccountingTransactionResponse` | `ACCOUNTING_READ` |
+| Accounting Admin | POST | `/api/admin/accounting/orders/{orderId}/recognize-revenue` | - | `OrderRevenueRecognitionResponse` | `ACCOUNTING_MANAGE` |
+| Accounting Admin | GET | `/api/admin/accounting/orders/{orderId}/revenue` | - | `OrderRevenueRecognitionResponse` | `ACCOUNTING_READ` |
+| Accounting Admin | GET | `/api/admin/accounting/revenue-events` | `page`, `size` | `PageResponse<AccountingTransactionResponse>` | `ACCOUNTING_READ` |
 | Warehouse Admin | GET | `/api/admin/warehouses` | - | `List<WarehouseResponse>` | 관리자 |
 | Warehouse Admin | POST | `/api/admin/warehouses` | `WarehouseCreateRequest` | `WarehouseResponse` | 관리자 |
 | Warehouse Admin | GET | `/api/admin/warehouse-stocks` | `warehouseId`, `keyword`, `page`, `size` | `PageResponse<WarehouseStockResponse>` | 관리자 |

@@ -330,7 +330,7 @@ export default function AdminAccountingPage() {
         <section>
           <div className="mb-3">
             <h2 className="text-sm font-semibold text-[#1a1f2e]">회계 거래</h2>
-            <p className="mt-1 text-xs text-[#8a9bb5]">주문/결제/배송/반품 등 참조 도메인과 연결될 거래 조회 기반입니다.</p>
+            <p className="mt-1 text-xs text-[#8a9bb5]">주문 결제 완료 시 생성되는 매출 인식 거래와 후속 배송/반품 거래 조회 기반입니다.</p>
           </div>
           {transactionError && (
             <div className="mb-3 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
