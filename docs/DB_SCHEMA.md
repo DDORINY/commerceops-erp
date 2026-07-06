@@ -169,4 +169,6 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.5.3 기준 `barcode_labels`는 라벨 생성/출력 이력을 저장한다. HTML 미리보기 기반이며 실제 프린터 드라이버/PDF 출력은 아직 제공하지 않는다.
 - v0.5.4 기준 바코드 입고/출고는 신규 재고 테이블을 만들지 않고 기존 `warehouse_stocks`와 `inventory_logs`를 사용한다. 통합 `inventory_movements` 원장은 후속 고도화 범위다.
 - v0.5.5 기준 재고 실사 완료 시 차이 수량만 기존 `InventoryLog(ADJUST)`에 기록하고 상품/창고 재고를 조정한다. 위치별 실사는 v0.5.6으로 이관한다.
+- v0.5.6 기준 `warehouse_locations`는 창고별 위치 코드와 구역/통로/랙/셀 정보를 저장한다. `(warehouse_id, code)`는 unique이며, 비활성 위치는 조회되지만 운영상 신규 이동/배치 대상에서 제외할 수 있다.
+- v0.5.6 기준 `warehouse_location_stocks`는 위치별 SKU 재고 기반 테이블이다. 현재는 조회 기반을 우선 제공하고, 위치 간 이동/수량 조정은 v0.5.7 재고 이동 고도화로 이관한다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

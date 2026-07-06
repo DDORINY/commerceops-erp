@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.5.5`
+기준 버전: `v0.5.6`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -224,3 +224,10 @@
 - `frontend/src/lib/services/stockCountService.ts`: `/api/admin/stock-counts` 호출 타입과 API 함수.
 - `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `재고 실사` 메뉴를 추가한다.
 - 실사 조회는 `INVENTORY_READ`, 생성/품목 저장/완료/취소는 `STOCK_COUNT_MANAGE` 기준으로 비활성화한다.
+
+## v0.5.6 Warehouse Location Management UI
+
+- `frontend/src/app/admin/warehouse-locations/page.tsx`: 창고 위치 생성/수정, 활성/비활성 변경, 위치 목록 필터, 위치별 SKU 재고 조회 화면.
+- `frontend/src/lib/services/warehouseLocationService.ts`: `/api/admin/warehouse-locations`와 위치별 재고 조회 API 호출 타입과 함수.
+- `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `창고 위치 관리` 메뉴를 추가한다.
+- 위치 조회는 `INVENTORY_READ`, 생성/수정/활성 변경 버튼은 `WAREHOUSE_MANAGE` 기준으로 비활성화한다.

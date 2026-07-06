@@ -220,6 +220,11 @@
 | Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/start` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
 | Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/complete` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
 | Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/cancel` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
+| Warehouse Location Admin | GET | `/api/admin/warehouse-locations` | `warehouseId`, `active`, `keyword`, `page`, `size` | `PageResponse<WarehouseLocationResponse>` | `INVENTORY_READ` |
+| Warehouse Location Admin | POST | `/api/admin/warehouse-locations` | `WarehouseLocationCreateRequest` | `WarehouseLocationResponse` | `WAREHOUSE_MANAGE` |
+| Warehouse Location Admin | PATCH | `/api/admin/warehouse-locations/{locationId}` | `WarehouseLocationUpdateRequest` | `WarehouseLocationResponse` | `WAREHOUSE_MANAGE` |
+| Warehouse Location Admin | PATCH | `/api/admin/warehouse-locations/{locationId}/active` | `WarehouseLocationActiveRequest` | `WarehouseLocationResponse` | `WAREHOUSE_MANAGE` |
+| Warehouse Location Admin | GET | `/api/admin/warehouse-locations/{locationId}/stocks` | `page`, `size` | `PageResponse<WarehouseLocationStockResponse>` | `INVENTORY_READ` |
 | Production Admin | GET | `/api/admin/production-orders` | `status`, `warehouseId`, `skuId`, `keyword`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<ProductionOrderListResponse>` | `INVENTORY_READ` |
 | Production Admin | GET | `/api/admin/production-orders/{productionOrderId}` | - | `ProductionOrderResponse` | `INVENTORY_READ` |
 | Production Admin | POST | `/api/admin/production-orders` | `ProductionOrderCreateRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
@@ -258,6 +263,8 @@
 - `ReviewResponse`: `reviewId`, `productId`, `productName`, `userName`, `orderItemId`, `rating`, `content`, `status`, `createdAt`.
 - `AuditLogResponse`: `id`, `actorId`, `actorEmail`, `actorName`, `actionType`, `targetType`, `targetId`, `beforeStatus`, `afterStatus`, `summary`, `createdAt`.
 - `NotificationResponse`: `id`, `userId`, `type`, `title`, `message`, `targetType`, `targetId`, `read`, `readAt`, `createdAt`.
+- `WarehouseLocationResponse`: `locationId`, `warehouseId`, `warehouseCode`, `warehouseName`, `code`, `name`, `zone`, `aisle`, `rack`, `cell`, `active`, `createdAt`, `updatedAt`.
+- `WarehouseLocationStockResponse`: `stockId`, `locationId`, `locationCode`, `locationName`, `warehouseId`, `warehouseName`, `skuId`, `skuCode`, `barcode`, `productId`, `productName`, `quantity`, `reservedQuantity`, `availableQuantity`, `updatedAt`.
 - `UnreadNotificationCountResponse`: `unreadCount`.
 - `OpsAnalyticsOverviewResponse`: `accounting`, `sales`, `warehouse`, `notes`.
 - `OpsAnalyticsOverviewResponse.accounting`: `totalSales`, `totalRefunds`, `totalInboundAmount`, `netSales`, `entryCount`.
