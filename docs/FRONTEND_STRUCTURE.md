@@ -58,7 +58,7 @@
 | `/admin/settings/menu-permissions` | `app/admin/settings/menu-permissions/page.tsx` | 권한 그룹별 기능 권한 매트릭스, 메뉴별 필요 권한 관리 |
 | `/admin/barcodes` | `app/admin/barcodes/page.tsx` | `barcodeService`, SKU/바코드 검색, 라벨 미리보기, 출력 이력 기록 |
 | `/admin/barcode-stock` | `app/admin/barcode-stock/page.tsx` | `barcodeStockService`, 바코드 재고 조회, 입고/출고 처리 |
-| `/admin/outbound-orders` | `app/admin/outbound-orders/page.tsx` | `outboundOrderService`, 주문 기준 출고 지시 목록/상세/생성/수정/피킹/취소 |
+| `/admin/outbound-orders` | `app/admin/outbound-orders/page.tsx` | `outboundOrderService`, 주문 기준 출고 지시 목록/상세/생성/수정/피킹/취소, 바코드 검수 |
 | `/admin/carriers` | `app/admin/carriers/page.tsx` | `shippingSettingService`, 택배사 목록/생성/수정/활성 상태 변경 |
 | `/admin/shipping-methods` | `app/admin/shipping-methods/page.tsx` | `shippingSettingService`, 배송 방법 목록/생성/수정/활성 상태 변경 |
 | `/admin/stock-counts` | `app/admin/stock-counts/page.tsx` | `stockCountService`, 실사 세션, 품목 저장, 완료 조정 |
@@ -94,7 +94,7 @@
 | `permissionGroupService.ts` | 권한 그룹 목록/상세/생성/수정/활성 변경, 사용자 권한 그룹 조회/할당, 권한 목록/그룹별 권한/유효 권한/메뉴 권한 |
 | `barcodeService.ts` | 바코드/SKU 검색, 바코드 단건 조회, 바코드 라벨 목록, 라벨 생성, 출력 이력 기록 |
 | `barcodeStockService.ts` | 바코드 재고 조회, 바코드 입고, 바코드 출고 |
-| `outboundOrderService.ts` | 관리자 출고 지시 목록/상세/생성/수정/피킹/취소 |
+| `outboundOrderService.ts` | 관리자 출고 지시 목록/상세/생성/수정/피킹/취소, 바코드 검수 |
 | `shippingSettingService.ts` | 관리자 택배사와 배송 방법 목록/생성/수정/활성 상태 변경 |
 | `stockCountService.ts` | 재고 실사 목록/상세/생성, 품목 저장, 시작/완료/취소 |
 
@@ -251,8 +251,8 @@
 
 ## v0.6.1 Outbound Order UI
 
-- `frontend/src/app/admin/outbound-orders/page.tsx`: 출고 지시 목록, 상태/창고/키워드 필터, 출고 지시 생성/수정, 피킹 완료, 취소, 품목 상세 표시 화면.
-- `frontend/src/lib/services/outboundOrderService.ts`: `/api/admin/outbound-orders` 목록/상세/생성/수정/피킹/취소 API 호출 타입과 함수.
+- `frontend/src/app/admin/outbound-orders/page.tsx`: 출고 지시 목록, 상태/창고/키워드 필터, 출고 지시 생성/수정, 피킹 완료, 취소, 품목 상세, 바코드 검수 입력 화면.
+- `frontend/src/lib/services/outboundOrderService.ts`: `/api/admin/outbound-orders` 목록/상세/생성/수정/피킹/취소/바코드 검수 API 호출 타입과 함수.
 - `frontend/src/lib/adminMenu.ts`: 주문/배송/CS 관리 그룹에 `출고 관리` 메뉴를 추가한다.
 - 조회는 `OUTBOUND_READ`, 생성/수정/피킹/취소 버튼은 `OUTBOUND_MANAGE` 기준으로 비활성화한다.
 

@@ -1,5 +1,6 @@
 package com.commerceops.erp.domain.outbound.controller;
 
+import com.commerceops.erp.domain.outbound.dto.OutboundBarcodeScanRequest;
 import com.commerceops.erp.domain.outbound.dto.OutboundOrderCreateRequest;
 import com.commerceops.erp.domain.outbound.dto.OutboundOrderResponse;
 import com.commerceops.erp.domain.outbound.dto.OutboundOrderUpdateRequest;
@@ -82,6 +83,16 @@ public class AdminOutboundOrderController {
         permissionChecker.require(userDetails, PermissionCodes.OUTBOUND_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("출고 지시를 피킹 완료 처리했습니다.",
                 outboundOrderService.pickOutboundOrder(outboundOrderId, userDetails.getUser())));
+    }
+
+    @PostMapping("/{outboundOrderId}/scan")
+    public ResponseEntity<ApiResponse<OutboundOrderResponse>> scanOutboundItem(
+            @PathVariable Long outboundOrderId,
+            @Valid @RequestBody OutboundBarcodeScanRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.OUTBOUND_MANAGE);
+        return ResponseEntity.ok(ApiResponse.ok("출고 바코드 검수를 기록했습니다.",
+                outboundOrderService.scanOutboundItem(outboundOrderId, request, userDetails.getUser())));
     }
 
     @PatchMapping("/{outboundOrderId}/cancel")

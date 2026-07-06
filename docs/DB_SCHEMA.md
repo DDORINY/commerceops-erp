@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.6.6`
+기준 버전: `v0.6.7`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -31,6 +31,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 송장 라벨 출력 이력 마이그레이션: `backend/src/main/resources/db/migration/V26__create_shipment_labels.sql`
 - 배송 추적 이벤트 마이그레이션: `backend/src/main/resources/db/migration/V27__create_shipment_tracking_events.sql`
 - 반품 배송 정보 마이그레이션: `backend/src/main/resources/db/migration/V28__create_return_shipment_infos.sql`
+- 출고 바코드 검수 로그 마이그레이션: `backend/src/main/resources/db/migration/V29__create_outbound_scan_logs.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -58,6 +59,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `production_receipts` | `ProductionReceipt` | `production_order_id`, `sku_id`, `product_id`, `warehouse_id`, `quantity`, nullable `inventory_log_id`, `created_by`, `created_at` |
 | `outbound_orders` | `OutboundOrder` | unique `outbound_number`, `order_id`, `warehouse_id`, `status`, `requested_at`, `picked_at`, `shipped_at`, `memo`, `created_by`, `updated_by`, timestamps |
 | `outbound_order_items` | `OutboundOrderItem` | `outbound_order_id`, `order_item_id`, nullable `sku_id`, `product_id`, `quantity`, `picked_quantity`, `scanned_quantity`, timestamps |
+| `outbound_scan_logs` | `OutboundScanLog` | `outbound_order_id`, `outbound_order_item_id`, nullable `sku_id`, `barcode`, `quantity`, nullable `scanned_by`, `created_at` |
 | `carriers` | `Carrier` | unique `code`, `name`, `tracking_url_template`, `active`, timestamps |
 | `shipping_methods` | `ShippingMethod` | unique `code`, `name`, nullable `carrier_id`, `default_fee`, `description`, `active`, timestamps |
 | `stock_count_sessions` | `StockCountSession` | unique `count_number`, `warehouse_id`, `status`, `memo`, `started_by`, `completed_by`, `started_at`, `completed_at`, timestamps |
@@ -189,7 +191,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.5.6 기준 `warehouse_locations`는 창고별 위치 코드와 구역/통로/랙/셀 정보를 저장한다. `(warehouse_id, code)`는 unique이며, 비활성 위치는 조회되지만 운영상 신규 이동/배치 대상에서 제외할 수 있다.
 - v0.5.6 기준 `warehouse_location_stocks`는 위치별 SKU 재고 기반 테이블이다. 현재는 조회 기반을 우선 제공하고, 위치 간 이동/수량 조정은 v0.5.7 재고 이동 고도화로 이관한다.
 - v0.5.7 기준 `inventory_alert_rules`는 SKU 또는 SKU+창고 단위 안전재고 기준을 저장한다. `warehouse_id`가 null이면 전체 창고 기준이며, 재고 부족 조회는 활성 rule만 대상으로 한다.
-- v0.6.1 기준 `outbound_orders`는 `outbound_number`, 주문, 창고, 상태, 요청/피킹/배송 일시와 메모를 저장한다. `outbound_order_items`는 주문 품목, 상품, nullable SKU, 지시/피킹/스캔 수량을 저장한다. 실제 바코드 스캔 검수와 재고 차감은 후속 v0.6.x 범위다.
+- v0.6.7 기준 `outbound_orders`는 `outbound_number`, 주문, 창고, 상태, 요청/피킹/배송 일시와 메모를 저장한다. `outbound_order_items`는 주문 품목, 상품, nullable SKU, 지시/피킹/스캔 수량을 저장한다. `outbound_scan_logs`는 바코드 검수 이력을 저장한다. 실제 재고 차감 source of truth 고도화는 후속 범위다.
 - v0.6.2 기준 `carriers`와 `shipping_methods`는 송장/배송 처리에서 선택할 master 데이터다. 실제 택배사 API 호출과 자동 운임 계산은 구현하지 않는다.
 - v0.6.3 기준 `shipments.tracking_number_source`는 `MANUAL` 또는 `SYSTEM`으로 송장번호 입력 방식을 기록하고, `tracking_number_issued_at`은 수동 저장 또는 자동 생성 시각을 기록한다. READY 상태에서 최초 송장 등록 시에만 예약 재고 출고와 주문 `SHIPPING` 전환을 수행하며, IN_TRANSIT 상태의 송장 수정은 재고 차감을 반복하지 않는다.
 - v0.6.4 기준 `shipment_labels`는 송장 라벨 생성과 출력 이력을 저장한다. 송장번호와 택배사는 생성 시점 snapshot으로 저장하며, 실제 프린터 드라이버/PDF 출력은 제공하지 않는다.

@@ -86,4 +86,21 @@ public class OutboundOrderItem {
     void markFullyPicked() {
         this.pickedQuantity = this.quantity;
     }
+
+    public void scan(Integer quantity) {
+        int nextScanned = safe(this.scannedQuantity) + safe(quantity);
+        if (nextScanned > safe(this.quantity)) {
+            throw new IllegalArgumentException("검수 수량이 출고 지시 수량을 초과했습니다.");
+        }
+        this.scannedQuantity = nextScanned;
+        this.pickedQuantity = Math.max(safe(this.pickedQuantity), nextScanned);
+    }
+
+    public boolean isFullyScanned() {
+        return safe(this.scannedQuantity) >= safe(this.quantity);
+    }
+
+    private int safe(Integer value) {
+        return value == null ? 0 : value;
+    }
 }

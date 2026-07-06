@@ -121,6 +121,21 @@ public class OutboundOrder {
         this.items.forEach(OutboundOrderItem::markFullyPicked);
     }
 
+    public void markPicking(User actor) {
+        if (this.status == OutboundOrderStatus.REQUESTED) {
+            this.status = OutboundOrderStatus.PICKING;
+        }
+        this.updatedBy = actor;
+    }
+
+    public void markPickedIfFullyScanned(User actor) {
+        if (!items.isEmpty() && items.stream().allMatch(OutboundOrderItem::isFullyScanned)) {
+            this.status = OutboundOrderStatus.PICKED;
+            this.pickedAt = LocalDateTime.now();
+        }
+        this.updatedBy = actor;
+    }
+
     public void cancel(User actor) {
         this.status = OutboundOrderStatus.CANCELLED;
         this.updatedBy = actor;
