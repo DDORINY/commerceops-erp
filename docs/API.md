@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.4.5`
+기준 버전: `v0.4.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -41,6 +41,30 @@
 | 변경성 `/api/admin/products/**`, `/api/admin/categories/**`, `/api/admin/banners/**`, `/api/admin/coupons/**`, `/api/admin/accounting/**`, `/api/admin/media/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/uploads/**` | 공개 정적 파일 |
 | 기타 인증 API | 로그인 사용자 |
+
+## v0.4.6 관리자 Permission 정책
+
+`/api/admin/**`는 기존 role 기반 1차 접근 정책을 유지한다. `MANAGER`, `ADMIN`, `SUPER_ADMIN`만 관리자 API에 접근할 수 있고, 주요 실행 권한은 Controller method 시작부에서 `PermissionChecker.require(...)`로 세부 permission code를 검증한다. `SUPER_ADMIN`은 모든 활성 permission을 보유한 것으로 간주한다.
+
+권한이 없으면 403과 함께 “해당 작업을 수행할 권한이 없습니다. 관리자에게 권한을 요청하세요.” 메시지를 반환한다.
+
+| 영역 | 조회 권한 | 변경/실행 권한 |
+| --- | --- | --- |
+| 대시보드/운영 분석 | `DASHBOARD_READ` | - |
+| 상품 | `PRODUCT_READ` | `PRODUCT_WRITE`, `PRODUCT_STATUS_CHANGE`, `PRODUCT_BULK_UPDATE` |
+| 카테고리 | `CATEGORY_MANAGE` | `CATEGORY_MANAGE` |
+| 배너 | `BANNER_MANAGE` | `BANNER_MANAGE` |
+| 주문/배송/반품 | `ORDER_READ` | `ORDER_STATUS_CHANGE` |
+| 결제/환불 | - | `PAYMENT_REFUND` |
+| 재고 | `INVENTORY_READ` | `INVENTORY_WRITE` |
+| 창고/재고 이동 | `INVENTORY_READ` | `WAREHOUSE_MANAGE`, `INVENTORY_WRITE` |
+| 회계/매출 | `ACCOUNTING_READ` | `ACCOUNTING_CLOSE` 후보 |
+| 쿠폰 | `COUPON_MANAGE` | `COUPON_MANAGE` |
+| 리뷰 | `REVIEW_MODERATE` | `REVIEW_MODERATE` |
+| 문의 | `INQUIRY_REPLY` | `INQUIRY_REPLY` |
+| 직원/HR | `STAFF_MANAGE` | `STAFF_MANAGE` |
+| 권한 그룹/권한 매트릭스 | `ROLE_MANAGE` | `ROLE_MANAGE` |
+| 감사 로그 | `AUDIT_LOG_READ` | - |
 
 ## 실제 엔드포인트
 

@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.product.controller;
 
+import com.commerceops.erp.domain.permission.PermissionCodes;
+import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.domain.product.dto.AdminProductListResponse;
 import com.commerceops.erp.domain.product.dto.AdminProductResponse;
 import com.commerceops.erp.domain.product.dto.ProductBulkStatusUpdateRequest;
@@ -36,6 +38,7 @@ public class AdminProductController {
 
     private final ProductService productService;
     private final ProductDetailBlockService productDetailBlockService;
+    private final PermissionChecker permissionChecker;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminProductListResponse>>> getProducts(
@@ -48,7 +51,9 @@ public class AdminProductController {
             @RequestParam(required = false) String salePeriodStatus,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
                 ApiResponse.ok("관리자 상품 목록 조회가 완료되었습니다.",
                         productService.getAdminProducts(status, salesStatus, displayStatus, categoryId,
@@ -57,7 +62,10 @@ public class AdminProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<AdminProductResponse>> getProduct(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<AdminProductResponse>> getProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
                 ApiResponse.ok("관리자 상품 상세 조회가 완료되었습니다.", productService.getAdminProduct(productId))
         );
@@ -65,7 +73,9 @@ public class AdminProductController {
 
     @GetMapping("/{productId}/detail-blocks")
     public ResponseEntity<ApiResponse<java.util.List<ProductDetailBlockResponse>>> getDetailBlocks(
-            @PathVariable Long productId) {
+            @PathVariable Long productId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
                 ApiResponse.ok("Product detail blocks loaded.",
                         productDetailBlockService.getAdminBlocks(productId))
@@ -75,7 +85,9 @@ public class AdminProductController {
     @PutMapping("/{productId}/detail-blocks")
     public ResponseEntity<ApiResponse<java.util.List<ProductDetailBlockResponse>>> replaceDetailBlocks(
             @PathVariable Long productId,
-            @RequestBody java.util.List<ProductDetailBlockRequest> requests) {
+            @RequestBody java.util.List<ProductDetailBlockRequest> requests,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         return ResponseEntity.ok(
                 ApiResponse.ok("Product detail blocks saved.",
                         productDetailBlockService.replaceAdminBlocks(productId, requests))
@@ -84,7 +96,9 @@ public class AdminProductController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<AdminProductResponse>> createProduct(
-            @Valid @RequestBody ProductCreateRequest request) {
+            @Valid @RequestBody ProductCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         AdminProductResponse response = productService.createProduct(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -96,6 +110,7 @@ public class AdminProductController {
             @PathVariable Long productId,
             @Valid @RequestBody ProductUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         return ResponseEntity.ok(
                 ApiResponse.ok("상품이 수정되었습니다.",
                         productService.updateProduct(productId, request, userDetails.getUser()))
@@ -107,6 +122,7 @@ public class AdminProductController {
             @PathVariable Long productId,
             @Valid @RequestBody ProductStatusUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_STATUS_CHANGE);
         return ResponseEntity.ok(
                 ApiResponse.ok("Product operation status updated.",
                         productService.updateProductStatus(productId, request, userDetails.getUser()))
@@ -117,6 +133,7 @@ public class AdminProductController {
     public ResponseEntity<ApiResponse<ProductBulkStatusUpdateResponse>> bulkUpdateProductStatus(
             @Valid @RequestBody ProductBulkStatusUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_BULK_UPDATE);
         return ResponseEntity.ok(
                 ApiResponse.ok("Product operation statuses updated.",
                         productService.bulkUpdateProductStatus(request, userDetails.getUser()))
@@ -126,7 +143,9 @@ public class AdminProductController {
     @GetMapping("/{productId}/status-history")
     public ResponseEntity<ApiResponse<List<ProductStatusHistoryResponse>>> getProductStatusHistory(
             @PathVariable Long productId,
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "20") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
                 ApiResponse.ok("Product status history loaded.",
                         productService.getProductStatusHistory(productId, limit))
@@ -136,7 +155,9 @@ public class AdminProductController {
     @GetMapping("/{productId}/operation-notes")
     public ResponseEntity<ApiResponse<List<ProductOperationNoteResponse>>> getProductOperationNotes(
             @PathVariable Long productId,
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "20") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
                 ApiResponse.ok("Product operation notes loaded.",
                         productService.getProductOperationNotes(productId, limit))
@@ -148,6 +169,7 @@ public class AdminProductController {
             @PathVariable Long productId,
             @Valid @RequestBody ProductOperationNoteRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created("Product operation note created.",
@@ -156,7 +178,10 @@ public class AdminProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         productService.deleteProduct(productId);
         return ResponseEntity.ok(ApiResponse.<Void>ok("상품이 삭제되었습니다.", null));
     }

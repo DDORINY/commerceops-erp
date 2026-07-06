@@ -1,11 +1,13 @@
 package com.commerceops.erp.domain.permission.controller;
 
+import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.dto.PermissionGroupActiveUpdateRequest;
 import com.commerceops.erp.domain.permission.dto.PermissionGroupCreateRequest;
 import com.commerceops.erp.domain.permission.dto.PermissionGroupResponse;
 import com.commerceops.erp.domain.permission.dto.PermissionGroupUpdateRequest;
 import com.commerceops.erp.domain.permission.dto.UserPermissionGroupResponse;
 import com.commerceops.erp.domain.permission.dto.UserPermissionGroupUpdateRequest;
+import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.domain.permission.service.PermissionGroupService;
 import com.commerceops.erp.global.response.ApiResponse;
 import com.commerceops.erp.global.security.CustomUserDetails;
@@ -31,14 +33,20 @@ import java.util.List;
 public class AdminPermissionGroupController {
 
     private final PermissionGroupService permissionGroupService;
+    private final PermissionChecker permissionChecker;
 
     @GetMapping("/permission-groups")
-    public ResponseEntity<ApiResponse<List<PermissionGroupResponse>>> getPermissionGroups() {
+    public ResponseEntity<ApiResponse<List<PermissionGroupResponse>>> getPermissionGroups(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("권한 그룹 목록 조회가 완료되었습니다.", permissionGroupService.getPermissionGroups()));
     }
 
     @GetMapping("/permission-groups/{groupId}")
-    public ResponseEntity<ApiResponse<PermissionGroupResponse>> getPermissionGroup(@PathVariable Long groupId) {
+    public ResponseEntity<ApiResponse<PermissionGroupResponse>> getPermissionGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("권한 그룹 상세 조회가 완료되었습니다.", permissionGroupService.getPermissionGroup(groupId)));
     }
 
@@ -47,8 +55,9 @@ public class AdminPermissionGroupController {
             @Valid @RequestBody PermissionGroupCreateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.created("권한 그룹을 생성했습니다.", permissionGroupService.createPermissionGroup(request, userDetails.getUser())));
+                .body(ApiResponse.created("권한 그룹이 생성되었습니다.", permissionGroupService.createPermissionGroup(request, userDetails.getUser())));
     }
 
     @PatchMapping("/permission-groups/{groupId}")
@@ -57,7 +66,8 @@ public class AdminPermissionGroupController {
             @Valid @RequestBody PermissionGroupUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponse.ok("권한 그룹 정보를 수정했습니다.", permissionGroupService.updatePermissionGroup(groupId, request, userDetails.getUser())));
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
+        return ResponseEntity.ok(ApiResponse.ok("권한 그룹 정보가 수정되었습니다.", permissionGroupService.updatePermissionGroup(groupId, request, userDetails.getUser())));
     }
 
     @PatchMapping("/permission-groups/{groupId}/active")
@@ -66,11 +76,15 @@ public class AdminPermissionGroupController {
             @Valid @RequestBody PermissionGroupActiveUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponse.ok("권한 그룹 활성 상태를 변경했습니다.", permissionGroupService.updatePermissionGroupActive(groupId, request, userDetails.getUser())));
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
+        return ResponseEntity.ok(ApiResponse.ok("권한 그룹 활성 상태가 변경되었습니다.", permissionGroupService.updatePermissionGroupActive(groupId, request, userDetails.getUser())));
     }
 
     @GetMapping("/users/{userId}/permission-groups")
-    public ResponseEntity<ApiResponse<List<UserPermissionGroupResponse>>> getUserPermissionGroups(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<List<UserPermissionGroupResponse>>> getUserPermissionGroups(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("사용자 권한 그룹 조회가 완료되었습니다.", permissionGroupService.getUserPermissionGroups(userId)));
     }
 
@@ -80,6 +94,7 @@ public class AdminPermissionGroupController {
             @RequestBody UserPermissionGroupUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(ApiResponse.ok("사용자 권한 그룹 할당을 변경했습니다.", permissionGroupService.updateUserPermissionGroups(userId, request, userDetails.getUser())));
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
+        return ResponseEntity.ok(ApiResponse.ok("사용자 권한 그룹 할당이 변경되었습니다.", permissionGroupService.updateUserPermissionGroups(userId, request, userDetails.getUser())));
     }
 }

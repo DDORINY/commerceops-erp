@@ -2,9 +2,13 @@ package com.commerceops.erp.domain.ops.controller;
 
 import com.commerceops.erp.domain.ops.dto.OpsAnalyticsOverviewResponse;
 import com.commerceops.erp.domain.ops.service.OpsAnalyticsService;
+import com.commerceops.erp.domain.permission.PermissionCodes;
+import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.global.response.ApiResponse;
+import com.commerceops.erp.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,9 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminOpsAnalyticsController {
 
     private final OpsAnalyticsService opsAnalyticsService;
+    private final PermissionChecker permissionChecker;
 
     @GetMapping("/overview")
-    public ResponseEntity<ApiResponse<OpsAnalyticsOverviewResponse>> getOverview() {
+    public ResponseEntity<ApiResponse<OpsAnalyticsOverviewResponse>> getOverview(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.DASHBOARD_READ);
         return ResponseEntity.ok(
                 ApiResponse.ok("운영 분석 기초 지표 조회가 완료되었습니다.", opsAnalyticsService.getOverview()));
     }

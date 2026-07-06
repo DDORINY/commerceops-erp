@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.3.6`
+기준 버전: `v0.4.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -103,6 +103,7 @@ com.commerceops.erp
 - 직원 관리: v0.4.2 기준 `AdminStaffController`가 `/api/admin/staff` 목록/상세/등록/수정/재직 상태/활성 상태 변경 API를 제공한다. 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN` 기준으로 제한한다. 직원 생성/수정/상태 변경/활성 변경은 `AuditLog`에 기록한다.
 - 권한 그룹 관리: v0.4.3 기준 `AdminPermissionGroupController`가 `/api/admin/permission-groups` 목록/상세/생성/수정/활성 상태 변경 API와 `/api/admin/users/{userId}/permission-groups` 조회/할당 API를 제공한다. 기존 role 기반 접근 제어는 유지하고, 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN`으로 제한한다. 권한 그룹 작업은 `AuditLog`에 기록한다.
 - 메뉴/기능 권한 매트릭스: v0.4.5 기준 `AdminPermissionMatrixController`가 `/api/admin/permissions`, `/api/admin/permission-groups/{groupId}/permissions`, `/api/admin/users/{userId}/permissions`, `/api/admin/users/me/permissions`, `/api/admin/menu-permissions`를 제공한다. 현재 사용자 권한과 메뉴 권한 조회는 관리자 사이드바 연동을 위해 `MANAGER`도 접근 가능하며, 변경은 `SUPER_ADMIN`으로 제한한다. `SUPER_ADMIN`은 모든 활성 권한, 그 외 관리자는 사용자 권한 그룹 또는 role 기본 시스템 그룹 기준으로 유효 권한을 계산한다.
+- API permission 정책: v0.4.6 기준 `PermissionChecker`가 Controller method 시작부에서 현재 사용자의 effective permission code를 검증한다. `SecurityConfig`는 `/api/admin/**`에 대한 role 기반 1차 접근을 유지하고, 상품/주문/결제/재고/창고/회계/쿠폰/리뷰/문의/직원/권한/감사 로그 등 주요 관리자 API는 permission code로 세부 실행 권한을 나눈다. 권한 없음은 403과 한국어 안내 메시지로 반환한다.
 
 ## 환경 프로파일
 

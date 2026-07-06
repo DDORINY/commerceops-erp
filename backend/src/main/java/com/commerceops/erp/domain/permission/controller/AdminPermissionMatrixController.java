@@ -1,10 +1,12 @@
 package com.commerceops.erp.domain.permission.controller;
 
+import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.dto.AdminMenuPermissionResponse;
 import com.commerceops.erp.domain.permission.dto.AdminMenuPermissionUpdateRequest;
 import com.commerceops.erp.domain.permission.dto.EffectivePermissionResponse;
 import com.commerceops.erp.domain.permission.dto.PermissionGroupPermissionUpdateRequest;
 import com.commerceops.erp.domain.permission.dto.PermissionResponse;
+import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.domain.permission.service.PermissionMatrixService;
 import com.commerceops.erp.global.response.ApiResponse;
 import com.commerceops.erp.global.security.CustomUserDetails;
@@ -27,14 +29,20 @@ import java.util.List;
 public class AdminPermissionMatrixController {
 
     private final PermissionMatrixService permissionMatrixService;
+    private final PermissionChecker permissionChecker;
 
     @GetMapping("/permissions")
-    public ResponseEntity<ApiResponse<List<PermissionResponse>>> getPermissions() {
+    public ResponseEntity<ApiResponse<List<PermissionResponse>>> getPermissions(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("권한 목록 조회가 완료되었습니다.", permissionMatrixService.getPermissions()));
     }
 
     @GetMapping("/permission-groups/{groupId}/permissions")
-    public ResponseEntity<ApiResponse<List<PermissionResponse>>> getGroupPermissions(@PathVariable Long groupId) {
+    public ResponseEntity<ApiResponse<List<PermissionResponse>>> getGroupPermissions(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("권한 그룹별 권한 조회가 완료되었습니다.", permissionMatrixService.getGroupPermissions(groupId)));
     }
 
@@ -44,11 +52,15 @@ public class AdminPermissionMatrixController {
             @RequestBody PermissionGroupPermissionUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("권한 그룹별 권한 매핑을 저장했습니다.", permissionMatrixService.updateGroupPermissions(groupId, request, userDetails.getUser())));
     }
 
     @GetMapping("/users/{userId}/permissions")
-    public ResponseEntity<ApiResponse<EffectivePermissionResponse>> getUserPermissions(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<EffectivePermissionResponse>> getUserPermissions(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("사용자 effective permission 조회가 완료되었습니다.", permissionMatrixService.getEffectivePermissions(userId)));
     }
 
@@ -69,6 +81,7 @@ public class AdminPermissionMatrixController {
             @Valid @RequestBody AdminMenuPermissionUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.ROLE_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("관리자 메뉴 권한을 저장했습니다.", permissionMatrixService.updateMenuPermissions(request, userDetails.getUser())));
     }
 }

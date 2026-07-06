@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(ErrorResponse.of(errorCode));
+                .body(ErrorResponse.of(errorCode, e.getMessage()));
     }
 
     // @Valid, @Validated 유효성 검사 실패

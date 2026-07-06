@@ -7,6 +7,8 @@ import com.commerceops.erp.domain.hr.dto.StaffStatusUpdateRequest;
 import com.commerceops.erp.domain.hr.dto.StaffUpdateRequest;
 import com.commerceops.erp.domain.hr.enums.EmploymentStatus;
 import com.commerceops.erp.domain.hr.service.AdminStaffService;
+import com.commerceops.erp.domain.permission.PermissionCodes;
+import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.domain.user.enums.UserRole;
 import com.commerceops.erp.global.response.ApiResponse;
 import com.commerceops.erp.global.response.PageResponse;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminStaffController {
 
     private final AdminStaffService adminStaffService;
+    private final PermissionChecker permissionChecker;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<StaffProfileResponse>>> getStaff(
@@ -41,14 +44,19 @@ public class AdminStaffController {
             @RequestParam(required = false) Boolean active,
             @RequestParam(required = false) UserRole role,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.STAFF_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("직원 목록 조회가 완료되었습니다.",
                 adminStaffService.getStaff(keyword, departmentId, positionId, employmentStatus, active, role, page, size)));
     }
 
     @GetMapping("/{staffId}")
-    public ResponseEntity<ApiResponse<StaffProfileResponse>> getStaffDetail(@PathVariable Long staffId) {
+    public ResponseEntity<ApiResponse<StaffProfileResponse>> getStaffDetail(
+            @PathVariable Long staffId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.STAFF_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("직원 상세 조회가 완료되었습니다.",
                 adminStaffService.getStaffDetail(staffId)));
     }
@@ -58,6 +66,7 @@ public class AdminStaffController {
             @Valid @RequestBody StaffCreateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.STAFF_MANAGE);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created("직원이 등록되었습니다.",
                         adminStaffService.createStaff(request, userDetails.getUser())));
@@ -69,6 +78,7 @@ public class AdminStaffController {
             @Valid @RequestBody StaffUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.STAFF_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("직원 정보가 수정되었습니다.",
                 adminStaffService.updateStaff(staffId, request, userDetails.getUser())));
     }
@@ -79,6 +89,7 @@ public class AdminStaffController {
             @Valid @RequestBody StaffStatusUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.STAFF_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("직원 재직 상태가 변경되었습니다.",
                 adminStaffService.updateEmploymentStatus(staffId, request, userDetails.getUser())));
     }
@@ -89,6 +100,7 @@ public class AdminStaffController {
             @Valid @RequestBody StaffActiveUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        permissionChecker.require(userDetails, PermissionCodes.STAFF_MANAGE);
         return ResponseEntity.ok(ApiResponse.ok("직원 활성 상태가 변경되었습니다.",
                 adminStaffService.updateActive(staffId, request, userDetails.getUser())));
     }

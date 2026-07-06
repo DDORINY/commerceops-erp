@@ -5,6 +5,8 @@ import com.commerceops.erp.domain.payment.dto.PaymentApproveRequest;
 import com.commerceops.erp.domain.payment.dto.PaymentCancelRequest;
 import com.commerceops.erp.domain.payment.dto.PaymentResponse;
 import com.commerceops.erp.domain.payment.service.PaymentService;
+import com.commerceops.erp.domain.permission.PermissionCodes;
+import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.global.response.ApiResponse;
 import com.commerceops.erp.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final PermissionChecker permissionChecker;
 
     @PostMapping("/approve")
     public ResponseEntity<ApiResponse<PaymentResponse>> approvePayment(
@@ -33,6 +36,7 @@ public class PaymentController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long paymentId,
             @RequestBody(required = false) PaymentCancelRequest request) {
+        permissionChecker.require(userDetails, PermissionCodes.PAYMENT_REFUND);
         PaymentResponse response = paymentService.cancelPayment(userDetails.getUser(), paymentId, request);
         return ResponseEntity.ok(ApiResponse.ok("결제가 취소 또는 환불되었습니다.", response));
     }

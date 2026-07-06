@@ -17,9 +17,13 @@ public class ErrorResponse {
     private final List<FieldError> errors;
 
     private ErrorResponse(ErrorCode errorCode, List<FieldError> errors) {
+        this(errorCode, errorCode.getMessage(), errors);
+    }
+
+    private ErrorResponse(ErrorCode errorCode, String message, List<FieldError> errors) {
         this.statusCode = errorCode.getStatus();
         this.errorCode = errorCode.getCode();
-        this.message = errorCode.getMessage();
+        this.message = message;
         this.timestamp = LocalDateTime.now();
         this.errors = errors;
     }
@@ -30,6 +34,10 @@ public class ErrorResponse {
 
     public static ErrorResponse of(ErrorCode errorCode, List<FieldError> errors) {
         return new ErrorResponse(errorCode, errors);
+    }
+
+    public static ErrorResponse of(ErrorCode errorCode, String message) {
+        return new ErrorResponse(errorCode, message, null);
     }
 
     @Getter
