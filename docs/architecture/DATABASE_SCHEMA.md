@@ -32,6 +32,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 배송 추적 이벤트 마이그레이션: `backend/src/main/resources/db/migration/V27__create_shipment_tracking_events.sql`
 - 반품 배송 정보 마이그레이션: `backend/src/main/resources/db/migration/V28__create_return_shipment_infos.sql`
 - 출고 바코드 검수 로그 마이그레이션: `backend/src/main/resources/db/migration/V29__create_outbound_scan_logs.sql`
+- 회계 원장/거래 마이그레이션: `backend/src/main/resources/db/migration/V30__create_accounting_ledgers_transactions.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -88,6 +89,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `coupons` | `Coupon` | `code`, `discount_type`, `discount_value`, `min_order_amount`, `max_usage`, `used_count`, `expires_at`, `active`, `created_at` |
 | `inventory_logs` | `InventoryLog` | `product_id`, `type`, `quantity`, `before_stock`, `after_stock`, `memo`, `created_at` |
 | `accounting_entries` | `AccountingEntry` | `type`, `amount`, `description`, `reference_id`, `created_at` |
+| `accounting_ledgers` | `AccountingLedger` | unique `ledger_number`, `period`, `status`, nullable `closed_at`, nullable `closed_by`, timestamps |
+| `accounting_transactions` | `AccountingTransaction` | nullable `ledger_id`, unique `transaction_number`, `type`, `direction`, `amount`, `reference_type`, `reference_id`, `occurred_at`, nullable `memo`, nullable `created_by`, timestamps |
 | `warehouses` | `Warehouse` | `code`, `name`, `address`, `active`, timestamps |
 | `warehouse_stocks` | `WarehouseStock` | `warehouse_id`, `product_id`, `quantity`, `reserved_quantity`, `version`, timestamps; 창고-상품 unique |
 | `stock_reservations` | `StockReservation` | `order_id`, `order_item_id`, `warehouse_stock_id`, `quantity`, `status`, timestamps |
@@ -129,7 +132,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 ## 주요 인덱스/제약 기준
 
-- 유니크: `users.email`, `departments.code`, `staff_profiles.user_id`, `staff_profiles.employee_no`, `permission_groups.code`, `user_permission_groups(user_id, permission_group_id)`, `permissions.code`, `permission_group_permissions(permission_group_id, permission_id)`, `admin_menu_permissions.menu_key`, `categories.slug`, `products.product_code`, `skus.sku_code`, `skus.barcode`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
+- 유니크: `users.email`, `departments.code`, `staff_profiles.user_id`, `staff_profiles.employee_no`, `permission_groups.code`, `user_permission_groups(user_id, permission_group_id)`, `permissions.code`, `permission_group_permissions(permission_group_id, permission_id)`, `admin_menu_permissions.menu_key`, `categories.slug`, `products.product_code`, `skus.sku_code`, `skus.barcode`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`, `accounting_ledgers.ledger_number`, `accounting_transactions.transaction_number`.
 - 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다. 상세 블록은 `product_detail_blocks(product_id, sort_order)` 기준으로 정렬 조회한다. 상품 운영 이력은 `product_status_histories(product_id, created_at)`, 운영 메모는 `product_operation_notes(product_id, created_at)` 기준으로 최근순 조회한다. 송장번호 조회는 `shipments(tracking_number)`, 발급일 기준 내부 생성 번호 순번 계산은 `shipments(tracking_number_issued_at)` 인덱스를 사용한다.
 - 알림 조회 인덱스: `notifications(user_id, read_at, created_at)`, `notifications(type, created_at)`, `notifications(target_type, target_id)`.
 - FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `categories.parent_id`는 자기 참조 FK다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.

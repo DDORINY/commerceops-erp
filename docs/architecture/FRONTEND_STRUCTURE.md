@@ -43,7 +43,7 @@
 | `/admin/products/[id]` | `app/admin/products/[id]/page.tsx` | `productService.getAdminProduct`, update/delete, 이미지 업로드, 상품 마스터 수정, 상세 블록 편집, 운영 메모, 상태 변경 이력 |
 | `/admin/inquiries` | `app/admin/inquiries/page.tsx` | `inquiryService.getAdminInquiries`, answer/close |
 | `/admin/reviews` | `app/admin/reviews/page.tsx` | `reviewService.getAdminReviews`, hide/show/delete, `auditService.getAuditLogs` |
-| `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService` |
+| `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService`, 회계 요약/기존 내역/원장/거래 조회 |
 | `/admin/sales` | `app/admin/sales/page.tsx` | `adminService` dashboard sales/top products |
 | `/admin/inventory` | `app/admin/inventory/page.tsx` | `adminService.getInventory`, inbound/adjust |
 | `/admin/shipments` | `app/admin/shipments/page.tsx` | `shipmentService`, 송장번호 수동 입력/자동 생성/수정, 송장 라벨 미리보기/출력 이력, 배송 추적 이력 조회/추가, 배송 상태 변경, 배송완료 처리 |
@@ -87,7 +87,7 @@
 | `shipmentService.ts` | 사용자 배송 조회, 관리자 배송 목록/송장번호 수동 입력/자동 생성/송장 라벨 생성/출력 이력/배송 추적 이벤트/상태 변경/배송완료 처리 |
 | `couponService.ts` | 쿠폰 검증, 관리자 쿠폰 CRUD 일부 |
 | `adminService.ts` | 관리자 대시보드, 매출, 재고 요약 |
-| `accountingService.ts` | 관리자 회계 요약/내역 |
+| `accountingService.ts` | 관리자 회계 요약/기존 내역/원장/거래 조회 |
 | `warehouseService.ts` | 창고, 창고별 재고, 이동, 할당 |
 | `userService.ts` | 관리자 고객 목록/권한 변경 |
 | `staffService.ts` | 관리자 직원 목록/상세/등록/수정, 부서/직급 조회, 직원 상태 변경 |
