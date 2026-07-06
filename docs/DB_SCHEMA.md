@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.4.5`
+기준 버전: `v0.4.8`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -18,6 +18,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 권한 그룹 마이그레이션: `backend/src/main/resources/db/migration/V11__create_permission_groups.sql`
 - 메뉴/기능 권한 매트릭스 마이그레이션: `backend/src/main/resources/db/migration/V12__create_permission_matrix.sql`
 - 관리자 사이드바 menuKey 보강 마이그레이션: `backend/src/main/resources/db/migration/V13__seed_admin_sidebar_menu_permissions.sql`
+- 감사 로그 컨텍스트 확장 마이그레이션: `backend/src/main/resources/db/migration/V14__extend_audit_logs_context.sql`
+- 사업자/약관 설정 마이그레이션: `backend/src/main/resources/db/migration/V15__create_business_terms_settings.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -51,6 +53,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `status`, `created_at` |
 | `audit_logs` | `AuditLog` | `actor_id`, `actor_email`, `actor_name`, `action_type`, `target_type`, nullable `target_id`, `before_status`, `after_status`, `summary`, `ip_address`, `user_agent`, `request_method`, `request_path`, `before_json`, `after_json`, `metadata_json`, `created_at` |
+| `business_settings` | `BusinessSettings` | 단일 row 설정, `company_name`, `representative_name`, `business_registration_number`, `mail_order_business_number`, `address`, `customer_service_phone`, `customer_service_email`, `brand_name`, `updated_by`, timestamps |
+| `terms_versions` | `TermsVersion` | `type`, `title`, `content`, `version`, `effective_from`, `active`, `created_by`, `created_at`, unique `(type, version)` |
 | `notifications` | `Notification` | `user_id`, `type`, `title`, `message`, `target_type`, `target_id`, `read_at`, `created_at` |
 | `inquiries` | `Inquiry` | `user_id`, nullable `product_id`, `type`, `subject`, `content`, `answer`, `status`, timestamps |
 | `wishlists` | `Wishlist` | `user_id`, `product_id`, `created_at`; 사용자-상품 unique |
@@ -76,7 +80,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `ProductDetailBlockType` | `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` |
 | `BannerPosition` | `MAIN_TOP`, `MAIN_MIDDLE`, `MAIN_BOTTOM` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
-| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `PERMISSION_DENIED` |
+| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `BUSINESS_SETTINGS_UPDATED`, `TERMS_VERSION_CREATED`, `POLICY_VERSION_CREATED`, `PERMISSION_DENIED` |
+| `TermsType` | `TERMS_OF_SERVICE`, `PRIVACY_POLICY`, `SHIPPING_RETURN_POLICY` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |
@@ -138,4 +143,6 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `Product.stockQuantity`와 `WarehouseStock.quantity/reservedQuantity`가 함께 존재한다. 창고 기능에서는 창고별 재고와 예약이 source of truth가 되며, 상품 총 재고는 보조/요약 값으로 함께 갱신된다.
 - 실제 PG 벤더별 거래 원장/웹훅 이벤트 테이블은 아직 없다. v0.2.2에서는 `payments.idempotency_key`, `provider`만 추가했다.
 - v0.4.7 기준 `audit_logs`는 `V14__extend_audit_logs_context.sql`로 요청 IP/User-Agent/method/path와 before/after/metadata JSON을 추가한다. 상품, 카테고리, 배너, 주문, 결제, 재고, 창고, 쿠폰, 문의, 리뷰, 직원, 권한 작업과 permission denied 이력을 기록한다. 로그 삭제/수정 API는 제공하지 않는다.
+- v0.4.8 기준 `business_settings`는 단일 row 설정으로 운영한다. row가 없으면 저장 시 최초 생성하고 이후에는 기존 row를 갱신한다.
+- v0.4.8 기준 `terms_versions`는 기존 row를 overwrite하지 않고 새 버전을 생성한다. 서비스 레벨에서 type별 active=true 최신 버전을 하나만 유지하고 과거 버전 조회를 허용한다. 삭제 API는 제공하지 않는다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

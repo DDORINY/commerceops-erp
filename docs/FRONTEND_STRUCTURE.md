@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.3.7`
+기준 버전: `v0.4.8`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -50,7 +50,7 @@
 | `/admin/returns` | `app/admin/returns/page.tsx` | `returnService` |
 | `/admin/coupons` | `app/admin/coupons/page.tsx` | `couponService` |
 | `/admin/warehouses` | `app/admin/warehouses/page.tsx` | `warehouseService` |
-| `/admin/settings` | `app/admin/settings/page.tsx` | 시스템 설정 진입점 |
+| `/admin/settings` | `app/admin/settings/page.tsx` | `settingsService`, 사업자 설정 저장, 약관/개인정보처리방침/배송반품정책 버전 생성/이력 조회 |
 | `/admin/settings/audit-logs` | `app/admin/settings/audit-logs/page.tsx` | `auditService.getAuditLogs`, `auditService.getAuditLog`, 필터/상세 보기 |
 | `/admin/settings/staff` | `app/admin/settings/staff/page.tsx` | `staffService`, 직원 목록/등록/수정/상태 변경 |
 | `/admin/settings/permission-groups` | `app/admin/settings/permission-groups/page.tsx` | `permissionGroupService`, 권한 그룹 CRUD, 직원별 권한 그룹 할당 |
@@ -74,6 +74,7 @@
 | `inquiryService.ts` | 사용자/상품 문의, 관리자 문의 답변/종료 |
 | `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/숨김/해제/삭제 |
 | `auditService.ts` | 관리자 작업 이력 목록/상세 조회, actor/action/target/date 필터 |
+| `settingsService.ts` | 사업자 설정 조회/저장, 약관/정책 버전 생성/조회, 공개 사업자/약관 API 호출 |
 | `notificationService.ts` | 사용자 알림 목록/읽음 처리, 관리자 최근 알림 조회 |
 | `opsAnalyticsService.ts` | 운영 분석 기초 overview 조회 |
 | `returnService.ts` | 반품 요청/목록, 관리자 승인/거절 |
@@ -126,6 +127,7 @@
 - `frontend/src/components/admin/AdminSidebar.tsx`: 구형 사이드바 진입점은 `AdminSidebarV2`를 재사용한다.
 - 권한별 메뉴 노출은 `getUserRole()` 기준으로 `SUPER_ADMIN`, `ADMIN`, `MANAGER`를 최소 분기한다.
 - `frontend/src/app/admin/settings/page.tsx`: 사업자 설정, 약관 설정, 정책 설정, 관리자 작업 이력, 직원 관리, 권한 관리 진입점.
+- v0.4.8 기준 `frontend/src/app/admin/settings/page.tsx`는 `section=company|terms|privacy|policies` query에 따라 사업자 설정 저장과 약관/정책 새 버전 생성, 최신 버전/과거 버전 조회를 제공한다.
 - `frontend/src/app/admin/settings/audit-logs/page.tsx`: `/api/admin/audit-logs` 필터 조회와 `/api/admin/audit-logs/{auditLogId}` 상세 조회를 사용해 actionType, 작업자, 대상, 기간 필터와 JSON 요약을 표시한다.
 - 직원/부서/직급/권한 그룹/역할별 상세 권한 화면은 v0.4.0으로 이관한다.
 
