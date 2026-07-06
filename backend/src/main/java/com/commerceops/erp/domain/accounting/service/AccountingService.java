@@ -4,6 +4,7 @@ import com.commerceops.erp.domain.accounting.dto.AccountingEntryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingLedgerResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
+import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
 import com.commerceops.erp.domain.accounting.entity.AccountingEntry;
 import com.commerceops.erp.domain.accounting.entity.AccountingLedger;
 import com.commerceops.erp.domain.accounting.entity.AccountingTransaction;
@@ -15,6 +16,13 @@ import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
 import com.commerceops.erp.domain.accounting.repository.AccountingEntryRepository;
 import com.commerceops.erp.domain.accounting.repository.AccountingLedgerRepository;
 import com.commerceops.erp.domain.accounting.repository.AccountingTransactionRepository;
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
+import com.commerceops.erp.domain.order.entity.Order;
+import com.commerceops.erp.domain.order.enums.OrderStatus;
+import com.commerceops.erp.domain.order.repository.OrderRepository;
+import com.commerceops.erp.domain.payment.enums.PaymentStatus;
+import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
 import com.commerceops.erp.global.response.PageResponse;
@@ -36,6 +44,8 @@ public class AccountingService {
     private final AccountingEntryRepository accountingEntryRepository;
     private final AccountingLedgerRepository accountingLedgerRepository;
     private final AccountingTransactionRepository accountingTransactionRepository;
+    private final OrderRepository orderRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public void recordSale(String orderNumber, int amount) {
@@ -118,6 +128,88 @@ public class AccountingService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND)));
     }
 
+    @Transactional
+    public OrderRevenueRecognitionResponse recognizeOrderRevenue(Long orderId, User actor) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
+        return recognizeOrderRevenue(order, actor);
+    }
+
+    @Transactional
+    public OrderRevenueRecognitionResponse recognizeOrderRevenue(Order order, User actor) {
+        validateRevenueRecognizable(order);
+        var existing = accountingTransactionRepository
+                .findFirstByReferenceTypeAndReferenceIdAndTypeOrderByOccurredAtDesc(
+                        AccountingReferenceType.ORDER,
+                        order.getId(),
+                        AccountingTransactionType.SALES
+                )
+                .orElse(null);
+        if (existing != null) {
+            if (actor != null) {
+                auditLogService.record(
+                        actor,
+                        AuditActionType.ACCOUNTING_TRANSACTION_DUPLICATE_SKIPPED,
+                        "ORDER",
+                        order.getId(),
+                        null,
+                        existing.getTransactionNumber(),
+                        "이미 인식된 주문 매출 거래가 있어 중복 생성을 건너뛰었습니다."
+                );
+            }
+            return OrderRevenueRecognitionResponse.from(order, existing, "이미 매출 인식된 주문입니다.");
+        }
+
+        AccountingTransaction transaction = accountingTransactionRepository.save(AccountingTransaction.builder()
+                .transactionNumber("REV-ORDER-" + order.getId() + "-SALES")
+                .type(AccountingTransactionType.SALES)
+                .direction(AccountingTransactionDirection.INCOME)
+                .amount(order.getTotalPrice().longValue())
+                .referenceType(AccountingReferenceType.ORDER)
+                .referenceId(order.getId())
+                .occurredAt(LocalDateTime.now())
+                .memo("주문 매출 인식 - 주문번호: " + order.getOrderNumber())
+                .createdBy(actor)
+                .build());
+
+        if (actor != null) {
+            auditLogService.record(
+                    actor,
+                    AuditActionType.REVENUE_RECOGNIZED,
+                    "ORDER",
+                    order.getId(),
+                    null,
+                    transaction.getTransactionNumber(),
+                    "주문 매출을 회계 거래로 인식했습니다.",
+                    null,
+                    toTransactionJson(transaction),
+                    "{\"orderNumber\":\"" + escapeJson(order.getOrderNumber()) + "\"}"
+            );
+        }
+        return OrderRevenueRecognitionResponse.from(order, transaction, "주문 매출을 인식했습니다.");
+    }
+
+    public OrderRevenueRecognitionResponse getOrderRevenue(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
+        AccountingTransaction transaction = accountingTransactionRepository
+                .findFirstByReferenceTypeAndReferenceIdAndTypeOrderByOccurredAtDesc(
+                        AccountingReferenceType.ORDER,
+                        order.getId(),
+                        AccountingTransactionType.SALES
+                )
+                .orElse(null);
+        return OrderRevenueRecognitionResponse.from(
+                order,
+                transaction,
+                transaction != null ? "매출 인식 거래가 있습니다." : "매출 인식 거래가 없습니다."
+        );
+    }
+
+    public PageResponse<AccountingTransactionResponse> getRevenueEvents(int page, int size) {
+        return getTransactions(null, AccountingTransactionType.SALES, null, null, null, null, null, page, size);
+    }
+
     private Specification<AccountingLedger> buildLedgerSpec(AccountingLedgerStatus status, String period) {
         return (root, query, cb) -> {
             var predicates = cb.conjunction();
@@ -165,5 +257,35 @@ public class AccountingService {
             }
             return predicates;
         };
+    }
+
+    private void validateRevenueRecognizable(Order order) {
+        if (order.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        if (order.getStatus() != OrderStatus.PAID
+                && order.getStatus() != OrderStatus.PREPARING
+                && order.getStatus() != OrderStatus.SHIPPING
+                && order.getStatus() != OrderStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+    }
+
+    private String toTransactionJson(AccountingTransaction transaction) {
+        return "{"
+                + "\"transactionNumber\":\"" + escapeJson(transaction.getTransactionNumber()) + "\","
+                + "\"type\":\"" + transaction.getType().name() + "\","
+                + "\"direction\":\"" + transaction.getDirection().name() + "\","
+                + "\"amount\":" + transaction.getAmount() + ","
+                + "\"referenceType\":\"" + transaction.getReferenceType().name() + "\","
+                + "\"referenceId\":" + transaction.getReferenceId()
+                + "}";
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

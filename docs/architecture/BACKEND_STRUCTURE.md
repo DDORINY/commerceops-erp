@@ -135,7 +135,7 @@ com.commerceops.erp
 
 - 관리자 문의: `GET /api/admin/inquiries`, 답변, 종료 API 실제 연결.
 - 관리자 리뷰: `GET /api/admin/reviews`, 숨김/해제/삭제 API 실제 연결. 삭제는 `ReviewStatus.DELETED` soft delete로 처리한다.
-- 관리자 회계: `GET /api/admin/accounting/summary`, `GET /api/admin/accounting/entries` 실제 연결. v0.7.1 기준 `GET /api/admin/accounting/ledgers`, `GET /api/admin/accounting/transactions` 원장/거래 조회 기반을 추가했다.
+- 관리자 회계: `GET /api/admin/accounting/summary`, `GET /api/admin/accounting/entries` 실제 연결. v0.7.1 기준 `GET /api/admin/accounting/ledgers`, `GET /api/admin/accounting/transactions` 원장/거래 조회 기반을 추가했다. v0.7.2 기준 결제 완료 시 주문 매출 `SALES` 거래를 중복 방지로 생성하고, 주문별 매출 인식 조회/실행 API를 제공한다.
 - 관리자 판매/매출 분석: `GET /api/admin/dashboard/summary`, `/sales`, `/top-products` 사용.
 - 관리자 창고: 창고 목록/등록, 창고별 재고, 재고 할당, 재고 이동 실제 API 구현.
 - 사용자 쇼핑 화면: mock 파일 제거, 상품/카테고리/장바구니/주문/위시리스트/문의/리뷰 service 기반 연결.

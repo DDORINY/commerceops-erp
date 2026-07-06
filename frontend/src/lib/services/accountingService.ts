@@ -68,6 +68,20 @@ export interface ApiAccountingTransaction {
   updatedAt: string;
 }
 
+export interface ApiOrderRevenueRecognition {
+  orderId: number;
+  orderNumber: string;
+  orderStatus: string;
+  paymentStatus: string;
+  orderAmount: number;
+  recognized: boolean;
+  transactionId: number | null;
+  transactionNumber: string | null;
+  recognizedAmount: number | null;
+  recognizedAt: string | null;
+  message: string;
+}
+
 export const accountingService = {
   getSummary: () => apiClient<ApiAccountingSummary>('/admin/accounting/summary'),
 
@@ -108,5 +122,20 @@ export const accountingService = {
     qs.set('page', String(params.page ?? 0));
     qs.set('size', String(params.size ?? 10));
     return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/transactions?${qs.toString()}`);
+  },
+
+  recognizeOrderRevenue: (orderId: number) =>
+    apiClient<ApiOrderRevenueRecognition>(`/admin/accounting/orders/${orderId}/recognize-revenue`, {
+      method: 'POST',
+    }),
+
+  getOrderRevenue: (orderId: number) =>
+    apiClient<ApiOrderRevenueRecognition>(`/admin/accounting/orders/${orderId}/revenue`),
+
+  getRevenueEvents: (page = 0, size = 20) => {
+    const qs = new URLSearchParams();
+    qs.set('page', String(page));
+    qs.set('size', String(size));
+    return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/revenue-events?${qs.toString()}`);
   },
 };
