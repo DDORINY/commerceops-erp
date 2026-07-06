@@ -46,6 +46,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     items: [
       { menuKey: 'orders', label: '주문 관리', href: '/admin/orders', roles: ALL_ADMIN_ROLES },
       { menuKey: 'shipments', label: '배송 관리', href: '/admin/shipments', roles: ALL_ADMIN_ROLES },
+      { menuKey: 'outbound-orders', label: '출고 관리', href: '/admin/outbound-orders', roles: ALL_ADMIN_ROLES },
       { menuKey: 'returns', label: '반품 관리', href: '/admin/returns', roles: ALL_ADMIN_ROLES },
       { menuKey: 'refunds', label: '환불 관리', href: '/admin/returns?focus=refunds', roles: ADMIN_ROLES },
       { menuKey: 'inquiries', label: '문의 관리', href: '/admin/inquiries', roles: ALL_ADMIN_ROLES },

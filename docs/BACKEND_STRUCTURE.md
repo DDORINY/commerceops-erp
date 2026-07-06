@@ -118,6 +118,7 @@ com.commerceops.erp
 - 재고 실사: v0.5.5 기준 `StockCountService`가 창고별 실사 세션 생성, SKU 품목 저장, 시작/완료/취소를 제공한다. 완료 시 실사 차이를 상품/창고 재고와 `InventoryLog(ADJUST)`에 반영하고 `STOCK_COUNT_*` audit log를 남긴다.
 - 창고 위치: v0.5.6 기준 `WarehouseLocationService`가 창고 위치 목록/생성/수정/활성 상태 변경과 위치별 SKU 재고 조회를 제공한다. 위치별 수량 변경과 위치 간 이동은 v0.5.7 재고 이동 고도화로 이관한다.
 - 안전재고 알림: v0.5.7 기준 `InventoryAlertService`가 SKU 또는 SKU+창고 단위 안전재고 기준을 관리하고 기준 이하 재고 항목을 조회한다. 조회는 `INVENTORY_READ`, 기준 생성/수정/활성 변경은 `INVENTORY_WRITE` permission을 요구한다.
+- 출고 지시: v0.6.1 기준 `OutboundOrderService`가 주문 기준 출고 지시 생성, 목록/상세 조회, 창고/메모 수정, 피킹 완료, 취소를 제공한다. 조회는 `OUTBOUND_READ`, 변경은 `OUTBOUND_MANAGE` permission을 요구하고 출고 생성/수정/피킹/취소는 audit log에 기록한다.
 
 ## 환경 프로파일
 
