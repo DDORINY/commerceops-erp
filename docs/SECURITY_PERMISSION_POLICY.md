@@ -1,54 +1,61 @@
-# 관리자 API Permission 정책
+﻿## v0.4.8 설정 권한 메모
 
-기준 버전: `v0.4.7-admin-audit-log-expansion`
+- 사업자 설정과 약관/정책 버전 관리 관리자 API는 `SETTINGS_MANAGE` 권한을 요구한다.
+- `SUPER_ADMIN`은 기존 `PermissionChecker` 정책에 따라 모든 설정 작업을 수행할 수 있다.
+- 공개 조회 API인 `GET /api/settings/**`는 비로그인 사용자가 이용약관, 개인정보처리방침, 배송/반품 정책, 공개 사업자 정보를 볼 수 있도록 인증을 요구하지 않는다.
+- 사업자 설정 변경 감사 로그는 고객센터 전화번호와 이메일을 `phone`, `email` 키로 기록해 기존 민감정보 마스킹 로직을 적용한다.
+- 약관/정책 본문 전체는 감사 로그에 남기지 않고 타입, 버전, 제목, 본문 길이만 기록한다.
+# 愿由ъ옄 API Permission ?뺤콉
 
-## 목적
+湲곗? 踰꾩쟾: `v0.4.7-admin-audit-log-expansion`
 
-v0.4.6부터 관리자 API는 기존 role 기반 접근 제어를 유지하면서, 실제 기능 실행은 permission code 기준으로 한 번 더 검증한다. role은 관리자 영역에 들어올 수 있는 1차 기준이고, permission code는 읽기, 쓰기, 상태 변경, 환불, 권한 관리 같은 세부 작업 허용 기준이다.
+## 紐⑹쟻
 
-## 기본 정책
+v0.4.6遺??愿由ъ옄 API??湲곗〈 role 湲곕컲 ?묎렐 ?쒖뼱瑜??좎??섎㈃?? ?ㅼ젣 湲곕뒫 ?ㅽ뻾? permission code 湲곗??쇰줈 ??踰???寃利앺븳?? role? 愿由ъ옄 ?곸뿭???ㅼ뼱?????덈뒗 1李?湲곗??닿퀬, permission code???쎄린, ?곌린, ?곹깭 蹂寃? ?섎텋, 沅뚰븳 愿由?媛숈? ?몃? ?묒뾽 ?덉슜 湲곗??대떎.
 
-- `USER`와 비로그인 사용자는 `/api/admin/**`에 접근할 수 없다.
-- `MANAGER`, `ADMIN`, `SUPER_ADMIN`은 role 기반 1차 접근 대상이다.
-- `SUPER_ADMIN`은 모든 활성 permission을 보유한 것으로 간주한다.
-- `ADMIN`, `MANAGER`는 권한 그룹과 role 기본 그룹으로 계산된 effective permission code를 기준으로 API 실행 권한을 검증한다.
-- 권한이 없으면 403과 “해당 작업을 수행할 권한이 없습니다. 관리자에게 권한을 요청하세요.” 메시지를 반환한다.
+## 湲곕낯 ?뺤콉
 
-## 구현 구조
+- `USER`? 鍮꾨줈洹몄씤 ?ъ슜?먮뒗 `/api/admin/**`???묎렐?????녿떎.
+- `MANAGER`, `ADMIN`, `SUPER_ADMIN`? role 湲곕컲 1李??묎렐 ??곸씠??
+- `SUPER_ADMIN`? 紐⑤뱺 ?쒖꽦 permission??蹂댁쑀??寃껋쑝濡?媛꾩＜?쒕떎.
+- `ADMIN`, `MANAGER`??沅뚰븳 洹몃９怨?role 湲곕낯 洹몃９?쇰줈 怨꾩궛??effective permission code瑜?湲곗??쇰줈 API ?ㅽ뻾 沅뚰븳??寃利앺븳??
+- 沅뚰븳???놁쑝硫?403怨??쒗빐???묒뾽???섑뻾??沅뚰븳???놁뒿?덈떎. 愿由ъ옄?먭쾶 沅뚰븳???붿껌?섏꽭????硫붿떆吏瑜?諛섑솚?쒕떎.
 
-- `PermissionCodes`: permission code 상수 모음.
-- `PermissionChecker`: 현재 사용자와 필요한 permission code를 받아 권한을 검증한다.
-- `PermissionMatrixService`: 사용자 effective permission을 계산한다.
-- Controller method 시작부에서 `permissionChecker.require(currentUser, PermissionCodes.X)`를 호출한다.
+## 援ы쁽 援ъ“
 
-## 주요 권한 매핑
+- `PermissionCodes`: permission code ?곸닔 紐⑥쓬.
+- `PermissionChecker`: ?꾩옱 ?ъ슜?먯? ?꾩슂??permission code瑜?諛쏆븘 沅뚰븳??寃利앺븳??
+- `PermissionMatrixService`: ?ъ슜??effective permission??怨꾩궛?쒕떎.
+- Controller method ?쒖옉遺?먯꽌 `permissionChecker.require(currentUser, PermissionCodes.X)`瑜??몄텧?쒕떎.
 
-| 영역 | permission code |
+## 二쇱슂 沅뚰븳 留ㅽ븨
+
+| ?곸뿭 | permission code |
 | --- | --- |
-| 대시보드/운영 분석 | `DASHBOARD_READ` |
-| 상품 조회 | `PRODUCT_READ` |
-| 상품 생성/수정/삭제/상세 블록/운영 메모 | `PRODUCT_WRITE` |
-| 상품 상태 변경 | `PRODUCT_STATUS_CHANGE` |
-| 상품 대량 변경 | `PRODUCT_BULK_UPDATE` |
-| 카테고리 관리 | `CATEGORY_MANAGE` |
-| 배너 관리 | `BANNER_MANAGE` |
-| 주문/배송/반품 조회 | `ORDER_READ` |
-| 주문/배송/반품 상태 변경 | `ORDER_STATUS_CHANGE` |
-| 결제 취소/환불 | `PAYMENT_REFUND` |
-| 재고 조회 | `INVENTORY_READ` |
-| 재고 조정/입고/할당 | `INVENTORY_WRITE` |
-| 창고/재고 이동 관리 | `WAREHOUSE_MANAGE` |
-| 회계/매출 조회 | `ACCOUNTING_READ` |
-| 회계 마감 후보 | `ACCOUNTING_CLOSE` |
-| 쿠폰 관리 | `COUPON_MANAGE` |
-| 리뷰 운영 | `REVIEW_MODERATE` |
-| 문의 답변/종료 | `INQUIRY_REPLY` |
-| 직원/HR 관리 | `STAFF_MANAGE` |
-| 권한 그룹/권한 매트릭스 관리 | `ROLE_MANAGE` |
-| 감사 로그 조회 | `AUDIT_LOG_READ` |
+| ??쒕낫???댁쁺 遺꾩꽍 | `DASHBOARD_READ` |
+| ?곹뭹 議고쉶 | `PRODUCT_READ` |
+| ?곹뭹 ?앹꽦/?섏젙/??젣/?곸꽭 釉붾줉/?댁쁺 硫붾え | `PRODUCT_WRITE` |
+| ?곹뭹 ?곹깭 蹂寃?| `PRODUCT_STATUS_CHANGE` |
+| ?곹뭹 ???蹂寃?| `PRODUCT_BULK_UPDATE` |
+| 移댄뀒怨좊━ 愿由?| `CATEGORY_MANAGE` |
+| 諛곕꼫 愿由?| `BANNER_MANAGE` |
+| 二쇰Ц/諛곗넚/諛섑뭹 議고쉶 | `ORDER_READ` |
+| 二쇰Ц/諛곗넚/諛섑뭹 ?곹깭 蹂寃?| `ORDER_STATUS_CHANGE` |
+| 寃곗젣 痍⑥냼/?섎텋 | `PAYMENT_REFUND` |
+| ?ш퀬 議고쉶 | `INVENTORY_READ` |
+| ?ш퀬 議곗젙/?낃퀬/?좊떦 | `INVENTORY_WRITE` |
+| 李쎄퀬/?ш퀬 ?대룞 愿由?| `WAREHOUSE_MANAGE` |
+| ?뚭퀎/留ㅼ텧 議고쉶 | `ACCOUNTING_READ` |
+| ?뚭퀎 留덇컧 ?꾨낫 | `ACCOUNTING_CLOSE` |
+| 荑좏룿 愿由?| `COUPON_MANAGE` |
+| 由щ럭 ?댁쁺 | `REVIEW_MODERATE` |
+| 臾몄쓽 ?듬?/醫낅즺 | `INQUIRY_REPLY` |
+| 吏곸썝/HR 愿由?| `STAFF_MANAGE` |
+| 沅뚰븳 洹몃９/沅뚰븳 留ㅽ듃由?뒪 愿由?| `ROLE_MANAGE` |
+| 媛먯궗 濡쒓렇 議고쉶 | `AUDIT_LOG_READ` |
 
-## 후속 이슈
+## ?꾩냽 ?댁뒋
 
-- v0.4.7부터 인증된 관리자의 permission code 부족으로 인한 403은 `PERMISSION_DENIED` audit log로 기록한다.
-- Controller 직접 호출 방식에서 annotation/AOP 기반 선언형 권한 검증으로 고도화할 수 있다.
-- 전체 관리자 API의 자동화된 권한별 200/403 테스트 커버리지는 후속 안정화 범위로 유지한다.
+- v0.4.7遺???몄쬆??愿由ъ옄??permission code 遺議깆쑝濡??명븳 403? `PERMISSION_DENIED` audit log濡?湲곕줉?쒕떎.
+- Controller 吏곸젒 ?몄텧 諛⑹떇?먯꽌 annotation/AOP 湲곕컲 ?좎뼵??沅뚰븳 寃利앹쑝濡?怨좊룄?뷀븷 ???덈떎.
+- ?꾩껜 愿由ъ옄 API???먮룞?붾맂 沅뚰븳蹂?200/403 ?뚯뒪??而ㅻ쾭由ъ????꾩냽 ?덉젙??踰붿쐞濡??좎??쒕떎.

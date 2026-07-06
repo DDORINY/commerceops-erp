@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.4.7`
+기준 버전: `v0.4.8`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -18,7 +18,7 @@
 | --- | --- |
 | `GET /api/health` | 공개 |
 | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` | 공개 |
-| `GET /api/banners/**`, `GET /api/categories/**`, `GET /api/products/**` | 공개 |
+| `GET /api/banners/**`, `GET /api/categories/**`, `GET /api/products/**`, `GET /api/settings/**` | 공개 |
 | `/api/admin/users/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/orders/**` | `ADMIN`, `SUPER_ADMIN` |
 | `/api/admin/dashboard/**` | `ADMIN`, `SUPER_ADMIN` |
@@ -65,6 +65,7 @@
 | 직원/HR | `STAFF_MANAGE` | `STAFF_MANAGE` |
 | 권한 그룹/권한 매트릭스 | `ROLE_MANAGE` | `ROLE_MANAGE` |
 | 감사 로그 | `AUDIT_LOG_READ` | - |
+| 사업자/약관 설정 | `SETTINGS_MANAGE` | `SETTINGS_MANAGE` |
 
 ## 실제 엔드포인트
 
@@ -165,6 +166,15 @@
 | Review Admin | DELETE | `/api/admin/reviews/{reviewId}` | - | `null` | 관리자 |
 | Audit Admin | GET | `/api/admin/audit-logs` | `actorKeyword`, `actionType`, `targetType`, `targetId`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<AuditLogResponse>` | `AUDIT_LOG_READ` |
 | Audit Admin | GET | `/api/admin/audit-logs/{auditLogId}` | - | `AuditLogResponse` | `AUDIT_LOG_READ` |
+| Settings Admin | GET | `/api/admin/settings/company` | - | `BusinessSettingsResponse` | `SETTINGS_MANAGE` |
+| Settings Admin | PUT | `/api/admin/settings/company` | `BusinessSettingsUpdateRequest` | `BusinessSettingsResponse` | `SETTINGS_MANAGE` |
+| Settings Admin | GET | `/api/admin/settings/terms` | - | `List<TermsVersionResponse>` | `SETTINGS_MANAGE` |
+| Settings Admin | POST | `/api/admin/settings/terms` | `TermsVersionCreateRequest` | `TermsVersionResponse` | `SETTINGS_MANAGE` |
+| Settings Admin | GET | `/api/admin/settings/terms/{type}/latest` | - | `TermsVersionResponse` | `SETTINGS_MANAGE` |
+| Settings Admin | GET | `/api/admin/settings/terms/{type}/versions` | - | `List<TermsVersionResponse>` | `SETTINGS_MANAGE` |
+| Settings Admin | GET | `/api/admin/settings/terms/{type}/versions/{versionId}` | - | `TermsVersionResponse` | `SETTINGS_MANAGE` |
+| Settings Public | GET | `/api/settings/company/public` | - | `PublicBusinessSettingsResponse` | 공개 |
+| Settings Public | GET | `/api/settings/terms/{type}/latest` | - | `PublicTermsVersionResponse` | 공개 |
 | Notification | GET | `/api/notifications` | `page`, `size` | `PageResponse<NotificationResponse>` | 인증 |
 | Notification | GET | `/api/notifications/unread-count` | - | `UnreadNotificationCountResponse` | 인증 |
 | Notification | PATCH | `/api/notifications/{notificationId}/read` | - | `NotificationResponse` | 인증 |
@@ -244,7 +254,7 @@
 | `ProductDisplayStatus` | `VISIBLE`, `HIDDEN` |
 | `StockDisplayStatus` | `IN_STOCK`, `LOW_STOCK`, `SOLD_OUT` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
-| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `PERMISSION_DENIED` |
+| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `BUSINESS_SETTINGS_UPDATED`, `TERMS_VERSION_CREATED`, `POLICY_VERSION_CREATED`, `PERMISSION_DENIED` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
