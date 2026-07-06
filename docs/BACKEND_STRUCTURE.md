@@ -102,7 +102,7 @@ com.commerceops.erp
 - HR 조직 기반: v0.4.1 기준 `Department`, `Position`, `StaffProfile`을 추가했다. 직원 프로필은 `User`와 1:1로 연결되며, 부서/직급은 nullable로 시작한다. 생성/수정 API와 관리자 화면은 v0.4.2 이후 범위다.
 - 직원 관리: v0.4.2 기준 `AdminStaffController`가 `/api/admin/staff` 목록/상세/등록/수정/재직 상태/활성 상태 변경 API를 제공한다. 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN` 기준으로 제한한다. 직원 생성/수정/상태 변경/활성 변경은 `AuditLog`에 기록한다.
 - 권한 그룹 관리: v0.4.3 기준 `AdminPermissionGroupController`가 `/api/admin/permission-groups` 목록/상세/생성/수정/활성 상태 변경 API와 `/api/admin/users/{userId}/permission-groups` 조회/할당 API를 제공한다. 기존 role 기반 접근 제어는 유지하고, 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN`으로 제한한다. 권한 그룹 작업은 `AuditLog`에 기록한다.
-- 메뉴/기능 권한 매트릭스: v0.4.4 기준 `AdminPermissionMatrixController`가 `/api/admin/permissions`, `/api/admin/permission-groups/{groupId}/permissions`, `/api/admin/users/{userId}/permissions`, `/api/admin/menu-permissions`를 제공한다. 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN`으로 제한한다. `SUPER_ADMIN`은 모든 활성 권한, 그 외 관리자는 사용자 권한 그룹 또는 role 기본 시스템 그룹 기준으로 유효 권한을 계산한다.
+- 메뉴/기능 권한 매트릭스: v0.4.5 기준 `AdminPermissionMatrixController`가 `/api/admin/permissions`, `/api/admin/permission-groups/{groupId}/permissions`, `/api/admin/users/{userId}/permissions`, `/api/admin/users/me/permissions`, `/api/admin/menu-permissions`를 제공한다. 현재 사용자 권한과 메뉴 권한 조회는 관리자 사이드바 연동을 위해 `MANAGER`도 접근 가능하며, 변경은 `SUPER_ADMIN`으로 제한한다. `SUPER_ADMIN`은 모든 활성 권한, 그 외 관리자는 사용자 권한 그룹 또는 role 기본 시스템 그룹 기준으로 유효 권한을 계산한다.
 
 ## 환경 프로파일
 

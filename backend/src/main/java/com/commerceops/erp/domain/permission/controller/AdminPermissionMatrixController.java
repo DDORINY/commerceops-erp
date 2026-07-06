@@ -52,6 +52,13 @@ public class AdminPermissionMatrixController {
         return ResponseEntity.ok(ApiResponse.ok("사용자 effective permission 조회가 완료되었습니다.", permissionMatrixService.getEffectivePermissions(userId)));
     }
 
+    @GetMapping("/users/me/permissions")
+    public ResponseEntity<ApiResponse<EffectivePermissionResponse>> getMyPermissions(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok("현재 사용자 권한 조회가 완료되었습니다.", permissionMatrixService.getEffectivePermissions(userDetails.getUser())));
+    }
+
     @GetMapping("/menu-permissions")
     public ResponseEntity<ApiResponse<List<AdminMenuPermissionResponse>>> getMenuPermissions() {
         return ResponseEntity.ok(ApiResponse.ok("관리자 메뉴 권한 조회가 완료되었습니다.", permissionMatrixService.getMenuPermissions()));

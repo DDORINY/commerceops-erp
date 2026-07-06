@@ -173,3 +173,11 @@
 - `frontend/src/app/admin/settings/page.tsx`: 설정 홈에 메뉴/기능 권한 카드 추가.
 - `frontend/src/components/admin/AdminSidebarV2.tsx`: 인사/권한 관리 그룹에 메뉴/기능 권한 메뉴 추가.
 - v0.4.4에서는 매트릭스 관리 UI를 제공하고, 실제 사이드바 permission 기반 노출은 v0.4.5로 이관한다.
+
+## v0.4.5 Admin Sidebar Permission Integration
+
+- `frontend/src/lib/adminMenu.ts`: 관리자 메뉴 그룹, `menuKey`, href, role fallback, active 판정 공용 정의.
+- `frontend/src/components/admin/AdminSidebarV2.tsx`: `GET /api/admin/users/me/permissions`와 `GET /api/admin/menu-permissions`를 조회해 `admin_menu_permissions.menu_key`와 effective permission code 기준으로 메뉴를 필터링한다.
+- `frontend/src/components/admin/AdminLayout.tsx`: 직접 URL 접근 시 현재 메뉴의 필요 권한을 확인하고 권한이 없으면 403 안내 UX를 표시한다.
+- 권한 API 실패 시 기존 role 기반 메뉴 노출과 접근 확인으로 fallback한다.
+- 실제 API method 단위 permission 세분화는 v0.4.6으로 이관한다.

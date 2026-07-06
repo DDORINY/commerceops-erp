@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.4.4`
+기준 버전: `v0.4.5`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -17,6 +17,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - HR/직원 조직 기본 마이그레이션: `backend/src/main/resources/db/migration/V10__create_hr_staff_base.sql`
 - 권한 그룹 마이그레이션: `backend/src/main/resources/db/migration/V11__create_permission_groups.sql`
 - 메뉴/기능 권한 매트릭스 마이그레이션: `backend/src/main/resources/db/migration/V12__create_permission_matrix.sql`
+- 관리자 사이드바 menuKey 보강 마이그레이션: `backend/src/main/resources/db/migration/V13__seed_admin_sidebar_menu_permissions.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -133,6 +134,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.4.3 기준 inactive permission group은 사용자에게 신규 할당할 수 없다. 사용자별 권한 그룹 변경은 `user_permission_groups`를 교체 저장하고 `audit_logs`에 요약 기록한다.
 - v0.4.4 기준 `permissions`는 기능 권한 코드 master다. `SUPER_ADMIN`은 모든 활성 권한을 보유한 것으로 계산하고, `ADMIN`/`MANAGER`는 사용자 할당 권한 그룹 또는 role 기본 시스템 그룹으로 유효 권한을 계산한다.
 - v0.4.4 기준 권한 그룹-권한 매핑과 메뉴 필요 권한 변경은 `audit_logs`에 `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`로 기록한다.
+- v0.4.5 기준 `admin_menu_permissions.menu_key`는 프론트 `ADMIN_MENU_GROUPS`의 `menuKey`와 매칭한다. v0.4.4 seed에 없던 query 기반 메뉴는 `V13__seed_admin_sidebar_menu_permissions.sql`로 보강한다.
 - `Product.stockQuantity`와 `WarehouseStock.quantity/reservedQuantity`가 함께 존재한다. 창고 기능에서는 창고별 재고와 예약이 source of truth가 되며, 상품 총 재고는 보조/요약 값으로 함께 갱신된다.
 - 실제 PG 벤더별 거래 원장/웹훅 이벤트 테이블은 아직 없다. v0.2.2에서는 `payments.idempotency_key`, `provider`만 추가했다.
 - `audit_logs`는 리뷰 숨김/해제/삭제 이력부터 기록한다. 전체 관리자 기능 감사 로그는 후속 확장 범위다.

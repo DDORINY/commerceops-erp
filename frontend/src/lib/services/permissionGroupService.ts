@@ -122,6 +122,9 @@ export const permissionGroupService = {
   getUserEffectivePermissions: (userId: number) =>
     apiClient<EffectivePermission>(`/admin/users/${userId}/permissions`),
 
+  getMyEffectivePermissions: () =>
+    apiClient<EffectivePermission>('/admin/users/me/permissions'),
+
   getMenuPermissions: () => apiClient<AdminMenuPermission[]>('/admin/menu-permissions'),
 
   updateMenuPermissions: (items: AdminMenuPermissionUpdateItem[]) =>

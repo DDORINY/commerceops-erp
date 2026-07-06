@@ -97,6 +97,10 @@ public class PermissionMatrixService {
     public EffectivePermissionResponse getEffectivePermissions(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return getEffectivePermissions(user);
+    }
+
+    public EffectivePermissionResponse getEffectivePermissions(User user) {
         return new EffectivePermissionResponse(user.getId(), user.getRole().name(), calculateEffectivePermissionCodes(user));
     }
 

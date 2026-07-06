@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.4.4`
+기준 버전: `v0.4.5`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -33,7 +33,8 @@
 | 변경성 `/api/admin/staff/**` | `SUPER_ADMIN` |
 | `GET /api/admin/permission-groups/**`, `GET /api/admin/users/{userId}/permission-groups` | `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/permission-groups/**`, `PUT /api/admin/users/{userId}/permission-groups` | `SUPER_ADMIN` |
-| `GET /api/admin/permissions`, `GET /api/admin/permission-groups/{groupId}/permissions`, `GET /api/admin/users/{userId}/permissions`, `GET /api/admin/menu-permissions` | `ADMIN`, `SUPER_ADMIN` |
+| `GET /api/admin/permissions`, `GET /api/admin/permission-groups/{groupId}/permissions`, `GET /api/admin/users/{userId}/permissions` | `ADMIN`, `SUPER_ADMIN` |
+| `GET /api/admin/users/me/permissions`, `GET /api/admin/menu-permissions` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | `PUT /api/admin/permission-groups/{groupId}/permissions`, `PUT /api/admin/menu-permissions` | `SUPER_ADMIN` |
 | `GET /api/admin/dashboard/**`, `GET /api/admin/orders/**`, `GET /api/admin/inventory/**`, `GET /api/admin/shipments/**`, `GET /api/admin/returns/**`, `GET /api/admin/inquiries/**`, `GET /api/admin/warehouses/**`, `GET /api/admin/warehouse-stocks/**`, `GET /api/admin/stock-transfers/**`, `GET /api/admin/products/**`, `GET /api/admin/categories/**`, `GET /api/admin/notifications/**`, `GET /api/admin/ops-analytics/**` | `MANAGER`, `ADMIN`, `SUPER_ADMIN` |
 | 변경성 `/api/admin/warehouses/**`, `/api/admin/warehouse-stocks/**`, `/api/admin/stock-transfers/**` | `ADMIN`, `SUPER_ADMIN` |
@@ -71,7 +72,8 @@
 | Permission Matrix Admin | GET | `/api/admin/permission-groups/{groupId}/permissions` | - | `List<PermissionResponse>` | ADMIN/SUPER_ADMIN |
 | Permission Matrix Admin | PUT | `/api/admin/permission-groups/{groupId}/permissions` | `PermissionGroupPermissionUpdateRequest` | `List<PermissionResponse>` | SUPER_ADMIN |
 | Permission Matrix Admin | GET | `/api/admin/users/{userId}/permissions` | - | `EffectivePermissionResponse` | ADMIN/SUPER_ADMIN |
-| Permission Matrix Admin | GET | `/api/admin/menu-permissions` | - | `List<AdminMenuPermissionResponse>` | ADMIN/SUPER_ADMIN |
+| Permission Matrix Admin | GET | `/api/admin/users/me/permissions` | - | `EffectivePermissionResponse` | MANAGER/ADMIN/SUPER_ADMIN |
+| Permission Matrix Admin | GET | `/api/admin/menu-permissions` | - | `List<AdminMenuPermissionResponse>` | MANAGER/ADMIN/SUPER_ADMIN |
 | Permission Matrix Admin | PUT | `/api/admin/menu-permissions` | `AdminMenuPermissionUpdateRequest` | `List<AdminMenuPermissionResponse>` | SUPER_ADMIN |
 | Category | GET | `/api/categories` | - | `List<CategoryResponse>` | 공개 |
 | Category | GET | `/api/categories/navigation` | - | `List<CategoryTreeResponse>` | 공개 |

@@ -3,116 +3,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import {
+  ADMIN_MENU_GROUPS,
+  type AdminMenuItem,
+  type AdminRole,
+  canAccessByRole,
+  isAdminRole,
+  isHrefActive,
+} from '@/lib/adminMenu';
 import { getUserRole } from '@/lib/auth';
+import { permissionGroupService, type AdminMenuPermission } from '@/lib/services/permissionGroupService';
 
-type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER';
-
-type MenuItem = {
-  label: string;
-  href: string;
-  roles?: AdminRole[];
-  note?: string;
-};
-
-type MenuGroup = {
-  label: string;
-  items: MenuItem[];
-};
-
-const ALL_ROLES: AdminRole[] = ['SUPER_ADMIN', 'ADMIN', 'MANAGER'];
-const ADMIN_ROLES: AdminRole[] = ['SUPER_ADMIN', 'ADMIN'];
-const SUPER_ONLY: AdminRole[] = ['SUPER_ADMIN'];
-
-const MENU_GROUPS: MenuGroup[] = [
-  {
-    label: '대시보드',
-    items: [
-      { label: '대시보드', href: '/admin', roles: ALL_ROLES },
-      { label: '알림', href: '/admin/settings?section=notifications', roles: ADMIN_ROLES, note: '설정 진입점' },
-    ],
-  },
-  {
-    label: '쇼핑몰 관리',
-    items: [
-      { label: '카테고리 관리', href: '/admin/categories', roles: ADMIN_ROLES },
-      { label: '상단 네비 관리', href: '/admin/categories?focus=navigation', roles: ADMIN_ROLES },
-      { label: '배너 관리', href: '/admin/banners', roles: ADMIN_ROLES },
-    ],
-  },
-  {
-    label: '상품 관리',
-    items: [
-      { label: '상품 관리', href: '/admin/products', roles: ALL_ROLES },
-      { label: '상품 등록', href: '/admin/products/new', roles: ADMIN_ROLES },
-      { label: '상품 상태 관리', href: '/admin/products?focus=status', roles: ADMIN_ROLES },
-    ],
-  },
-  {
-    label: '주문/배송/CS 관리',
-    items: [
-      { label: '주문 관리', href: '/admin/orders', roles: ALL_ROLES },
-      { label: '배송 관리', href: '/admin/shipments', roles: ALL_ROLES },
-      { label: '반품 관리', href: '/admin/returns', roles: ALL_ROLES },
-      { label: '환불 관리', href: '/admin/returns?focus=refunds', roles: ADMIN_ROLES },
-      { label: '문의 관리', href: '/admin/inquiries', roles: ALL_ROLES },
-      { label: '리뷰 관리', href: '/admin/reviews', roles: ADMIN_ROLES },
-    ],
-  },
-  {
-    label: '재고/창고 관리',
-    items: [
-      { label: '재고 관리', href: '/admin/inventory', roles: ALL_ROLES },
-      { label: '창고 관리', href: '/admin/warehouses', roles: ALL_ROLES },
-      { label: '입고 관리', href: '/admin/warehouses?focus=inbound', roles: ADMIN_ROLES },
-      { label: '재고 이동', href: '/admin/warehouses?focus=transfers', roles: ADMIN_ROLES },
-    ],
-  },
-  {
-    label: '매출/회계 관리',
-    items: [
-      { label: '매출 통계', href: '/admin/sales', roles: ALL_ROLES },
-      { label: '회계 관리', href: '/admin/accounting', roles: ADMIN_ROLES },
-      { label: '결제 내역', href: '/admin/accounting?focus=payments', roles: ADMIN_ROLES },
-      { label: '환불 내역', href: '/admin/accounting?focus=refunds', roles: ADMIN_ROLES },
-      { label: '정산 관리', href: '/admin/accounting?focus=settlements', roles: ADMIN_ROLES },
-    ],
-  },
-  {
-    label: '마케팅 관리',
-    items: [
-      { label: '쿠폰 관리', href: '/admin/coupons', roles: ADMIN_ROLES },
-      { label: '이벤트 관리', href: '/admin/settings?section=events', roles: ADMIN_ROLES, note: '후속 구현' },
-      { label: '프로모션 관리', href: '/admin/settings?section=promotions', roles: ADMIN_ROLES, note: '후속 구현' },
-    ],
-  },
-  {
-    label: '인사/권한 관리',
-    items: [
-      { label: '직원 관리', href: '/admin/settings/staff', roles: SUPER_ONLY },
-      { label: '부서 관리', href: '/admin/settings?section=departments', roles: SUPER_ONLY, note: 'v0.4 예정' },
-      { label: '직급 관리', href: '/admin/settings?section=positions', roles: SUPER_ONLY, note: 'v0.4 예정' },
-      { label: '권한 그룹 관리', href: '/admin/settings/permission-groups', roles: SUPER_ONLY },
-      { label: '역할/권한 설정', href: '/admin/settings/roles', roles: SUPER_ONLY },
-      { label: '메뉴/기능 권한', href: '/admin/settings/menu-permissions', roles: SUPER_ONLY },
-    ],
-  },
-  {
-    label: '시스템 설정',
-    items: [
-      { label: '사업자 설정', href: '/admin/settings?section=company', roles: ADMIN_ROLES },
-      { label: '약관 설정', href: '/admin/settings?section=terms', roles: ADMIN_ROLES },
-      { label: '개인정보처리방침 설정', href: '/admin/settings?section=privacy', roles: ADMIN_ROLES },
-      { label: '배송/반품 정책 설정', href: '/admin/settings?section=policies', roles: ADMIN_ROLES },
-      { label: '관리자 작업 이력', href: '/admin/settings/audit-logs', roles: ADMIN_ROLES },
-      { label: '환경 설정', href: '/admin/settings?section=environment', roles: SUPER_ONLY, note: '후속 구현' },
-    ],
-  },
-];
-
-function splitHref(href: string) {
-  const [path, query = ''] = href.split('?');
-  return { path, query };
-}
+type PermissionLoadStatus = 'idle' | 'loading' | 'ready' | 'fallback';
 
 function roleLabel(role: string | null) {
   if (role === 'SUPER_ADMIN') return '최고관리자';
@@ -121,37 +23,95 @@ function roleLabel(role: string | null) {
   return '권한 확인 중';
 }
 
+function canShowByPermission(
+  item: AdminMenuItem,
+  role: AdminRole,
+  menuPermission: AdminMenuPermission | undefined,
+  permissionCodes: Set<string>,
+  status: PermissionLoadStatus
+) {
+  if (status !== 'ready') return canAccessByRole(item, role);
+  if (!menuPermission) return canAccessByRole(item, role);
+  if (!menuPermission.visible) return false;
+  if (role === 'SUPER_ADMIN') return true;
+  if (!menuPermission.requiredPermissionCode) return canAccessByRole(item, role);
+  return permissionCodes.has(menuPermission.requiredPermissionCode);
+}
+
 export default function AdminSidebarV2() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [permissionCodes, setPermissionCodes] = useState<string[]>([]);
+  const [menuPermissions, setMenuPermissions] = useState<AdminMenuPermission[]>([]);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionLoadStatus>('idle');
   const [openGroupLabel, setOpenGroupLabel] = useState<string | null>(null);
 
   useEffect(() => {
     queueMicrotask(() => setUserRole(getUserRole()));
   }, []);
 
-  const visibleGroups = useMemo(() => {
-    if (!userRole || !['SUPER_ADMIN', 'ADMIN', 'MANAGER'].includes(userRole)) return [];
-    return MENU_GROUPS
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((item) => !item.roles || item.roles.includes(userRole as AdminRole)),
-      }))
-      .filter((group) => group.items.length > 0);
+  useEffect(() => {
+    if (!isAdminRole(userRole)) {
+      queueMicrotask(() => setPermissionStatus('fallback'));
+      return;
+    }
+
+    let mounted = true;
+    const loadPermissions = async () => {
+      setPermissionStatus('loading');
+      try {
+        const [effective, menus] = await Promise.all([
+          permissionGroupService.getMyEffectivePermissions(),
+          permissionGroupService.getMenuPermissions(),
+        ]);
+        if (!mounted) return;
+        setPermissionCodes(effective.permissionCodes);
+        setMenuPermissions(menus);
+        setPermissionStatus('ready');
+      } catch {
+        if (!mounted) return;
+        setPermissionCodes([]);
+        setMenuPermissions([]);
+        setPermissionStatus('fallback');
+      }
+    };
+
+    loadPermissions();
+    return () => {
+      mounted = false;
+    };
   }, [userRole]);
 
   const currentQuery = searchParams.toString();
 
+  const menuPermissionByKey = useMemo(() => {
+    return new Map(menuPermissions.map((permission) => [permission.menuKey, permission]));
+  }, [menuPermissions]);
+
+  const permissionCodeSet = useMemo(() => new Set(permissionCodes), [permissionCodes]);
+
+  const visibleGroups = useMemo(() => {
+    if (!isAdminRole(userRole)) return [];
+
+    return ADMIN_MENU_GROUPS
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) =>
+          canShowByPermission(
+            item,
+            userRole,
+            menuPermissionByKey.get(item.menuKey),
+            permissionCodeSet,
+            permissionStatus
+          )
+        ),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [menuPermissionByKey, permissionCodeSet, permissionStatus, userRole]);
+
   const isActive = useMemo(() => {
-    return (href: string) => {
-      const { path, query } = splitHref(href);
-      if (query) {
-        return pathname === path && currentQuery === query;
-      }
-      if (path === '/admin') return pathname === '/admin';
-      return pathname === path || pathname.startsWith(`${path}/`);
-    };
+    return (href: string) => isHrefActive(href, pathname, currentQuery);
   }, [currentQuery, pathname]);
 
   const activeGroupLabel = useMemo(() => {
@@ -175,6 +135,12 @@ export default function AdminSidebarV2() {
 
       <div className="px-6 py-3 border-b border-white/10">
         <span className="text-xs text-amber-300 font-semibold tracking-wide">{roleLabel(userRole)}</span>
+        {permissionStatus === 'loading' && (
+          <p className="mt-1 text-[11px] text-[#8a9bb5]">메뉴 권한 확인 중</p>
+        )}
+        {permissionStatus === 'fallback' && isAdminRole(userRole) && (
+          <p className="mt-1 text-[11px] text-[#8a9bb5]">기본 역할 기준 메뉴</p>
+        )}
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
@@ -200,7 +166,7 @@ export default function AdminSidebarV2() {
                 {isOpen && (
                   <ul className="pb-2">
                     {group.items.map((item) => (
-                      <li key={`${group.label}-${item.label}-${item.href}`}>
+                      <li key={`${group.label}-${item.menuKey}-${item.href}`}>
                         <Link
                           href={item.href}
                           className={[
