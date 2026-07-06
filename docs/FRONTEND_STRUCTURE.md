@@ -190,3 +190,10 @@
 - `frontend/src/lib/services/skuService.ts`: `/api/admin/skus`와 `/api/admin/products/{productId}/skus` 호출 타입과 API 함수.
 - `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `SKU/바코드 관리` 메뉴를 추가한다.
 - SKU 조회는 `INVENTORY_READ` 권한 메뉴로 진입하고, 생성/수정/활성 변경 버튼은 `SKU_MANAGE`, 바코드 재발급 버튼은 `BARCODE_MANAGE` 기준으로 비활성화한다.
+
+## v0.5.2 Production Receipt Flow UI
+
+- `frontend/src/app/admin/production/page.tsx`: 생산 주문 목록, 검색/상태 필터, 생산 주문 생성/수정, 시작/완료/취소, 상세 보기, 최근 생산 입고 이력 화면.
+- `frontend/src/lib/services/productionService.ts`: `/api/admin/production-orders`와 `/api/admin/production-receipts` 호출 타입과 API 함수.
+- `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `생산 입고 관리` 메뉴를 추가한다.
+- 생산 조회는 `INVENTORY_READ`, 생성/수정/시작/완료/취소 버튼은 `PRODUCTION_MANAGE` 기준으로 비활성화한다.

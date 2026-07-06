@@ -205,6 +205,15 @@
 | SKU Admin | PATCH | `/api/admin/skus/{skuId}` | `SkuUpdateRequest` | `SkuResponse` | `SKU_MANAGE` |
 | SKU Admin | PATCH | `/api/admin/skus/{skuId}/active` | `SkuActiveUpdateRequest` | `SkuResponse` | `SKU_MANAGE` |
 | SKU Admin | POST | `/api/admin/skus/{skuId}/barcode/regenerate` | - | `SkuResponse` | `BARCODE_MANAGE` |
+| Production Admin | GET | `/api/admin/production-orders` | `status`, `warehouseId`, `skuId`, `keyword`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<ProductionOrderListResponse>` | `INVENTORY_READ` |
+| Production Admin | GET | `/api/admin/production-orders/{productionOrderId}` | - | `ProductionOrderResponse` | `INVENTORY_READ` |
+| Production Admin | POST | `/api/admin/production-orders` | `ProductionOrderCreateRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
+| Production Admin | PATCH | `/api/admin/production-orders/{productionOrderId}` | `ProductionOrderUpdateRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
+| Production Admin | PATCH | `/api/admin/production-orders/{productionOrderId}/start` | `ProductionOrderStartRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
+| Production Admin | PATCH | `/api/admin/production-orders/{productionOrderId}/complete` | `ProductionOrderCompleteRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
+| Production Admin | PATCH | `/api/admin/production-orders/{productionOrderId}/cancel` | `ProductionOrderCancelRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
+| Production Admin | GET | `/api/admin/production-receipts` | `productionOrderId`, `skuId`, `warehouseId`, `page`, `size` | `PageResponse<ProductionReceiptResponse>` | `INVENTORY_READ` |
+| Production Admin | GET | `/api/admin/production-receipts/{receiptId}` | - | `ProductionReceiptResponse` | `INVENTORY_READ` |
 | Accounting Admin | GET | `/api/admin/accounting/summary` | - | `AccountingSummaryResponse` | 관리자 |
 | Accounting Admin | GET | `/api/admin/accounting/entries` | `type`, `page`, `size` | `PageResponse<AccountingEntryResponse>` | 관리자 |
 | Warehouse Admin | GET | `/api/admin/warehouses` | - | `List<WarehouseResponse>` | 관리자 |
@@ -253,6 +262,10 @@
 - `SkuUpdateRequest`: `optionSignature`, 선택 `skuCode`, 선택 `barcode`, 선택 `name`, `safetyStockQuantity`.
 - `SkuActiveUpdateRequest`: `active`.
 - `SkuResponse`, `SkuListResponse`: `id`, `productId`, `productName`, `productCode`, `optionSignature`, `skuCode`, `barcode`, `name`, `safetyStockQuantity`, `active`, timestamps.
+- `ProductionOrderCreateRequest`, `ProductionOrderUpdateRequest`: `warehouseId`, `memo`, `items[{skuId, plannedQuantity}]`.
+- `ProductionOrderCompleteRequest`: `items[{skuId, completedQuantity}]`, `memo`.
+- `ProductionOrderResponse`: 생산번호, 상태, 창고, 예정/완료 수량, 시작/완료일, 메모, 품목 목록.
+- `ProductionReceiptResponse`: 생산 주문, SKU, 상품, 창고, 입고 수량, 연결 `inventoryLogId`, 생성일.
 
 ## enum
 
@@ -278,6 +291,7 @@
 | `AccountingEntryType` | `SALE`, `REFUND`, `INBOUND` |
 | `InventoryLogType` | `INBOUND`, `OUTBOUND`, `ORDER`, `CANCEL`, `ADJUST`, `RETURN_RESTOCK` |
 | `StockTransferStatus` | `PENDING`, `COMPLETED` |
+| `ProductionOrderStatus` | `PLANNED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` |
 | `StockReservationStatus` | `RESERVED`, `RELEASED`, `SHIPPED`, `RETURNED` |
 
 ## 미구현/예정으로 분리된 항목

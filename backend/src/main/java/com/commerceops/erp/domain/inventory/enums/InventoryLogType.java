@@ -6,5 +6,6 @@ public enum InventoryLogType {
     ORDER,
     CANCEL,
     ADJUST,
-    RETURN_RESTOCK
+    RETURN_RESTOCK,
+    PRODUCTION_RECEIPT
 }

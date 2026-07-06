@@ -46,6 +46,7 @@ v0.4.6遺??愿由ъ옄 API??湲곗〈 role 湲곕컲 ?묎렐 ?쒖뼱瑜??좎
 | ?ш퀬 議곗젙/?낃퀬/?좊떦 | `INVENTORY_WRITE` |
 | SKU 생성/수정/활성 변경 | `SKU_MANAGE` |
 | 바코드 발급/재발급 | `BARCODE_MANAGE` |
+| 생산 주문 생성/수정/시작/완료/취소 | `PRODUCTION_MANAGE` |
 | 李쎄퀬/?ш퀬 ?대룞 愿由?| `WAREHOUSE_MANAGE` |
 | ?뚭퀎/留ㅼ텧 議고쉶 | `ACCOUNTING_READ` |
 | ?뚭퀎 留덇컧 ?꾨낫 | `ACCOUNTING_CLOSE` |
