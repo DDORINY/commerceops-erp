@@ -219,6 +219,14 @@
 | Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}` | `OutboundOrderUpdateRequest` | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}/pick` | - | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}/cancel` | - | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
+| Carrier Admin | GET | `/api/admin/carriers` | `keyword`, `active`, `page`, `size` | `PageResponse<CarrierResponse>` | `CARRIER_MANAGE` |
+| Carrier Admin | POST | `/api/admin/carriers` | `CarrierRequest` | `CarrierResponse` | `CARRIER_MANAGE` |
+| Carrier Admin | PATCH | `/api/admin/carriers/{carrierId}` | `CarrierRequest` | `CarrierResponse` | `CARRIER_MANAGE` |
+| Carrier Admin | PATCH | `/api/admin/carriers/{carrierId}/active` | `CarrierActiveUpdateRequest` | `CarrierResponse` | `CARRIER_MANAGE` |
+| Shipping Method Admin | GET | `/api/admin/shipping-methods` | `keyword`, `carrierId`, `active`, `page`, `size` | `PageResponse<ShippingMethodResponse>` | `CARRIER_MANAGE` |
+| Shipping Method Admin | POST | `/api/admin/shipping-methods` | `ShippingMethodRequest` | `ShippingMethodResponse` | `CARRIER_MANAGE` |
+| Shipping Method Admin | PATCH | `/api/admin/shipping-methods/{shippingMethodId}` | `ShippingMethodRequest` | `ShippingMethodResponse` | `CARRIER_MANAGE` |
+| Shipping Method Admin | PATCH | `/api/admin/shipping-methods/{shippingMethodId}/active` | `ShippingMethodActiveUpdateRequest` | `ShippingMethodResponse` | `CARRIER_MANAGE` |
 | Stock Count Admin | GET | `/api/admin/stock-counts` | `status`, `page`, `size` | `PageResponse<StockCountResponse>` | `INVENTORY_READ` |
 | Stock Count Admin | GET | `/api/admin/stock-counts/{stockCountId}` | - | `StockCountResponse` | `INVENTORY_READ` |
 | Stock Count Admin | POST | `/api/admin/stock-counts` | `StockCountCreateRequest` | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
@@ -301,6 +309,10 @@
 - `OutboundOrderUpdateRequest`: `warehouseId`, `memo`.
 - `OutboundOrderResponse`: 출고 지시 ID/번호, 주문/주문자/창고 요약, 상태, 요청/피킹/배송 일시, 메모, 수량 합계, 출고 품목 목록.
 - `OutboundOrderItemResponse`: 주문 품목, SKU/바코드, 상품, 지시 수량, 피킹 수량, 스캔 수량.
+- `CarrierRequest`: `code`, `name`, `trackingUrlTemplate`, `active`.
+- `CarrierResponse`: 택배사 ID, 코드, 이름, 배송 추적 URL 템플릿, 활성 상태, 생성/수정일.
+- `ShippingMethodRequest`: `code`, `name`, `carrierId`, `defaultFee`, `description`, `active`.
+- `ShippingMethodResponse`: 배송 방법 ID, 코드, 이름, 연결 택배사, 기본 배송비, 설명, 활성 상태, 생성/수정일.
 - `StockCountCreateRequest`: `warehouseId`, `memo`.
 - `StockCountItemsUpdateRequest`: `items[{ skuId, countedQuantity, memo }]`.
 - `StockCountResponse`: 실사 세션 요약, 상태, 창고, 시작/완료 시각, 실사 품목 목록.
