@@ -29,6 +29,9 @@ public interface WarehouseStockRepository extends JpaRepository<WarehouseStock, 
     @Query("SELECT COALESCE(SUM(s.quantity - s.reservedQuantity), 0) FROM WarehouseStock s WHERE s.product.id = :productId")
     long sumAvailableQuantityByProductId(@Param("productId") Long productId);
 
+    @Query("SELECT s FROM WarehouseStock s JOIN FETCH s.warehouse WHERE s.product.id = :productId ORDER BY s.warehouse.name ASC")
+    List<WarehouseStock> findByProductIdWithWarehouse(@Param("productId") Long productId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM WarehouseStock s WHERE s.warehouse.id = :warehouseId AND s.product.id = :productId")
     Optional<WarehouseStock> findForUpdate(

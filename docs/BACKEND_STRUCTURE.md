@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.5.3`
+기준 버전: `v0.5.4`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -114,7 +114,7 @@ com.commerceops.erp
 - 사업자/약관 설정: v0.4.8 기준 `SettingsService`가 단일 row 사업자 설정과 약관/개인정보처리방침/배송반품정책 버전 이력을 관리한다. 관리자 API는 `SETTINGS_MANAGE` permission을 요구하고 공개 API는 인증 없이 최신 공개 정보만 조회한다.
 - SKU/바코드 재고 마스터: v0.5.1 기준 `SkuService`가 상품별 SKU 코드와 바코드를 관리한다. 조회는 `INVENTORY_READ`, 생성/수정/활성 변경은 `SKU_MANAGE`, 바코드 재발급은 `BARCODE_MANAGE` permission을 요구하며 주요 변경은 audit log에 기록한다.
 - 생산 입고 흐름: v0.5.2 기준 `ProductionService`가 생산 주문 생성/수정/시작/취소/완료를 관리한다. 완료 처리 시 SKU의 상품 재고와 창고 재고를 증가시키고 `ProductionReceipt`, `InventoryLog(PRODUCTION_RECEIPT)`, audit log를 함께 생성한다.
-- 바코드 라벨 출력: v0.5.3 기준 `BarcodeService`가 바코드/SKU 검색, 바코드 단건 조회, 라벨 HTML 미리보기 생성, 출력 이력 기록을 제공한다. 조회는 `INVENTORY_READ`, 라벨 생성/출력 기록은 `BARCODE_MANAGE` permission을 요구하며 `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED` audit log를 남긴다.
+- 바코드 라벨/입출고: v0.5.4 기준 `BarcodeService`가 바코드/SKU 검색, 바코드 단건 조회, 라벨 HTML 미리보기 생성, 출력 이력 기록, 바코드 기반 재고 조회/입고/출고를 제공한다. 조회는 `INVENTORY_READ`, 라벨 생성/출력 기록은 `BARCODE_MANAGE`, 입고/출고는 `INVENTORY_WRITE` permission을 요구하며 `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED`, `STOCK_INBOUNDED`, `STOCK_OUTBOUNDED` audit log를 남긴다.
 
 ## 환경 프로파일
 

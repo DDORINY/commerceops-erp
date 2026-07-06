@@ -210,6 +210,9 @@
 | Barcode Label Admin | GET | `/api/admin/barcode-labels` | `keyword`, `page`, `size` | `PageResponse<BarcodeLabelResponse>` | `INVENTORY_READ` |
 | Barcode Label Admin | POST | `/api/admin/barcodes/{skuId}/labels` | `BarcodeLabelRequest` | `BarcodeLabelPreviewResponse` | `BARCODE_MANAGE` |
 | Barcode Label Admin | POST | `/api/admin/barcode-labels/{labelId}/print` | - | `BarcodeLabelPreviewResponse` | `BARCODE_MANAGE` |
+| Barcode Stock Admin | GET | `/api/admin/barcodes/{barcode}/stock` | - | `BarcodeStockResponse` | `INVENTORY_READ` |
+| Barcode Stock Admin | POST | `/api/admin/barcodes/{barcode}/inbound` | `BarcodeStockChangeRequest` | `BarcodeStockChangeResponse` | `INVENTORY_WRITE` |
+| Barcode Stock Admin | POST | `/api/admin/barcodes/{barcode}/outbound` | `BarcodeStockChangeRequest` | `BarcodeStockChangeResponse` | `INVENTORY_WRITE` |
 | Production Admin | GET | `/api/admin/production-orders` | `status`, `warehouseId`, `skuId`, `keyword`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<ProductionOrderListResponse>` | `INVENTORY_READ` |
 | Production Admin | GET | `/api/admin/production-orders/{productionOrderId}` | - | `ProductionOrderResponse` | `INVENTORY_READ` |
 | Production Admin | POST | `/api/admin/production-orders` | `ProductionOrderCreateRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
@@ -264,6 +267,9 @@
 - `BarcodeLabelRequest`: `labelFormat`. 기본값은 `SKU_60X40`.
 - `BarcodeLabelResponse`: `id`, SKU/상품 요약, `barcode`, `labelFormat`, `printCount`, `lastPrintedAt`, `createdBy`, `createdAt`.
 - `BarcodeLabelPreviewResponse`: `labelId`, `labelFormat`, `barcode`, `skuCode`, `productName`, `skuName`, `html`, `createdAt`.
+- `BarcodeStockResponse`: SKU/상품 요약, `productStockQuantity`, `safetyStockQuantity`, `warehouseStocks`.
+- `BarcodeStockChangeRequest`: `warehouseId`, `quantity`, `memo`.
+- `BarcodeStockChangeResponse`: 바코드/SKU/상품/창고 요약, 처리 수량, 상품/창고 재고 변경 전후, `type`.
 - `UserSummaryResponse`: `id`, `name`, `email`, `phone`, `role`, `status`, `createdAt`, `orderCount`, `totalOrderAmount`.
 - `DashboardSummaryResponse`: 전체/오늘 주문, 전체/오늘 매출, 고객/상품/품절/재고부족 수, 상태별 주문 수.
 - `WarehouseStockResponse`: 창고, 상품, 수량, 예약 수량, 가용 수량, 상품 총 재고.
