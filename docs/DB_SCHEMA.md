@@ -24,6 +24,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 생산 입고 마이그레이션: `backend/src/main/resources/db/migration/V17__create_production_receipts.sql`
 - 바코드 라벨 출력 이력 마이그레이션: `backend/src/main/resources/db/migration/V18__create_barcode_labels.sql`
 - 바코드 입출고 메뉴 seed 마이그레이션: `backend/src/main/resources/db/migration/V19__seed_barcode_stock_menu.sql`
+- 재고 실사 마이그레이션: `backend/src/main/resources/db/migration/V20__create_stock_counts.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -49,6 +50,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `production_orders` | `ProductionOrder` | unique `production_number`, `status`, `warehouse_id`, `planned_quantity`, `completed_quantity`, `started_at`, `completed_at`, `memo`, `created_by`, `updated_by`, timestamps |
 | `production_order_items` | `ProductionOrderItem` | `production_order_id`, `sku_id`, `product_id`, `planned_quantity`, `completed_quantity` |
 | `production_receipts` | `ProductionReceipt` | `production_order_id`, `sku_id`, `product_id`, `warehouse_id`, `quantity`, nullable `inventory_log_id`, `created_by`, `created_at` |
+| `stock_count_sessions` | `StockCountSession` | unique `count_number`, `warehouse_id`, `status`, `memo`, `started_by`, `completed_by`, `started_at`, `completed_at`, timestamps |
+| `stock_count_items` | `StockCountItem` | `session_id`, `sku_id`, `product_id`, `system_quantity`, `counted_quantity`, `difference_quantity`, `memo`, timestamps |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
 | `product_status_histories` | `ProductStatusHistory` | `product_id`, `changed_by_user_id`, `changed_by_email`, 이전/변경 판매 상태, 이전/변경 전시 상태, `reason`, `created_at` |
 | `product_operation_notes` | `ProductOperationNote` | `product_id`, `writer_user_id`, `writer_email`, `content`, timestamps |
@@ -102,6 +105,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `InquiryStatus` | `WAITING`, `ANSWERED`, `CLOSED` |
 | `AccountingEntryType` | `SALE`, `REFUND`, `INBOUND` |
 | `InventoryLogType` | `INBOUND`, `OUTBOUND`, `ORDER`, `CANCEL`, `ADJUST`, `RETURN_RESTOCK` |
+| `StockCountStatus` | `DRAFT`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` |
 | `DiscountType` | `FIXED`, `PERCENT` |
 | `StockReservationStatus` | `RESERVED`, `RELEASED`, `SHIPPED`, `RETURNED` |
 | `StockTransferStatus` | `PENDING`, `COMPLETED` |
@@ -128,6 +132,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `Product` 1:N `Cart`, `OrderItem`, `Review`, `Inquiry`, `Wishlist`, `InventoryLog`, `WarehouseStock`, `StockTransfer`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote`.
 - `Product` 1:N `Sku`. v0.5.1 기준 SKU는 재고/입출고/바코드 운영 단위 코드이며, 상품 마스터 코드 `product_code`와 분리한다.
 - `Sku` 1:N `BarcodeLabel`. v0.5.3 기준 라벨 출력 이력은 SKU와 현재 barcode snapshot을 함께 저장한다.
+- `Warehouse` 1:N `StockCountSession`; `StockCountSession` 1:N `StockCountItem`. 실사 품목은 SKU와 상품을 함께 참조한다.
 - `ProductionOrder` 1:N `ProductionOrderItem`; `ProductionOrder` 1:N `ProductionReceipt`.
 - `ProductionOrderItem`은 `Sku`와 `Product`를 참조한다. v0.5.2 기준 BOM/자재 차감 없이 완제품 SKU 입고만 처리한다.
 - `ProductionReceipt`는 생산 완료 입고 이력이며 `Sku`, `Product`, `Warehouse`, 선택 `InventoryLog`를 참조한다.
@@ -163,4 +168,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.5.2 기준 생산 완료 처리는 `Product.stockQuantity`와 `WarehouseStock.quantity`를 함께 증가시키고 `inventory_logs.type=PRODUCTION_RECEIPT`를 생성한다.
 - v0.5.3 기준 `barcode_labels`는 라벨 생성/출력 이력을 저장한다. HTML 미리보기 기반이며 실제 프린터 드라이버/PDF 출력은 아직 제공하지 않는다.
 - v0.5.4 기준 바코드 입고/출고는 신규 재고 테이블을 만들지 않고 기존 `warehouse_stocks`와 `inventory_logs`를 사용한다. 통합 `inventory_movements` 원장은 후속 고도화 범위다.
+- v0.5.5 기준 재고 실사 완료 시 차이 수량만 기존 `InventoryLog(ADJUST)`에 기록하고 상품/창고 재고를 조정한다. 위치별 실사는 v0.5.6으로 이관한다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

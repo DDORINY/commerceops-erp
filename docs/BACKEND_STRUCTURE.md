@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.5.4`
+기준 버전: `v0.5.5`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -66,7 +66,7 @@ com.commerceops.erp
 | dashboard | `AdminDashboardController` | `DashboardService` | 주문/결제/상품/회원 repository 사용 | - |
 | hr | `AdminHrController`, `AdminStaffController` | `DepartmentService`, `PositionService`, `StaffProfileService`, `AdminStaffService` | `DepartmentRepository`, `PositionRepository`, `StaffProfileRepository`, `UserRepository` | `Department`, `Position`, `StaffProfile` |
 | inquiry | `InquiryController`, `AdminInquiryController` | `InquiryService` | `InquiryRepository` | `Inquiry` |
-| inventory | `AdminInventoryController` | `InventoryService` | `InventoryLogRepository` | `InventoryLog` |
+| inventory | `AdminInventoryController`, `AdminStockCountController` | `InventoryService`, `StockCountService` | `InventoryLogRepository`, `StockCountSessionRepository`, `StockCountItemRepository` | `InventoryLog`, `StockCountSession`, `StockCountItem` |
 | media | `AdminMediaController` | `MediaStorageService` | `MediaFileRepository` | `MediaFile` |
 | notification | `NotificationController`, `AdminNotificationController` | `NotificationService` | `NotificationRepository` | `Notification` |
 | ops | `AdminOpsAnalyticsController` | `OpsAnalyticsService` | 회계/주문/결제/창고 repository 사용 | - |
@@ -115,6 +115,7 @@ com.commerceops.erp
 - SKU/바코드 재고 마스터: v0.5.1 기준 `SkuService`가 상품별 SKU 코드와 바코드를 관리한다. 조회는 `INVENTORY_READ`, 생성/수정/활성 변경은 `SKU_MANAGE`, 바코드 재발급은 `BARCODE_MANAGE` permission을 요구하며 주요 변경은 audit log에 기록한다.
 - 생산 입고 흐름: v0.5.2 기준 `ProductionService`가 생산 주문 생성/수정/시작/취소/완료를 관리한다. 완료 처리 시 SKU의 상품 재고와 창고 재고를 증가시키고 `ProductionReceipt`, `InventoryLog(PRODUCTION_RECEIPT)`, audit log를 함께 생성한다.
 - 바코드 라벨/입출고: v0.5.4 기준 `BarcodeService`가 바코드/SKU 검색, 바코드 단건 조회, 라벨 HTML 미리보기 생성, 출력 이력 기록, 바코드 기반 재고 조회/입고/출고를 제공한다. 조회는 `INVENTORY_READ`, 라벨 생성/출력 기록은 `BARCODE_MANAGE`, 입고/출고는 `INVENTORY_WRITE` permission을 요구하며 `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED`, `STOCK_INBOUNDED`, `STOCK_OUTBOUNDED` audit log를 남긴다.
+- 재고 실사: v0.5.5 기준 `StockCountService`가 창고별 실사 세션 생성, SKU 품목 저장, 시작/완료/취소를 제공한다. 완료 시 실사 차이를 상품/창고 재고와 `InventoryLog(ADJUST)`에 반영하고 `STOCK_COUNT_*` audit log를 남긴다.
 
 ## 환경 프로파일
 
