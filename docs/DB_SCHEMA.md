@@ -41,6 +41,9 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `categories` | `Category` | `name`, `parent_id`, `depth`, `sort_order`, `active`, `visible_in_nav`, `slug`, timestamps |
 | `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, 호환 상태 `status`, 판매 상태 `sales_status`, 전시 상태 `display_status`, `deleted_at`, `safety_stock_quantity`, `options`, timestamps |
 | `skus` | `Sku` | `product_id`, `option_signature`, unique `sku_code`, unique nullable `barcode`, `name`, `safety_stock_quantity`, `active`, timestamps |
+| `production_orders` | `ProductionOrder` | unique `production_number`, `status`, `warehouse_id`, `planned_quantity`, `completed_quantity`, `started_at`, `completed_at`, `memo`, `created_by`, `updated_by`, timestamps |
+| `production_order_items` | `ProductionOrderItem` | `production_order_id`, `sku_id`, `product_id`, `planned_quantity`, `completed_quantity` |
+| `production_receipts` | `ProductionReceipt` | `production_order_id`, `sku_id`, `product_id`, `warehouse_id`, `quantity`, nullable `inventory_log_id`, `created_by`, `created_at` |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
 | `product_status_histories` | `ProductStatusHistory` | `product_id`, `changed_by_user_id`, `changed_by_email`, 이전/변경 판매 상태, 이전/변경 전시 상태, `reason`, `created_at` |
 | `product_operation_notes` | `ProductOperationNote` | `product_id`, `writer_user_id`, `writer_email`, `content`, timestamps |
@@ -119,6 +122,9 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `Category`는 `parent_id` 자기 참조로 트리 구조를 구성한다.
 - `Product` 1:N `Cart`, `OrderItem`, `Review`, `Inquiry`, `Wishlist`, `InventoryLog`, `WarehouseStock`, `StockTransfer`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote`.
 - `Product` 1:N `Sku`. v0.5.1 기준 SKU는 재고/입출고/바코드 운영 단위 코드이며, 상품 마스터 코드 `product_code`와 분리한다.
+- `ProductionOrder` 1:N `ProductionOrderItem`; `ProductionOrder` 1:N `ProductionReceipt`.
+- `ProductionOrderItem`은 `Sku`와 `Product`를 참조한다. v0.5.2 기준 BOM/자재 차감 없이 완제품 SKU 입고만 처리한다.
+- `ProductionReceipt`는 생산 완료 입고 이력이며 `Sku`, `Product`, `Warehouse`, 선택 `InventoryLog`를 참조한다.
 - v0.2.3 기준 상품 대표 이미지는 `products.image_url`에 업로드 결과 URL을 저장한다. `media_files`는 파일 메타데이터를 보관하며 상품과의 별도 FK는 아직 두지 않는다.
 - `Order` 1:N `OrderItem`; `Order` 1:1 `Payment`, `Shipment`; `Order` 1:N `ReturnRequest`, `StockReservation`.
 - `Warehouse` 1:N `WarehouseStock`; `WarehouseStock` 1:N `StockReservation`.
@@ -148,4 +154,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.4.8 기준 `business_settings`는 단일 row 설정으로 운영한다. row가 없으면 저장 시 최초 생성하고 이후에는 기존 row를 갱신한다.
 - v0.4.8 기준 `terms_versions`는 기존 row를 overwrite하지 않고 새 버전을 생성한다. 서비스 레벨에서 type별 active=true 최신 버전을 하나만 유지하고 과거 버전 조회를 허용한다. 삭제 API는 제공하지 않는다.
 - v0.5.1 기준 `skus.sku_code`는 수동 입력 또는 서버 자동 생성 값을 저장한다. `barcode`는 nullable이지만 값이 있으면 unique이며, 비어 있는 생성 요청은 서버가 고유 바코드를 자동 생성한다.
+- v0.5.2 기준 생산 완료 처리는 `Product.stockQuantity`와 `WarehouseStock.quantity`를 함께 증가시키고 `inventory_logs.type=PRODUCTION_RECEIPT`를 생성한다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

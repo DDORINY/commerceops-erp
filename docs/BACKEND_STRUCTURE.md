@@ -72,6 +72,7 @@ com.commerceops.erp
 | payment | `PaymentController` | `PaymentService` | `PaymentRepository` | `Payment` |
 | permission | `AdminPermissionGroupController`, `AdminPermissionMatrixController` | `PermissionGroupService`, `PermissionMatrixService` | `PermissionGroupRepository`, `UserPermissionGroupRepository`, `PermissionRepository`, `PermissionGroupPermissionRepository`, `AdminMenuPermissionRepository`, `UserRepository` | `PermissionGroup`, `UserPermissionGroup`, `Permission`, `PermissionGroupPermission`, `AdminMenuPermission` |
 | product | `ProductController`, `AdminProductController` | `ProductService`, `ProductDetailBlockService` | `ProductRepository`, `ProductDetailBlockRepository`, `ProductStatusHistoryRepository`, `ProductOperationNoteRepository` | `Product`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote` |
+| production | `AdminProductionController` | `ProductionService` | `ProductionOrderRepository`, `ProductionOrderItemRepository`, `ProductionReceiptRepository` | `ProductionOrder`, `ProductionOrderItem`, `ProductionReceipt` |
 | returns | `ReturnController`, `AdminReturnController` | `ReturnService` | `ReturnRequestRepository` | `ReturnRequest` |
 | review | `ReviewController`, `AdminReviewController` | `ReviewService` | `ReviewRepository` | `Review` |
 | settings | `SettingsController`, `AdminSettingsController` | `SettingsService` | `BusinessSettingsRepository`, `TermsVersionRepository` | `BusinessSettings`, `TermsVersion` |
@@ -110,6 +111,7 @@ com.commerceops.erp
 - 감사 로그 확장: v0.4.7 기준 `AuditLogService`는 관리자 변경 작업의 action/target/status 요약과 함께 요청 IP, User-Agent, method/path, before/after/metadata JSON을 기록한다. `AdminAuditLogController`는 actor/action/target/date 필터와 상세 조회를 제공하며, `PermissionChecker`는 인증된 관리자의 permission code 부족으로 인한 403을 `PERMISSION_DENIED`로 남긴다.
 - 사업자/약관 설정: v0.4.8 기준 `SettingsService`가 단일 row 사업자 설정과 약관/개인정보처리방침/배송반품정책 버전 이력을 관리한다. 관리자 API는 `SETTINGS_MANAGE` permission을 요구하고 공개 API는 인증 없이 최신 공개 정보만 조회한다.
 - SKU/바코드 재고 마스터: v0.5.1 기준 `SkuService`가 상품별 SKU 코드와 바코드를 관리한다. 조회는 `INVENTORY_READ`, 생성/수정/활성 변경은 `SKU_MANAGE`, 바코드 재발급은 `BARCODE_MANAGE` permission을 요구하며 주요 변경은 audit log에 기록한다.
+- 생산 입고 흐름: v0.5.2 기준 `ProductionService`가 생산 주문 생성/수정/시작/취소/완료를 관리한다. 완료 처리 시 SKU의 상품 재고와 창고 재고를 증가시키고 `ProductionReceipt`, `InventoryLog(PRODUCTION_RECEIPT)`, audit log를 함께 생성한다.
 
 ## 환경 프로파일
 
