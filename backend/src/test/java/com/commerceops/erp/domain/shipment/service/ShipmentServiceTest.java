@@ -1,5 +1,6 @@
 package com.commerceops.erp.domain.shipment.service;
 
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
@@ -9,6 +10,7 @@ import com.commerceops.erp.domain.shipment.dto.TrackingUpdateRequest;
 import com.commerceops.erp.domain.shipment.entity.Shipment;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
 import com.commerceops.erp.domain.shipment.repository.ShipmentRepository;
+import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.domain.warehouse.service.WarehouseFulfillmentService;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,9 @@ class ShipmentServiceTest {
     @Mock
     private WarehouseFulfillmentService warehouseFulfillmentService;
 
+    @Mock
+    private AuditLogService auditLogService;
+
     @InjectMocks
     private ShipmentService shipmentService;
 
@@ -50,13 +55,16 @@ class ShipmentServiceTest {
 
         ShipmentResponse response = shipmentService.updateTracking(
                 3L,
-                new TrackingUpdateRequest("TRACK-001", "Commerce Express")
+                new TrackingUpdateRequest("TRACK-001", "Commerce Express"),
+                admin()
         );
 
         assertThat(shipment.getStatus()).isEqualTo(ShipmentStatus.IN_TRANSIT);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.SHIPPING);
         assertThat(response.trackingNumber()).isEqualTo("TRACK-001");
         assertThat(response.carrier()).isEqualTo("Commerce Express");
+        assertThat(response.trackingNumberSource()).isEqualTo("MANUAL");
+        assertThat(response.trackingNumberIssuedAt()).isNotNull();
         assertThat(response.shippedAt()).isNotNull();
     }
 
@@ -71,8 +79,13 @@ class ShipmentServiceTest {
 
         assertThatThrownBy(() -> shipmentService.updateTracking(
                 4L,
-                new TrackingUpdateRequest("TRACK-002", "Commerce Express")
+                new TrackingUpdateRequest("TRACK-002", "Commerce Express"),
+                admin()
         )).isInstanceOf(BusinessException.class);
+    }
+
+    private User admin() {
+        return User.createAdmin("admin@example.com", "encoded", "관리자");
     }
 
     private Order order(OrderStatus status) {

@@ -14,6 +14,8 @@ public final class PermissionCodes {
     public static final String BANNER_MANAGE = "BANNER_MANAGE";
     public static final String ORDER_READ = "ORDER_READ";
     public static final String ORDER_STATUS_CHANGE = "ORDER_STATUS_CHANGE";
+    public static final String SHIPMENT_READ = "SHIPMENT_READ";
+    public static final String SHIPMENT_MANAGE = "SHIPMENT_MANAGE";
     public static final String PAYMENT_REFUND = "PAYMENT_REFUND";
     public static final String INVENTORY_READ = "INVENTORY_READ";
     public static final String INVENTORY_WRITE = "INVENTORY_WRITE";

@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.5.8`
+기준 버전: `v0.6.3`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -46,7 +46,7 @@
 | `/admin/accounting` | `app/admin/accounting/page.tsx` | `accountingService` |
 | `/admin/sales` | `app/admin/sales/page.tsx` | `adminService` dashboard sales/top products |
 | `/admin/inventory` | `app/admin/inventory/page.tsx` | `adminService.getInventory`, inbound/adjust |
-| `/admin/shipments` | `app/admin/shipments/page.tsx` | `shipmentService` |
+| `/admin/shipments` | `app/admin/shipments/page.tsx` | `shipmentService`, 송장번호 수동 입력/자동 생성/수정, 배송완료 처리 |
 | `/admin/returns` | `app/admin/returns/page.tsx` | `returnService` |
 | `/admin/coupons` | `app/admin/coupons/page.tsx` | `couponService` |
 | `/admin/warehouses` | `app/admin/warehouses/page.tsx` | `warehouseService` |
@@ -84,7 +84,7 @@
 | `notificationService.ts` | 사용자 알림 목록/읽음 처리, 관리자 최근 알림 조회 |
 | `opsAnalyticsService.ts` | 운영 분석 기초 overview 조회 |
 | `returnService.ts` | 반품 요청/목록, 관리자 승인/거절 |
-| `shipmentService.ts` | 사용자 배송 조회, 관리자 배송 처리 |
+| `shipmentService.ts` | 사용자 배송 조회, 관리자 배송 목록/송장번호 수동 입력/자동 생성/배송완료 처리 |
 | `couponService.ts` | 쿠폰 검증, 관리자 쿠폰 CRUD 일부 |
 | `adminService.ts` | 관리자 대시보드, 매출, 재고 요약 |
 | `accountingService.ts` | 관리자 회계 요약/내역 |

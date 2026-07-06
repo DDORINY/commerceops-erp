@@ -10,6 +10,8 @@ export interface ApiShipment {
   status: string;
   trackingNumber: string | null;
   carrier: string | null;
+  trackingNumberSource: string | null;
+  trackingNumberIssuedAt: string | null;
   shippedAt: string | null;
   deliveredAt: string | null;
   createdAt: string;
@@ -29,6 +31,12 @@ export const shipmentService = {
     apiClient<ApiShipment>(`/admin/shipments/${shipmentId}/tracking`, {
       method: 'PATCH',
       body: JSON.stringify({ trackingNumber, carrier }),
+    }),
+
+  generateTrackingNumber: (shipmentId: number, carrier: string) =>
+    apiClient<ApiShipment>(`/admin/shipments/${shipmentId}/tracking-number`, {
+      method: 'POST',
+      body: JSON.stringify({ carrier }),
     }),
 
   markDelivered: (shipmentId: number) =>

@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.5.3`
+기준 버전: `v0.6.3`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -54,7 +54,9 @@
 | 상품 | `PRODUCT_READ` | `PRODUCT_WRITE`, `PRODUCT_STATUS_CHANGE`, `PRODUCT_BULK_UPDATE` |
 | 카테고리 | `CATEGORY_MANAGE` | `CATEGORY_MANAGE` |
 | 배너 | `BANNER_MANAGE` | `BANNER_MANAGE` |
-| 주문/배송/반품 | `ORDER_READ` | `ORDER_STATUS_CHANGE` |
+| 주문 | `ORDER_READ` | `ORDER_STATUS_CHANGE` |
+| 배송/송장 | `SHIPMENT_READ` | `SHIPMENT_MANAGE` |
+| 반품 | `ORDER_READ` | `ORDER_STATUS_CHANGE` |
 | 결제/환불 | - | `PAYMENT_REFUND` |
 | 재고 | `INVENTORY_READ` | `INVENTORY_WRITE` |
 | 창고/재고 이동 | `INVENTORY_READ` | `WAREHOUSE_MANAGE`, `INVENTORY_WRITE` |
@@ -140,10 +142,12 @@
 | Payment | POST | `/api/payments/{paymentId}/cancel` | `PaymentCancelRequest` | `PaymentResponse` | 인증 |
 | Payment | POST | `/api/payments/mock/complete` | `MockPaymentCompleteRequest` | `PaymentResponse` | 인증 |
 | Shipment | GET | `/api/orders/{orderId}/shipment` | - | `ShipmentResponse` | 인증 |
-| Shipment Admin | GET | `/api/admin/shipments` | `status`, `keyword`, `page`, `size` | `PageResponse<ShipmentResponse>` | 관리자 |
-| Shipment Admin | GET | `/api/admin/shipments/{id}` | - | `ShipmentResponse` | 관리자 |
-| Shipment Admin | PATCH | `/api/admin/shipments/{id}/tracking` | `TrackingUpdateRequest` | `ShipmentResponse` | 관리자 |
-| Shipment Admin | PATCH | `/api/admin/shipments/{id}/deliver` | - | `ShipmentResponse` | 관리자 |
+| Shipment Admin | GET | `/api/admin/shipments` | `status`, `keyword`, `page`, `size` | `PageResponse<ShipmentResponse>` | `SHIPMENT_READ` |
+| Shipment Admin | GET | `/api/admin/shipments/{id}` | - | `ShipmentResponse` | `SHIPMENT_READ` |
+| Shipment Admin | PATCH | `/api/admin/shipments/{id}/tracking` | `TrackingUpdateRequest` | `ShipmentResponse` | `SHIPMENT_MANAGE` |
+| Shipment Admin | POST | `/api/admin/shipments/{id}/tracking-number` | `TrackingNumberGenerateRequest` | `ShipmentResponse` | `SHIPMENT_MANAGE` |
+| Shipment Admin | PATCH | `/api/admin/shipments/{id}/tracking-number` | `TrackingUpdateRequest` | `ShipmentResponse` | `SHIPMENT_MANAGE` |
+| Shipment Admin | PATCH | `/api/admin/shipments/{id}/deliver` | - | `ShipmentResponse` | `SHIPMENT_MANAGE` |
 | Return | POST | `/api/orders/{orderId}/returns` | `ReturnCreateRequest` | `ReturnResponse` | 인증 |
 | Return | GET | `/api/returns` | - | `List<ReturnResponse>` | 인증 |
 | Return Admin | GET | `/api/admin/returns` | `status`, `keyword`, `page`, `size` | `PageResponse<ReturnResponse>` | 관리자 |
@@ -313,6 +317,9 @@
 - `CarrierResponse`: 택배사 ID, 코드, 이름, 배송 추적 URL 템플릿, 활성 상태, 생성/수정일.
 - `ShippingMethodRequest`: `code`, `name`, `carrierId`, `defaultFee`, `description`, `active`.
 - `ShippingMethodResponse`: 배송 방법 ID, 코드, 이름, 연결 택배사, 기본 배송비, 설명, 활성 상태, 생성/수정일.
+- `TrackingNumberGenerateRequest`: `carrier`.
+- `TrackingUpdateRequest`: `trackingNumber`, `carrier`.
+- `ShipmentResponse`: 배송 ID, 주문/수령인/주소 요약, 상태, 송장번호, 택배사, 송장 발급 방식, 송장 발급 시각, 배송 시작/완료 시각.
 - `StockCountCreateRequest`: `warehouseId`, `memo`.
 - `StockCountItemsUpdateRequest`: `items[{ skuId, countedQuantity, memo }]`.
 - `StockCountResponse`: 실사 세션 요약, 상태, 창고, 시작/완료 시각, 실사 품목 목록.
