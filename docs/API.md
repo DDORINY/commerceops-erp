@@ -220,6 +220,11 @@
 | Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/start` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
 | Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/complete` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
 | Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/cancel` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
+| Inventory Alert Admin | GET | `/api/admin/inventory-alert-rules` | `warehouseId`, `active`, `keyword`, `page`, `size` | `PageResponse<InventoryAlertRuleResponse>` | `INVENTORY_READ` |
+| Inventory Alert Admin | POST | `/api/admin/inventory-alert-rules` | `InventoryAlertRuleRequest` | `InventoryAlertRuleResponse` | `INVENTORY_WRITE` |
+| Inventory Alert Admin | PATCH | `/api/admin/inventory-alert-rules/{ruleId}` | `InventoryAlertRuleRequest` | `InventoryAlertRuleResponse` | `INVENTORY_WRITE` |
+| Inventory Alert Admin | PATCH | `/api/admin/inventory-alert-rules/{ruleId}/active` | `InventoryAlertRuleActiveRequest` | `InventoryAlertRuleResponse` | `INVENTORY_WRITE` |
+| Inventory Alert Admin | GET | `/api/admin/inventory-alerts/low-stock` | `warehouseId` | `List<LowStockAlertResponse>` | `INVENTORY_READ` |
 | Warehouse Location Admin | GET | `/api/admin/warehouse-locations` | `warehouseId`, `active`, `keyword`, `page`, `size` | `PageResponse<WarehouseLocationResponse>` | `INVENTORY_READ` |
 | Warehouse Location Admin | POST | `/api/admin/warehouse-locations` | `WarehouseLocationCreateRequest` | `WarehouseLocationResponse` | `WAREHOUSE_MANAGE` |
 | Warehouse Location Admin | PATCH | `/api/admin/warehouse-locations/{locationId}` | `WarehouseLocationUpdateRequest` | `WarehouseLocationResponse` | `WAREHOUSE_MANAGE` |
@@ -265,6 +270,8 @@
 - `NotificationResponse`: `id`, `userId`, `type`, `title`, `message`, `targetType`, `targetId`, `read`, `readAt`, `createdAt`.
 - `WarehouseLocationResponse`: `locationId`, `warehouseId`, `warehouseCode`, `warehouseName`, `code`, `name`, `zone`, `aisle`, `rack`, `cell`, `active`, `createdAt`, `updatedAt`.
 - `WarehouseLocationStockResponse`: `stockId`, `locationId`, `locationCode`, `locationName`, `warehouseId`, `warehouseName`, `skuId`, `skuCode`, `barcode`, `productId`, `productName`, `quantity`, `reservedQuantity`, `availableQuantity`, `updatedAt`.
+- `InventoryAlertRuleResponse`: `ruleId`, `skuId`, `skuCode`, `barcode`, `productId`, `productName`, `warehouseId`, `warehouseName`, `thresholdQuantity`, `active`, `memo`, `createdAt`, `updatedAt`.
+- `LowStockAlertResponse`: `ruleId`, `skuId`, `skuCode`, `barcode`, `productId`, `productName`, `warehouseId`, `warehouseName`, `currentQuantity`, `thresholdQuantity`, `shortageQuantity`, `memo`.
 - `UnreadNotificationCountResponse`: `unreadCount`.
 - `OpsAnalyticsOverviewResponse`: `accounting`, `sales`, `warehouse`, `notes`.
 - `OpsAnalyticsOverviewResponse.accounting`: `totalSales`, `totalRefunds`, `totalInboundAmount`, `netSales`, `entryCount`.

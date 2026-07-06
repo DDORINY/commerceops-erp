@@ -16,4 +16,8 @@ public interface WarehouseLocationStockRepository extends JpaRepository<Warehous
             countQuery = "SELECT COUNT(s) FROM WarehouseLocationStock s WHERE s.location.id = :locationId"
     )
     Page<WarehouseLocationStock> findByLocationIdForAdmin(@Param("locationId") Long locationId, Pageable pageable);
+
+    @Query("SELECT COALESCE(SUM(s.quantity), 0) FROM WarehouseLocationStock s " +
+            "WHERE s.sku.id = :skuId AND (:warehouseId IS NULL OR s.warehouse.id = :warehouseId)")
+    long sumQuantityBySkuAndWarehouse(@Param("skuId") Long skuId, @Param("warehouseId") Long warehouseId);
 }

@@ -171,4 +171,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.5.5 기준 재고 실사 완료 시 차이 수량만 기존 `InventoryLog(ADJUST)`에 기록하고 상품/창고 재고를 조정한다. 위치별 실사는 v0.5.6으로 이관한다.
 - v0.5.6 기준 `warehouse_locations`는 창고별 위치 코드와 구역/통로/랙/셀 정보를 저장한다. `(warehouse_id, code)`는 unique이며, 비활성 위치는 조회되지만 운영상 신규 이동/배치 대상에서 제외할 수 있다.
 - v0.5.6 기준 `warehouse_location_stocks`는 위치별 SKU 재고 기반 테이블이다. 현재는 조회 기반을 우선 제공하고, 위치 간 이동/수량 조정은 v0.5.7 재고 이동 고도화로 이관한다.
+- v0.5.7 기준 `inventory_alert_rules`는 SKU 또는 SKU+창고 단위 안전재고 기준을 저장한다. `warehouse_id`가 null이면 전체 창고 기준이며, 재고 부족 조회는 활성 rule만 대상으로 한다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

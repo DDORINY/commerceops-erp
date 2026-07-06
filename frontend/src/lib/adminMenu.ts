@@ -65,6 +65,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { menuKey: 'production', label: '생산 입고 관리', href: '/admin/production', roles: ALL_ADMIN_ROLES },
       { menuKey: 'stock-counts', label: '재고 실사', href: '/admin/stock-counts', roles: ALL_ADMIN_ROLES },
       { menuKey: 'stock-transfers', label: '재고 이동', href: '/admin/warehouses?focus=transfers', roles: ADMIN_ROLES },
+      { menuKey: 'inventory-alerts', label: '안전재고 알림', href: '/admin/inventory-alerts', roles: ALL_ADMIN_ROLES },
     ],
   },
   {
