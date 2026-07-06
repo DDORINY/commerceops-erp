@@ -26,6 +26,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 바코드 입출고 메뉴 seed 마이그레이션: `backend/src/main/resources/db/migration/V19__seed_barcode_stock_menu.sql`
 - 재고 실사 마이그레이션: `backend/src/main/resources/db/migration/V20__create_stock_counts.sql`
 - 출고 지시 마이그레이션: `backend/src/main/resources/db/migration/V23__create_outbound_orders.sql`
+- 택배사/배송 방법 마이그레이션: `backend/src/main/resources/db/migration/V24__create_carriers_shipping_methods.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -53,6 +54,8 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `production_receipts` | `ProductionReceipt` | `production_order_id`, `sku_id`, `product_id`, `warehouse_id`, `quantity`, nullable `inventory_log_id`, `created_by`, `created_at` |
 | `outbound_orders` | `OutboundOrder` | unique `outbound_number`, `order_id`, `warehouse_id`, `status`, `requested_at`, `picked_at`, `shipped_at`, `memo`, `created_by`, `updated_by`, timestamps |
 | `outbound_order_items` | `OutboundOrderItem` | `outbound_order_id`, `order_item_id`, nullable `sku_id`, `product_id`, `quantity`, `picked_quantity`, `scanned_quantity`, timestamps |
+| `carriers` | `Carrier` | unique `code`, `name`, `tracking_url_template`, `active`, timestamps |
+| `shipping_methods` | `ShippingMethod` | unique `code`, `name`, nullable `carrier_id`, `default_fee`, `description`, `active`, timestamps |
 | `stock_count_sessions` | `StockCountSession` | unique `count_number`, `warehouse_id`, `status`, `memo`, `started_by`, `completed_by`, `started_at`, `completed_at`, timestamps |
 | `stock_count_items` | `StockCountItem` | `session_id`, `sku_id`, `product_id`, `system_quantity`, `counted_quantity`, `difference_quantity`, `memo`, timestamps |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
@@ -141,6 +144,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `ProductionOrderItem`은 `Sku`와 `Product`를 참조한다. v0.5.2 기준 BOM/자재 차감 없이 완제품 SKU 입고만 처리한다.
 - `ProductionReceipt`는 생산 완료 입고 이력이며 `Sku`, `Product`, `Warehouse`, 선택 `InventoryLog`를 참조한다.
 - `Order` 1:N `OutboundOrder`; `OutboundOrder` 1:N `OutboundOrderItem`. v0.6.1 기준 출고 지시는 주문과 창고를 기준으로 생성하고, 출고 품목은 주문 품목과 상품, 가능한 경우 SKU/바코드를 함께 참조한다.
+- `Carrier` 1:N `ShippingMethod`. v0.6.2 기준 배송 방법은 택배사와 선택적으로 연결하며, 비활성 택배사는 신규 배송 방법에 연결하지 않는다.
 - v0.2.3 기준 상품 대표 이미지는 `products.image_url`에 업로드 결과 URL을 저장한다. `media_files`는 파일 메타데이터를 보관하며 상품과의 별도 FK는 아직 두지 않는다.
 - `Order` 1:N `OrderItem`; `Order` 1:1 `Payment`, `Shipment`; `Order` 1:N `ReturnRequest`, `StockReservation`.
 - `Warehouse` 1:N `WarehouseStock`; `WarehouseStock` 1:N `StockReservation`.
@@ -178,4 +182,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.5.6 기준 `warehouse_location_stocks`는 위치별 SKU 재고 기반 테이블이다. 현재는 조회 기반을 우선 제공하고, 위치 간 이동/수량 조정은 v0.5.7 재고 이동 고도화로 이관한다.
 - v0.5.7 기준 `inventory_alert_rules`는 SKU 또는 SKU+창고 단위 안전재고 기준을 저장한다. `warehouse_id`가 null이면 전체 창고 기준이며, 재고 부족 조회는 활성 rule만 대상으로 한다.
 - v0.6.1 기준 `outbound_orders`는 `outbound_number`, 주문, 창고, 상태, 요청/피킹/배송 일시와 메모를 저장한다. `outbound_order_items`는 주문 품목, 상품, nullable SKU, 지시/피킹/스캔 수량을 저장한다. 실제 바코드 스캔 검수와 재고 차감은 후속 v0.6.x 범위다.
+- v0.6.2 기준 `carriers`와 `shipping_methods`는 송장/배송 처리에서 선택할 master 데이터다. 실제 택배사 API 호출과 자동 운임 계산은 구현하지 않는다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.
