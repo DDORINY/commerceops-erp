@@ -13,6 +13,31 @@ export interface ApiReturn {
   updatedAt: string;
 }
 
+export type ReturnShipmentStatus = 'NOT_REQUESTED' | 'COLLECTION_REQUESTED' | 'IN_TRANSIT' | 'RECEIVED' | 'CANCELLED';
+export type ReturnShippingFeePayer = 'UNDECIDED' | 'CUSTOMER' | 'COMPANY';
+
+export interface ApiReturnShipmentInfo {
+  id: number | null;
+  returnId: number;
+  carrier: string | null;
+  trackingNumber: string | null;
+  status: ReturnShipmentStatus;
+  shippingFee: number | null;
+  feePayer: ReturnShippingFeePayer;
+  memo: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface ReturnShipmentPayload {
+  carrier?: string;
+  trackingNumber?: string;
+  status?: ReturnShipmentStatus;
+  shippingFee?: number | null;
+  feePayer?: ReturnShippingFeePayer;
+  memo?: string;
+}
+
 export const returnService = {
   createReturn: (orderId: number, reason: string, reasonDetail?: string) =>
     apiClient<ApiReturn>(`/orders/${orderId}/returns`, {
@@ -41,5 +66,14 @@ export const returnService = {
     apiClient<ApiReturn>(`/admin/returns/${returnId}/reject`, {
       method: 'PATCH',
       body: JSON.stringify({ adminNote }),
+    }),
+
+  getReturnShipment: (returnId: number) =>
+    apiClient<ApiReturnShipmentInfo>(`/admin/returns/${returnId}/shipment`),
+
+  saveReturnShipment: (returnId: number, payload: ReturnShipmentPayload, exists: boolean) =>
+    apiClient<ApiReturnShipmentInfo>(`/admin/returns/${returnId}/shipment`, {
+      method: exists ? 'PATCH' : 'POST',
+      body: JSON.stringify(payload),
     }),
 };

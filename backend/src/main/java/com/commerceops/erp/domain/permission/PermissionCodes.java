@@ -26,6 +26,7 @@ public final class PermissionCodes {
     public static final String OUTBOUND_READ = "OUTBOUND_READ";
     public static final String OUTBOUND_MANAGE = "OUTBOUND_MANAGE";
     public static final String CARRIER_MANAGE = "CARRIER_MANAGE";
+    public static final String RETURN_SHIPPING_MANAGE = "RETURN_SHIPPING_MANAGE";
     public static final String STOCK_COUNT_MANAGE = "STOCK_COUNT_MANAGE";
     public static final String WAREHOUSE_MANAGE = "WAREHOUSE_MANAGE";
     public static final String ACCOUNTING_READ = "ACCOUNTING_READ";

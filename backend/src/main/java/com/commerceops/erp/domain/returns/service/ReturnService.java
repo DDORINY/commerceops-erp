@@ -1,6 +1,8 @@
 package com.commerceops.erp.domain.returns.service;
 
 import com.commerceops.erp.domain.accounting.service.AccountingService;
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.inventory.entity.InventoryLog;
 import com.commerceops.erp.domain.inventory.enums.InventoryLogType;
 import com.commerceops.erp.domain.inventory.repository.InventoryLogRepository;
@@ -16,9 +18,15 @@ import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.returns.dto.ReturnAdminActionRequest;
 import com.commerceops.erp.domain.returns.dto.ReturnCreateRequest;
 import com.commerceops.erp.domain.returns.dto.ReturnResponse;
+import com.commerceops.erp.domain.returns.dto.ReturnShipmentInfoRequest;
+import com.commerceops.erp.domain.returns.dto.ReturnShipmentInfoResponse;
 import com.commerceops.erp.domain.returns.entity.ReturnRequest;
+import com.commerceops.erp.domain.returns.entity.ReturnShipmentInfo;
+import com.commerceops.erp.domain.returns.enums.ReturnShipmentStatus;
+import com.commerceops.erp.domain.returns.enums.ReturnShippingFeePayer;
 import com.commerceops.erp.domain.returns.enums.ReturnStatus;
 import com.commerceops.erp.domain.returns.repository.ReturnRequestRepository;
+import com.commerceops.erp.domain.returns.repository.ReturnShipmentInfoRepository;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.domain.warehouse.service.WarehouseFulfillmentService;
 import com.commerceops.erp.global.exception.BusinessException;
@@ -39,6 +47,7 @@ import java.util.List;
 public class ReturnService {
 
     private final ReturnRequestRepository returnRequestRepository;
+    private final ReturnShipmentInfoRepository returnShipmentInfoRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
@@ -46,6 +55,7 @@ public class ReturnService {
     private final AccountingService accountingService;
     private final WarehouseFulfillmentService warehouseFulfillmentService;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public ReturnResponse createReturn(Long orderId, User user, ReturnCreateRequest request) {
@@ -134,6 +144,58 @@ public class ReturnService {
         return ReturnResponse.from(returnRequest);
     }
 
+    public ReturnShipmentInfoResponse getReturnShipmentInfo(Long returnId) {
+        ReturnRequest returnRequest = findReturn(returnId);
+        return returnShipmentInfoRepository.findByReturnRequestId(returnRequest.getId())
+                .map(ReturnShipmentInfoResponse::from)
+                .orElseGet(() -> ReturnShipmentInfoResponse.from(createDefaultShipmentInfo(returnRequest)));
+    }
+
+    @Transactional
+    public ReturnShipmentInfoResponse saveReturnShipmentInfo(Long returnId, ReturnShipmentInfoRequest request, User actor) {
+        ReturnRequest returnRequest = findReturn(returnId);
+        ReturnShipmentStatus nextStatus = request.status() != null
+                ? request.status()
+                : ReturnShipmentStatus.NOT_REQUESTED;
+        ReturnShippingFeePayer nextFeePayer = request.feePayer() != null
+                ? request.feePayer()
+                : ReturnShippingFeePayer.UNDECIDED;
+
+        ReturnShipmentInfo info = returnShipmentInfoRepository.findByReturnRequestId(returnRequest.getId())
+                .orElse(null);
+        boolean created = info == null;
+        String beforeStatus = created ? null : info.getStatus().name();
+
+        if (created) {
+            info = ReturnShipmentInfo.builder()
+                    .returnRequest(returnRequest)
+                    .carrier(normalize(request.carrier()))
+                    .trackingNumber(normalize(request.trackingNumber()))
+                    .status(nextStatus)
+                    .shippingFee(request.shippingFee())
+                    .feePayer(nextFeePayer)
+                    .memo(normalize(request.memo()))
+                    .build();
+        } else {
+            info.update(
+                    normalize(request.carrier()),
+                    normalize(request.trackingNumber()),
+                    nextStatus,
+                    request.shippingFee(),
+                    nextFeePayer,
+                    normalize(request.memo())
+            );
+        }
+
+        ReturnShipmentInfo saved = returnShipmentInfoRepository.save(info);
+        AuditActionType action = resolveReturnShipmentAction(created, beforeStatus, saved.getStatus().name());
+        auditLogService.record(actor, action, "RETURN_SHIPMENT", saved.getId(),
+                beforeStatus, saved.getStatus().name(),
+                "반품 배송 정보를 저장했습니다: 반품 ID " + returnRequest.getId());
+
+        return ReturnShipmentInfoResponse.from(saved);
+    }
+
     private void notifyReturnProcessed(ReturnRequest returnRequest) {
         notificationService.notifyUser(
                 returnRequest.getUser(),
@@ -149,5 +211,31 @@ public class ReturnService {
     private ReturnRequest findReturn(Long returnId) {
         return returnRequestRepository.findById(returnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RETURN_NOT_FOUND));
+    }
+
+    private ReturnShipmentInfo createDefaultShipmentInfo(ReturnRequest returnRequest) {
+        return ReturnShipmentInfo.builder()
+                .returnRequest(returnRequest)
+                .status(ReturnShipmentStatus.NOT_REQUESTED)
+                .feePayer(ReturnShippingFeePayer.UNDECIDED)
+                .build();
+    }
+
+    private AuditActionType resolveReturnShipmentAction(boolean created, String beforeStatus, String afterStatus) {
+        if (created) {
+            return AuditActionType.RETURN_SHIPMENT_CREATED;
+        }
+        if (beforeStatus != null && !beforeStatus.equals(afterStatus)) {
+            return AuditActionType.RETURN_SHIPMENT_STATUS_CHANGED;
+        }
+        return AuditActionType.RETURN_SHIPMENT_UPDATED;
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

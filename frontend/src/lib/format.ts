@@ -1,7 +1,7 @@
-export function downloadCsv(filename: string, headers: string[], rows: (string | number | null | undefined)[][]): void {
+﻿export function downloadCsv(filename: string, headers: string[], rows: (string | number | null | undefined)[][]): void {
   const escape = (v: string | number | null | undefined) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const csv = [headers, ...rows].map((r) => r.map(escape).join(',')).join('\r\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -86,6 +86,20 @@ export const RETURN_REASON_LABEL: Record<string, string> = {
   WRONG_DELIVERY: '오배송',
 };
 
+export const RETURN_SHIPMENT_STATUS_LABEL: Record<string, string> = {
+  NOT_REQUESTED: '수거 미요청',
+  COLLECTION_REQUESTED: '수거 요청',
+  IN_TRANSIT: '회수 배송중',
+  RECEIVED: '입고 완료',
+  CANCELLED: '수거 취소',
+};
+
+export const RETURN_SHIPPING_FEE_PAYER_LABEL: Record<string, string> = {
+  UNDECIDED: '미정',
+  CUSTOMER: '고객 부담',
+  COMPANY: '회사 부담',
+};
+
 export const INQUIRY_STATUS_LABEL: Record<string, string> = {
   WAITING: '답변 대기',
   ANSWERED: '답변 완료',
@@ -117,10 +131,10 @@ export const ACCOUNTING_TYPE_COLOR: Record<string, string> = {
 };
 
 export const SHIPMENT_STATUS_LABEL: Record<string, string> = {
-  READY: '배송준비',
+  READY: '배송 준비',
   IN_TRANSIT: '배송중',
-  DELIVERED: '배송완료',
-  CANCELLED: '배송취소',
+  DELIVERED: '배송 완료',
+  CANCELLED: '배송 취소',
 };
 
 export const SHIPMENT_STATUS_COLOR: Record<string, string> = {

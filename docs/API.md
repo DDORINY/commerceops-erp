@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.6.5`
+기준 버전: `v0.6.6`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -159,6 +159,9 @@
 | Return Admin | GET | `/api/admin/returns` | `status`, `keyword`, `page`, `size` | `PageResponse<ReturnResponse>` | 관리자 |
 | Return Admin | PATCH | `/api/admin/returns/{id}/approve` | `ReturnAdminActionRequest` | `ReturnResponse` | 관리자 |
 | Return Admin | PATCH | `/api/admin/returns/{id}/reject` | `ReturnAdminActionRequest` | `ReturnResponse` | 관리자 |
+| Return Shipment Admin | GET | `/api/admin/returns/{id}/shipment` | - | `ReturnShipmentInfoResponse` | `ORDER_READ` |
+| Return Shipment Admin | POST | `/api/admin/returns/{id}/shipment` | `ReturnShipmentInfoRequest` | `ReturnShipmentInfoResponse` | `RETURN_SHIPPING_MANAGE` |
+| Return Shipment Admin | PATCH | `/api/admin/returns/{id}/shipment` | `ReturnShipmentInfoRequest` | `ReturnShipmentInfoResponse` | `RETURN_SHIPPING_MANAGE` |
 | Inquiry | POST | `/api/products/{productId}/inquiries` | `InquiryCreateRequest` | `InquiryResponse` | 인증 |
 | Inquiry | POST | `/api/inquiries` | `InquiryCreateRequest` | `InquiryResponse` | 인증 |
 | Inquiry | GET | `/api/my/inquiries` | - | `List<InquiryResponse>` | 인증 |

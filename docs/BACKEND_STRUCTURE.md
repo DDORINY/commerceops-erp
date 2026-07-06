@@ -121,6 +121,7 @@ com.commerceops.erp
 - 출고 지시: v0.6.1 기준 `OutboundOrderService`가 주문 기준 출고 지시 생성, 목록/상세 조회, 창고/메모 수정, 피킹 완료, 취소를 제공한다. 조회는 `OUTBOUND_READ`, 변경은 `OUTBOUND_MANAGE` permission을 요구하고 출고 생성/수정/피킹/취소는 audit log에 기록한다.
 - 택배사/배송 방법: v0.6.2 기준 `ShippingSettingService`가 택배사와 배송 방법 목록/생성/수정/활성 상태 변경을 제공한다. 모든 API는 `CARRIER_MANAGE` permission을 요구하고 생성/수정/활성 상태 변경은 audit log에 기록한다.
 - 송장번호/라벨/추적 관리: v0.6.5 기준 `ShipmentService`가 송장번호 수동 저장/수정, 내부 테스트용 자동 생성, 송장 라벨 HTML 미리보기 생성, 출력 이력 기록, 배송 상태 변경, 배송 추적 이벤트 조회/등록을 제공한다. 배송 조회는 `SHIPMENT_READ`, 송장번호 생성/수정/배송완료/상태 변경/추적 이벤트 등록은 `SHIPMENT_MANAGE`, 라벨 생성/출력은 `SHIPPING_LABEL_PRINT` permission을 요구한다.
+- 반품 배송 관리: v0.6.6 기준 `ReturnService`가 반품 요청별 수거 택배사, 수거 송장번호, 수거 상태, 반품 배송비, 배송비 부담 주체를 조회/저장한다. 조회는 `ORDER_READ`, 저장은 `RETURN_SHIPPING_MANAGE` permission을 요구하고 변경 내역은 audit log에 기록한다.
 
 ## 환경 프로파일
 
