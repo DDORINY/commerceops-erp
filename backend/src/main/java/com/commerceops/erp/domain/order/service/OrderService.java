@@ -197,7 +197,7 @@ public class OrderService {
             warehouseFulfillmentService.shipOrder(order);
             shipmentRepository.findByOrderId(order.getId()).ifPresent(s -> {
                 if (s.getStatus() != ShipmentStatus.IN_TRANSIT && s.getStatus() != ShipmentStatus.DELIVERED) {
-                    s.updateTracking(s.getTrackingNumber(), s.getCarrier());
+                    s.markInTransit();
                 }
             });
         } else if (newStatus == OrderStatus.COMPLETED) {

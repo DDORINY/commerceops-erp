@@ -94,6 +94,15 @@ export default function AdminShipmentsPage() {
     }
   };
 
+  const handleGenerateTrackingNumber = async (shipmentId: number) => {
+    try {
+      await shipmentService.generateTrackingNumber(shipmentId, carrierInput);
+      setReloadKey((prev) => prev + 1);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '송장번호 자동 생성에 실패했습니다.');
+    }
+  };
+
   const handleDeliver = async (shipmentId: number) => {
     if (!confirm('배송완료로 처리하시겠습니까?')) return;
     try {
@@ -186,6 +195,15 @@ export default function AdminShipmentsPage() {
               render: (row) => <span className="text-xs font-mono">{row.trackingNumber ?? '—'}</span>,
             },
             {
+              key: 'trackingNumberSource',
+              header: '발급 방식',
+              render: (row) => (
+                <span className="text-xs">
+                  {row.trackingNumberSource === 'SYSTEM' ? '자동 생성' : row.trackingNumberSource === 'MANUAL' ? '수동 입력' : '—'}
+                </span>
+              ),
+            },
+            {
               key: 'shippedAt',
               header: '배송시작',
               render: (row) => (
@@ -204,59 +222,86 @@ export default function AdminShipmentsPage() {
                   );
                 }
 
-                if (row.status === 'READY') {
-                  if (editingId === row.shipmentId) {
-                    return (
-                      <div className="flex flex-col gap-1.5 min-w-[240px]">
-                        <select
-                          value={carrierInput}
-                          onChange={(e) => setCarrierInput(e.target.value)}
-                          className="border border-[#e0e0e0] px-2 py-1 text-xs outline-none bg-white"
-                        >
-                          {CARRIER_OPTIONS.map((c) => (
-                            <option key={c} value={c}>{c}</option>
-                          ))}
-                        </select>
-                        <div className="flex gap-1">
-                          <input
-                            autoFocus
-                            type="text"
-                            value={trackingInput}
-                            onChange={(e) => setTrackingInput(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleTrackingSubmit(row.shipmentId); }}
-                            placeholder="송장번호 입력"
-                            className="flex-1 border border-[#e0e0e0] px-2 py-1 text-xs outline-none focus:border-[#1a1f2e] font-mono"
-                          />
-                          <Button variant="primary" size="sm" onClick={() => handleTrackingSubmit(row.shipmentId)}>
-                            등록
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => { setEditingId(null); setTrackingInput(''); }}>
-                            취소
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  }
+                if (editingId === row.shipmentId) {
                   return (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingId(row.shipmentId);
-                        setTrackingInput('');
-                        setCarrierInput(CARRIER_OPTIONS[0]);
-                      }}
-                    >
-                      송장 입력
-                    </Button>
+                    <div className="flex flex-col gap-1.5 min-w-[240px]">
+                      <select
+                        value={carrierInput}
+                        onChange={(e) => setCarrierInput(e.target.value)}
+                        className="border border-[#e0e0e0] px-2 py-1 text-xs outline-none bg-white"
+                      >
+                        {CARRIER_OPTIONS.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <div className="flex gap-1">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={trackingInput}
+                          onChange={(e) => setTrackingInput(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleTrackingSubmit(row.shipmentId); }}
+                          placeholder="송장번호 입력"
+                          className="flex-1 border border-[#e0e0e0] px-2 py-1 text-xs outline-none focus:border-[#1a1f2e] font-mono"
+                        />
+                        <Button variant="primary" size="sm" onClick={() => handleTrackingSubmit(row.shipmentId)}>
+                          저장
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingId(null);
+                            setTrackingInput('');
+                            setCarrierInput(CARRIER_OPTIONS[0]);
+                          }}
+                        >
+                          취소
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (row.status === 'READY') {
+                  return (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingId(row.shipmentId);
+                          setTrackingInput('');
+                          setCarrierInput(CARRIER_OPTIONS[0]);
+                        }}
+                      >
+                        송장 입력
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleGenerateTrackingNumber(row.shipmentId)}>
+                        자동 생성
+                      </Button>
+                    </div>
                   );
                 }
 
                 // IN_TRANSIT
                 return (
-                  <Button variant="outline" size="sm" onClick={() => handleDeliver(row.shipmentId)}>
-                    배송완료
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingId(row.shipmentId);
+                        setTrackingInput(row.trackingNumber ?? '');
+                        setCarrierInput(row.carrier ?? CARRIER_OPTIONS[0]);
+                      }}
+                    >
+                      송장 수정
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDeliver(row.shipmentId)}>
+                      배송완료
+                    </Button>
+                  </div>
                 );
               },
             },

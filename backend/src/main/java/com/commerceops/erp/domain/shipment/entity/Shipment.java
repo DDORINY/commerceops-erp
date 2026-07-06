@@ -2,6 +2,7 @@ package com.commerceops.erp.domain.shipment.entity;
 
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
+import com.commerceops.erp.domain.shipment.enums.TrackingNumberSource;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -37,6 +38,13 @@ public class Shipment {
     @Column(length = 100)
     private String carrier;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tracking_number_source", length = 20)
+    private TrackingNumberSource trackingNumberSource;
+
+    @Column(name = "tracking_number_issued_at")
+    private LocalDateTime trackingNumberIssuedAt;
+
     @Column
     private LocalDateTime shippedAt;
 
@@ -52,10 +60,22 @@ public class Shipment {
     private LocalDateTime updatedAt;
 
     public void updateTracking(String trackingNumber, String carrier) {
+        updateTracking(trackingNumber, carrier, TrackingNumberSource.MANUAL);
+    }
+
+    public void updateTracking(String trackingNumber, String carrier, TrackingNumberSource source) {
         this.trackingNumber = trackingNumber;
         this.carrier = carrier;
+        this.trackingNumberSource = source;
+        this.trackingNumberIssuedAt = LocalDateTime.now();
+        markInTransit();
+    }
+
+    public void markInTransit() {
         this.status = ShipmentStatus.IN_TRANSIT;
-        this.shippedAt = LocalDateTime.now();
+        if (this.shippedAt == null) {
+            this.shippedAt = LocalDateTime.now();
+        }
     }
 
     public void markDelivered() {

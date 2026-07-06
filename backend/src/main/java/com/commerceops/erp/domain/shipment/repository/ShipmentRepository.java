@@ -8,11 +8,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     Optional<Shipment> findByOrderId(Long orderId);
+
+    boolean existsByTrackingNumber(String trackingNumber);
+
+    long countByTrackingNumberIssuedAtBetween(LocalDateTime from, LocalDateTime to);
 
     @Query(
         value = "SELECT s FROM Shipment s JOIN FETCH s.order o JOIN FETCH o.user " +

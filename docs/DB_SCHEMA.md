@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.5.3`
+기준 버전: `v0.6.3`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -27,6 +27,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 재고 실사 마이그레이션: `backend/src/main/resources/db/migration/V20__create_stock_counts.sql`
 - 출고 지시 마이그레이션: `backend/src/main/resources/db/migration/V23__create_outbound_orders.sql`
 - 택배사/배송 방법 마이그레이션: `backend/src/main/resources/db/migration/V24__create_carriers_shipping_methods.sql`
+- 송장번호 발급 정보 마이그레이션: `backend/src/main/resources/db/migration/V25__extend_shipments_tracking_number.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -67,7 +68,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `orders` | `Order` | `user_id`, `order_number`, `total_price`, `discount_amount`, `coupon_code`, `status`, receiver fields, `payment_status`, timestamps |
 | `order_items` | `OrderItem` | `order_id`, `product_id`, snapshot `product_name`, `price`, `quantity`, `selected_options`, `created_at` |
 | `payments` | `Payment` | `order_id`, `payment_method`, `payment_status`, `paid_amount`, `transaction_id`, `idempotency_key`, `provider`, timestamps |
-| `shipments` | `Shipment` | `order_id`, `status`, `tracking_number`, `carrier`, `shipped_at`, `delivered_at`, timestamps |
+| `shipments` | `Shipment` | `order_id`, `status`, `tracking_number`, `carrier`, `tracking_number_source`, `tracking_number_issued_at`, `shipped_at`, `delivered_at`, timestamps |
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `status`, `created_at` |
 | `audit_logs` | `AuditLog` | `actor_id`, `actor_email`, `actor_name`, `action_type`, `target_type`, nullable `target_id`, `before_status`, `after_status`, `summary`, `ip_address`, `user_agent`, `request_method`, `request_path`, `before_json`, `after_json`, `metadata_json`, `created_at` |
@@ -105,6 +106,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `PaymentMethod` | `MOCK_CARD`, `MOCK_BANK`, `MOCK_SIMPLE_PAY` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
 | `ShipmentStatus` | `READY`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
+| `TrackingNumberSource` | `MANUAL`, `SYSTEM` |
 | `OutboundOrderStatus` | `REQUESTED`, `PICKING`, `PICKED`, `SHIPPED`, `CANCELLED` |
 | `ReturnReason` | `CHANGE_OF_MIND`, `DEFECTIVE`, `WRONG_DELIVERY` |
 | `ReturnStatus` | `REQUESTED`, `APPROVED`, `REJECTED` |
@@ -120,7 +122,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 ## 주요 인덱스/제약 기준
 
 - 유니크: `users.email`, `departments.code`, `staff_profiles.user_id`, `staff_profiles.employee_no`, `permission_groups.code`, `user_permission_groups(user_id, permission_group_id)`, `permissions.code`, `permission_group_permissions(permission_group_id, permission_id)`, `admin_menu_permissions.menu_key`, `categories.slug`, `products.product_code`, `skus.sku_code`, `skus.barcode`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
-- 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다. 상세 블록은 `product_detail_blocks(product_id, sort_order)` 기준으로 정렬 조회한다. 상품 운영 이력은 `product_status_histories(product_id, created_at)`, 운영 메모는 `product_operation_notes(product_id, created_at)` 기준으로 최근순 조회한다.
+- 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다. 상세 블록은 `product_detail_blocks(product_id, sort_order)` 기준으로 정렬 조회한다. 상품 운영 이력은 `product_status_histories(product_id, created_at)`, 운영 메모는 `product_operation_notes(product_id, created_at)` 기준으로 최근순 조회한다. 송장번호 조회는 `shipments(tracking_number)`, 발급일 기준 내부 생성 번호 순번 계산은 `shipments(tracking_number_issued_at)` 인덱스를 사용한다.
 - 알림 조회 인덱스: `notifications(user_id, read_at, created_at)`, `notifications(type, created_at)`, `notifications(target_type, target_id)`.
 - FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `categories.parent_id`는 자기 참조 FK다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
 
@@ -183,4 +185,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.5.7 기준 `inventory_alert_rules`는 SKU 또는 SKU+창고 단위 안전재고 기준을 저장한다. `warehouse_id`가 null이면 전체 창고 기준이며, 재고 부족 조회는 활성 rule만 대상으로 한다.
 - v0.6.1 기준 `outbound_orders`는 `outbound_number`, 주문, 창고, 상태, 요청/피킹/배송 일시와 메모를 저장한다. `outbound_order_items`는 주문 품목, 상품, nullable SKU, 지시/피킹/스캔 수량을 저장한다. 실제 바코드 스캔 검수와 재고 차감은 후속 v0.6.x 범위다.
 - v0.6.2 기준 `carriers`와 `shipping_methods`는 송장/배송 처리에서 선택할 master 데이터다. 실제 택배사 API 호출과 자동 운임 계산은 구현하지 않는다.
+- v0.6.3 기준 `shipments.tracking_number_source`는 `MANUAL` 또는 `SYSTEM`으로 송장번호 입력 방식을 기록하고, `tracking_number_issued_at`은 수동 저장 또는 자동 생성 시각을 기록한다. READY 상태에서 최초 송장 등록 시에만 예약 재고 출고와 주문 `SHIPPING` 전환을 수행하며, IN_TRANSIT 상태의 송장 수정은 재고 차감을 반복하지 않는다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

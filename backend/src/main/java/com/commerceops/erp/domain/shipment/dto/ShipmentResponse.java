@@ -15,6 +15,8 @@ public record ShipmentResponse(
         String status,
         String trackingNumber,
         String carrier,
+        String trackingNumberSource,
+        LocalDateTime trackingNumberIssuedAt,
         LocalDateTime shippedAt,
         LocalDateTime deliveredAt,
         LocalDateTime createdAt
@@ -35,6 +37,8 @@ public record ShipmentResponse(
                 shipment.getStatus().name(),
                 shipment.getTrackingNumber(),
                 shipment.getCarrier(),
+                shipment.getTrackingNumberSource() != null ? shipment.getTrackingNumberSource().name() : null,
+                shipment.getTrackingNumberIssuedAt(),
                 shipment.getShippedAt(),
                 shipment.getDeliveredAt(),
                 shipment.getCreatedAt()
