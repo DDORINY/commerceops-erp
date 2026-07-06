@@ -10,6 +10,8 @@ import {
   type ApiAccountingEntry,
   type ApiAccountingSummary,
   type ApiAccountingEntryType,
+  type ApiAccountingLedger,
+  type ApiAccountingTransaction,
 } from '@/lib/services/accountingService';
 import {
   formatPrice,
@@ -29,6 +31,41 @@ const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
 ];
 
 const PAGE_SIZE = 20;
+const PREVIEW_SIZE = 10;
+
+const LEDGER_STATUS_LABEL: Record<ApiAccountingLedger['status'], string> = {
+  OPEN: '진행 중',
+  CLOSED: '마감',
+  CANCELLED: '취소',
+};
+
+const TRANSACTION_TYPE_LABEL: Record<ApiAccountingTransaction['type'], string> = {
+  SALES: '매출',
+  REFUND: '환불',
+  SHIPPING_REVENUE: '배송비 매출',
+  SHIPPING_COST: '택배비 비용',
+  RETURN_FEE: '반품 배송비',
+  ADJUSTMENT: '조정',
+  SETTLEMENT: '정산',
+};
+
+const TRANSACTION_DIRECTION_LABEL: Record<ApiAccountingTransaction['direction'], string> = {
+  DEBIT: '차변',
+  CREDIT: '대변',
+  INCOME: '수익',
+  EXPENSE: '비용',
+};
+
+const REFERENCE_TYPE_LABEL: Record<ApiAccountingTransaction['referenceType'], string> = {
+  ORDER: '주문',
+  PAYMENT: '결제',
+  REFUND: '환불',
+  RETURN: '반품',
+  SHIPMENT: '배송',
+  OUTBOUND_ORDER: '출고',
+  SHIPPING_METHOD: '배송 방법',
+  SETTLEMENT_BATCH: '정산 배치',
+};
 
 export default function AdminAccountingPage() {
   const [summary, setSummary] = useState<ApiAccountingSummary | null>(null);
@@ -40,6 +77,10 @@ export default function AdminAccountingPage() {
   const [loading, setLoading] = useState(true);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [entriesError, setEntriesError] = useState<string | null>(null);
+  const [ledgers, setLedgers] = useState<ApiAccountingLedger[]>([]);
+  const [transactions, setTransactions] = useState<ApiAccountingTransaction[]>([]);
+  const [ledgerError, setLedgerError] = useState<string | null>(null);
+  const [transactionError, setTransactionError] = useState<string | null>(null);
 
   useEffect(() => {
     accountingService
@@ -75,6 +116,30 @@ export default function AdminAccountingPage() {
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
+
+  useEffect(() => {
+    accountingService
+      .getLedgers({ size: PREVIEW_SIZE })
+      .then((res) => {
+        setLedgers(res.content);
+        setLedgerError(null);
+      })
+      .catch((err) => {
+        setLedgers([]);
+        setLedgerError(err instanceof Error ? err.message : '회계 원장을 불러오지 못했습니다.');
+      });
+
+    accountingService
+      .getTransactions({ size: PREVIEW_SIZE })
+      .then((res) => {
+        setTransactions(res.content);
+        setTransactionError(null);
+      })
+      .catch((err) => {
+        setTransactions([]);
+        setTransactionError(err instanceof Error ? err.message : '회계 거래를 불러오지 못했습니다.');
+      });
+  }, []);
 
   const handleTypeFilterChange = (value: TypeFilter) => {
     setTypeFilter(value);
@@ -225,6 +290,91 @@ export default function AdminAccountingPage() {
 
       <div className="mt-2 text-xs text-[#aaa]">총 {totalElements}건</div>
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+
+      <div className="mt-10 grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section>
+          <div className="mb-3">
+            <h2 className="text-sm font-semibold text-[#1a1f2e]">회계 원장</h2>
+            <p className="mt-1 text-xs text-[#8a9bb5]">v0.7.1부터 사용하는 기간별 원장 조회 기반입니다.</p>
+          </div>
+          {ledgerError && (
+            <div className="mb-3 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+              {ledgerError}
+            </div>
+          )}
+          <DataTable<ApiAccountingLedger>
+            keyField="ledgerId"
+            data={ledgers}
+            emptyMessage="회계 원장이 없습니다."
+            columns={[
+              {
+                key: 'ledgerNumber',
+                header: '원장 번호',
+                render: (row) => <span className="text-xs font-mono text-[#555]">{row.ledgerNumber}</span>,
+              },
+              { key: 'period', header: '기간', render: (row) => <span className="text-xs">{row.period}</span> },
+              {
+                key: 'status',
+                header: '상태',
+                render: (row) => <span className="text-xs">{LEDGER_STATUS_LABEL[row.status] ?? row.status}</span>,
+              },
+              {
+                key: 'closedAt',
+                header: '마감일',
+                render: (row) => <span className="text-xs">{row.closedAt ? formatDateTime(row.closedAt) : '-'}</span>,
+              },
+            ]}
+          />
+        </section>
+
+        <section>
+          <div className="mb-3">
+            <h2 className="text-sm font-semibold text-[#1a1f2e]">회계 거래</h2>
+            <p className="mt-1 text-xs text-[#8a9bb5]">주문/결제/배송/반품 등 참조 도메인과 연결될 거래 조회 기반입니다.</p>
+          </div>
+          {transactionError && (
+            <div className="mb-3 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+              {transactionError}
+            </div>
+          )}
+          <DataTable<ApiAccountingTransaction>
+            keyField="transactionId"
+            data={transactions}
+            emptyMessage="회계 거래가 없습니다."
+            columns={[
+              {
+                key: 'transactionNumber',
+                header: '거래 번호',
+                render: (row) => <span className="text-xs font-mono text-[#555]">{row.transactionNumber}</span>,
+              },
+              {
+                key: 'type',
+                header: '유형',
+                render: (row) => <span className="text-xs">{TRANSACTION_TYPE_LABEL[row.type] ?? row.type}</span>,
+              },
+              {
+                key: 'amount',
+                header: '금액',
+                render: (row) => <span className="text-xs font-semibold tabular-nums">{formatPrice(row.amount)}</span>,
+              },
+              {
+                key: 'reference',
+                header: '참조',
+                render: (row) => (
+                  <span className="text-xs">
+                    {REFERENCE_TYPE_LABEL[row.referenceType] ?? row.referenceType} #{row.referenceId}
+                  </span>
+                ),
+              },
+              {
+                key: 'direction',
+                header: '방향',
+                render: (row) => <span className="text-xs">{TRANSACTION_DIRECTION_LABEL[row.direction] ?? row.direction}</span>,
+              },
+            ]}
+          />
+        </section>
+      </div>
     </AdminLayout>
   );
 }

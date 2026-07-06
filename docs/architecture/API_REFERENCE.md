@@ -269,6 +269,10 @@
 | Production Admin | GET | `/api/admin/production-receipts/{receiptId}` | - | `ProductionReceiptResponse` | `INVENTORY_READ` |
 | Accounting Admin | GET | `/api/admin/accounting/summary` | - | `AccountingSummaryResponse` | 관리자 |
 | Accounting Admin | GET | `/api/admin/accounting/entries` | `type`, `page`, `size` | `PageResponse<AccountingEntryResponse>` | 관리자 |
+| Accounting Admin | GET | `/api/admin/accounting/ledgers` | `status`, `period`, `page`, `size` | `PageResponse<AccountingLedgerResponse>` | `ACCOUNTING_READ` |
+| Accounting Admin | GET | `/api/admin/accounting/ledgers/{ledgerId}` | - | `AccountingLedgerResponse` | `ACCOUNTING_READ` |
+| Accounting Admin | GET | `/api/admin/accounting/transactions` | `ledgerId`, `type`, `direction`, `referenceType`, `referenceId`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<AccountingTransactionResponse>` | `ACCOUNTING_READ` |
+| Accounting Admin | GET | `/api/admin/accounting/transactions/{transactionId}` | - | `AccountingTransactionResponse` | `ACCOUNTING_READ` |
 | Warehouse Admin | GET | `/api/admin/warehouses` | - | `List<WarehouseResponse>` | 관리자 |
 | Warehouse Admin | POST | `/api/admin/warehouses` | `WarehouseCreateRequest` | `WarehouseResponse` | 관리자 |
 | Warehouse Admin | GET | `/api/admin/warehouse-stocks` | `warehouseId`, `keyword`, `page`, `size` | `PageResponse<WarehouseStockResponse>` | 관리자 |
@@ -370,6 +374,10 @@
 | `ShipmentStatus` | `READY`, `IN_TRANSIT`, `DELIVERED`, `CANCELLED` |
 | `ReturnReason` | `CHANGE_OF_MIND`, `DEFECTIVE`, `WRONG_DELIVERY` |
 | `ReturnStatus` | `REQUESTED`, `APPROVED`, `REJECTED` |
+| `AccountingLedgerStatus` | `OPEN`, `CLOSED`, `CANCELLED` |
+| `AccountingTransactionType` | `SALES`, `REFUND`, `SHIPPING_REVENUE`, `SHIPPING_COST`, `RETURN_FEE`, `ADJUSTMENT`, `SETTLEMENT` |
+| `AccountingTransactionDirection` | `DEBIT`, `CREDIT`, `INCOME`, `EXPENSE` |
+| `AccountingReferenceType` | `ORDER`, `PAYMENT`, `REFUND`, `RETURN`, `SHIPMENT`, `OUTBOUND_ORDER`, `SHIPPING_METHOD`, `SETTLEMENT_BATCH` |
 | `InquiryType` | `PRODUCT`, `ORDER`, `OTHER` |
 | `InquiryStatus` | `WAITING`, `ANSWERED`, `CLOSED` |
 | `AccountingEntryType` | `SALE`, `REFUND`, `INBOUND` |

@@ -48,6 +48,7 @@ Controller method 시작부에서 `permissionChecker.require(currentUser, Permis
 | 생산 관리 | `PRODUCTION_MANAGE` | 생산 주문 생성/수정/시작/완료/취소 |
 | 창고 관리 | `WAREHOUSE_MANAGE` | 창고, 창고 위치, 창고 재고 이동 관리 |
 | 회계 조회 | `ACCOUNTING_READ` | 회계/매출 조회 |
+| 회계 거래 관리 | `ACCOUNTING_MANAGE` | 회계 거래 생성/보정 후보 작업 |
 | 회계 마감 후보 | `ACCOUNTING_CLOSE` | 정산/마감 후보 작업 |
 | 쿠폰 관리 | `COUPON_MANAGE` | 쿠폰 생성/삭제/관리 |
 | 리뷰 운영 | `REVIEW_MODERATE` | 리뷰 숨김/해제/삭제 |
