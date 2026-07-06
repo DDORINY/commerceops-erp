@@ -17,6 +17,8 @@ public final class PermissionCodes {
     public static final String PAYMENT_REFUND = "PAYMENT_REFUND";
     public static final String INVENTORY_READ = "INVENTORY_READ";
     public static final String INVENTORY_WRITE = "INVENTORY_WRITE";
+    public static final String SKU_MANAGE = "SKU_MANAGE";
+    public static final String BARCODE_MANAGE = "BARCODE_MANAGE";
     public static final String WAREHOUSE_MANAGE = "WAREHOUSE_MANAGE";
     public static final String ACCOUNTING_READ = "ACCOUNTING_READ";
     public static final String ACCOUNTING_CLOSE = "ACCOUNTING_CLOSE";

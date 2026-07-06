@@ -183,3 +183,10 @@
 - `frontend/src/components/admin/AdminLayout.tsx`: 직접 URL 접근 시 현재 메뉴의 필요 권한을 확인하고 권한이 없으면 403 안내 UX를 표시한다.
 - 권한 API 실패 시 기존 role 기반 메뉴 노출과 접근 확인으로 fallback한다.
 - 실제 API method 단위 permission 세분화는 v0.4.6으로 이관한다.
+
+## v0.5.1 SKU and Barcode Inventory Master UI
+
+- `frontend/src/app/admin/skus/page.tsx`: SKU 목록, 검색/상품 ID/활성/바코드 필터, SKU 생성/수정, 활성 토글, 바코드 재발급 화면.
+- `frontend/src/lib/services/skuService.ts`: `/api/admin/skus`와 `/api/admin/products/{productId}/skus` 호출 타입과 API 함수.
+- `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `SKU/바코드 관리` 메뉴를 추가한다.
+- SKU 조회는 `INVENTORY_READ` 권한 메뉴로 진입하고, 생성/수정/활성 변경 버튼은 `SKU_MANAGE`, 바코드 재발급 버튼은 `BARCODE_MANAGE` 기준으로 비활성화한다.

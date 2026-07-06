@@ -40,6 +40,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `admin_menu_permissions` | `AdminMenuPermission` | unique `menu_key`, `menu_label`, `menu_path`, `required_permission_code`, `visible`, `sort_order`, timestamps |
 | `categories` | `Category` | `name`, `parent_id`, `depth`, `sort_order`, `active`, `visible_in_nav`, `slug`, timestamps |
 | `products` | `Product` | `category_id`, `name`, `description`, 판매가 `price`, `product_code`, `brand`, `manufacturer`, `model_name`, `origin`, `original_price`, `discount_price`, `purchase_price`, `search_keywords`, `tags`, 판매 기간, 배송/SEO 필드, `stock_quantity`, `image_url`, 호환 상태 `status`, 판매 상태 `sales_status`, 전시 상태 `display_status`, `deleted_at`, `safety_stock_quantity`, `options`, timestamps |
+| `skus` | `Sku` | `product_id`, `option_signature`, unique `sku_code`, unique nullable `barcode`, `name`, `safety_stock_quantity`, `active`, timestamps |
 | `product_detail_blocks` | `ProductDetailBlock` | `product_id`, `block_type`, `title`, `content`, `image_url`, `spec_json`, `sort_order`, `visible`, timestamps |
 | `product_status_histories` | `ProductStatusHistory` | `product_id`, `changed_by_user_id`, `changed_by_email`, 이전/변경 판매 상태, 이전/변경 전시 상태, `reason`, `created_at` |
 | `product_operation_notes` | `ProductOperationNote` | `product_id`, `writer_user_id`, `writer_email`, `content`, timestamps |
@@ -99,7 +100,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 
 ## 주요 인덱스/제약 기준
 
-- 유니크: `users.email`, `departments.code`, `staff_profiles.user_id`, `staff_profiles.employee_no`, `permission_groups.code`, `user_permission_groups(user_id, permission_group_id)`, `permissions.code`, `permission_group_permissions(permission_group_id, permission_id)`, `admin_menu_permissions.menu_key`, `categories.slug`, `products.product_code`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
+- 유니크: `users.email`, `departments.code`, `staff_profiles.user_id`, `staff_profiles.employee_no`, `permission_groups.code`, `user_permission_groups(user_id, permission_group_id)`, `permissions.code`, `permission_group_permissions(permission_group_id, permission_id)`, `admin_menu_permissions.menu_key`, `categories.slug`, `products.product_code`, `skus.sku_code`, `skus.barcode`, `orders.order_number`, `payments.order_id`, `payments.idempotency_key`, `shipments.order_id`, `reviews.order_item_id`, `wishlists(user_id, product_id)`, `coupons.code`, `warehouses.code`, `warehouse_stocks(warehouse_id, product_id)`, `stock_transfers.transfer_number`.
 - 조회 인덱스: 상태/생성일 기반 관리자 목록 조회를 위해 주문, 상품, 결제, 배송, 문의, 리뷰, 회계, 감사 로그, 알림, 창고 이동 테이블에 상태/일시 인덱스를 둔다. 상세 블록은 `product_detail_blocks(product_id, sort_order)` 기준으로 정렬 조회한다. 상품 운영 이력은 `product_status_histories(product_id, created_at)`, 운영 메모는 `product_operation_notes(product_id, created_at)` 기준으로 최근순 조회한다.
 - 알림 조회 인덱스: `notifications(user_id, read_at, created_at)`, `notifications(type, created_at)`, `notifications(target_type, target_id)`.
 - FK: 사용자/상품/주문/창고 주요 관계는 DDL에 FK를 둔다. `categories.parent_id`는 자기 참조 FK다. `audit_logs`는 운영 이력 스냅샷 성격이므로 actor/target FK를 두지 않는다.
@@ -117,6 +118,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - `Category` 1:N `Product`.
 - `Category`는 `parent_id` 자기 참조로 트리 구조를 구성한다.
 - `Product` 1:N `Cart`, `OrderItem`, `Review`, `Inquiry`, `Wishlist`, `InventoryLog`, `WarehouseStock`, `StockTransfer`, `ProductDetailBlock`, `ProductStatusHistory`, `ProductOperationNote`.
+- `Product` 1:N `Sku`. v0.5.1 기준 SKU는 재고/입출고/바코드 운영 단위 코드이며, 상품 마스터 코드 `product_code`와 분리한다.
 - v0.2.3 기준 상품 대표 이미지는 `products.image_url`에 업로드 결과 URL을 저장한다. `media_files`는 파일 메타데이터를 보관하며 상품과의 별도 FK는 아직 두지 않는다.
 - `Order` 1:N `OrderItem`; `Order` 1:1 `Payment`, `Shipment`; `Order` 1:N `ReturnRequest`, `StockReservation`.
 - `Warehouse` 1:N `WarehouseStock`; `WarehouseStock` 1:N `StockReservation`.
@@ -145,4 +147,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.4.7 기준 `audit_logs`는 `V14__extend_audit_logs_context.sql`로 요청 IP/User-Agent/method/path와 before/after/metadata JSON을 추가한다. 상품, 카테고리, 배너, 주문, 결제, 재고, 창고, 쿠폰, 문의, 리뷰, 직원, 권한 작업과 permission denied 이력을 기록한다. 로그 삭제/수정 API는 제공하지 않는다.
 - v0.4.8 기준 `business_settings`는 단일 row 설정으로 운영한다. row가 없으면 저장 시 최초 생성하고 이후에는 기존 row를 갱신한다.
 - v0.4.8 기준 `terms_versions`는 기존 row를 overwrite하지 않고 새 버전을 생성한다. 서비스 레벨에서 type별 active=true 최신 버전을 하나만 유지하고 과거 버전 조회를 허용한다. 삭제 API는 제공하지 않는다.
+- v0.5.1 기준 `skus.sku_code`는 수동 입력 또는 서버 자동 생성 값을 저장한다. `barcode`는 nullable이지만 값이 있으면 unique이며, 비어 있는 생성 요청은 서버가 고유 바코드를 자동 생성한다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.
