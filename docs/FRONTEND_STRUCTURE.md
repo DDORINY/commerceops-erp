@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.5.7`
+기준 버전: `v0.5.8`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -238,3 +238,8 @@
 - `frontend/src/lib/services/inventoryAlertService.ts`: `/api/admin/inventory-alert-rules`와 `/api/admin/inventory-alerts/low-stock` 호출 타입과 함수.
 - `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `안전재고 알림` 메뉴를 추가한다.
 - 기준 조회와 재고 부족 조회는 `INVENTORY_READ`, 생성/수정/활성 변경 버튼은 `INVENTORY_WRITE` 기준으로 비활성화한다.
+
+## v0.5.8 UI Verification
+
+- `docs/checklists/v0.5.8-inventory-production-barcode-ui-verification.md`: v0.5 재고/생산/바코드 관리자 화면, 핵심 흐름, 권한별 수동 확인 후보를 정리한다.
+- 신규 UI 기능 추가 없이 `/admin/skus`, `/admin/barcodes`, `/admin/barcode-stock`, `/admin/production`, `/admin/inventory`, `/admin/stock-counts`, `/admin/warehouses`, `/admin/warehouse-locations`, `/admin/inventory-alerts`의 존재와 문서 정합성을 확인한다.
