@@ -5,7 +5,12 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import DataTable from '@/components/admin/DataTable';
 import Pagination from '@/components/common/Pagination';
 import Button from '@/components/common/Button';
-import { shipmentService, type ApiShipment, type ApiShipmentLabelPreview } from '@/lib/services/shipmentService';
+import {
+  shipmentService,
+  type ApiShipment,
+  type ApiShipmentLabelPreview,
+  type ApiShipmentTrackingEvent,
+} from '@/lib/services/shipmentService';
 import {
   formatDateTime,
   SHIPMENT_STATUS_LABEL,
@@ -39,6 +44,11 @@ export default function AdminShipmentsPage() {
   const [actionError, setActionError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const [labelPreview, setLabelPreview] = useState<ApiShipmentLabelPreview | null>(null);
+  const [trackingShipment, setTrackingShipment] = useState<ApiShipment | null>(null);
+  const [trackingEvents, setTrackingEvents] = useState<ApiShipmentTrackingEvent[]>([]);
+  const [trackingStatus, setTrackingStatus] = useState<StatusFilter>('IN_TRANSIT');
+  const [trackingDescription, setTrackingDescription] = useState('');
+  const [trackingLoading, setTrackingLoading] = useState(false);
 
   // inline tracking form state: shipmentId → { trackingNumber, carrier }
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -129,6 +139,64 @@ export default function AdminShipmentsPage() {
       setActionError('');
     } catch (err) {
       setActionError(err instanceof Error ? err.message : '송장 라벨 출력 이력 기록에 실패했습니다.');
+    }
+  };
+
+  const openTrackingEvents = async (shipment: ApiShipment) => {
+    setTrackingShipment(shipment);
+    setTrackingStatus(shipment.status as StatusFilter);
+    setTrackingDescription('');
+    setTrackingLoading(true);
+    setActionError('');
+
+    try {
+      const events = await shipmentService.getTrackingEvents(shipment.shipmentId);
+      setTrackingEvents(events);
+    } catch (err) {
+      setTrackingEvents([]);
+      setActionError(err instanceof Error ? err.message : '배송 추적 이력을 불러오지 못했습니다.');
+    } finally {
+      setTrackingLoading(false);
+    }
+  };
+
+  const handleUpdateShipmentStatus = async () => {
+    if (!trackingShipment || trackingStatus === 'ALL') return;
+
+    try {
+      const updated = await shipmentService.updateShipmentStatus(
+        trackingShipment.shipmentId,
+        trackingStatus,
+        trackingDescription || undefined
+      );
+      setTrackingShipment(updated);
+      setTrackingDescription('');
+      setActionMessage('배송 상태를 변경했습니다.');
+      setActionError('');
+      setReloadKey((prev) => prev + 1);
+      const events = await shipmentService.getTrackingEvents(updated.shipmentId);
+      setTrackingEvents(events);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : '배송 상태 변경에 실패했습니다.');
+    }
+  };
+
+  const handleCreateTrackingEvent = async () => {
+    if (!trackingShipment || trackingStatus === 'ALL') return;
+    if (!trackingDescription.trim()) {
+      setActionError('배송 추적 설명을 입력하세요.');
+      return;
+    }
+
+    try {
+      await shipmentService.createTrackingEvent(trackingShipment.shipmentId, trackingStatus, trackingDescription.trim());
+      setTrackingDescription('');
+      setActionMessage('배송 추적 이벤트를 추가했습니다.');
+      setActionError('');
+      const events = await shipmentService.getTrackingEvents(trackingShipment.shipmentId);
+      setTrackingEvents(events);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : '배송 추적 이벤트 추가에 실패했습니다.');
     }
   };
 
@@ -257,9 +325,14 @@ export default function AdminShipmentsPage() {
                 if (row.status === 'DELIVERED' || row.status === 'CANCELLED') {
                   if (row.status === 'DELIVERED' && row.trackingNumber) {
                     return (
-                      <Button variant="outline" size="sm" onClick={() => handleCreateShipmentLabel(row.shipmentId)}>
-                        라벨 미리보기
-                      </Button>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleCreateShipmentLabel(row.shipmentId)}>
+                          라벨 미리보기
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => openTrackingEvents(row)}>
+                          추적 이력
+                        </Button>
+                      </div>
                     );
                   }
                   return (
@@ -348,6 +421,9 @@ export default function AdminShipmentsPage() {
                     <Button variant="outline" size="sm" onClick={() => handleDeliver(row.shipmentId)}>
                       배송완료
                     </Button>
+                    <Button variant="ghost" size="sm" onClick={() => openTrackingEvents(row)}>
+                      추적 이력
+                    </Button>
                     {row.trackingNumber && (
                       <Button variant="outline" size="sm" onClick={() => handleCreateShipmentLabel(row.shipmentId)}>
                         라벨 미리보기
@@ -386,6 +462,66 @@ export default function AdminShipmentsPage() {
           <p className="mt-3 text-xs text-[#8a9bb5]">
             실제 프린터 SDK 연동은 제외하고, 현재는 HTML 라벨 미리보기와 출력 이력만 기록합니다. 출력 횟수: {labelPreview.printCount}회
           </p>
+        </div>
+      )}
+
+      {trackingShipment && (
+        <div className="mt-6 border border-[#dfe3ea] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-[#1a1f2e]">배송 추적 이력</h2>
+              <p className="mt-1 text-xs text-[#8a9bb5]">
+                {trackingShipment.orderNumber} / {trackingShipment.receiverName}
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setTrackingShipment(null)}>
+              닫기
+            </Button>
+          </div>
+
+          <div className="mt-4 grid gap-2 md:grid-cols-[160px_1fr_auto_auto]">
+            <select
+              value={trackingStatus}
+              onChange={(e) => setTrackingStatus(e.target.value as StatusFilter)}
+              className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none bg-white"
+            >
+              {STATUS_FILTERS.filter((status) => status.value !== 'ALL').map((status) => (
+                <option key={status.value} value={status.value}>{status.label}</option>
+              ))}
+            </select>
+            <input
+              value={trackingDescription}
+              onChange={(e) => setTrackingDescription(e.target.value)}
+              placeholder="배송 추적 설명"
+              className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e]"
+            />
+            <Button variant="outline" size="sm" onClick={handleCreateTrackingEvent}>
+              이력 추가
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleUpdateShipmentStatus}>
+              상태 변경
+            </Button>
+          </div>
+
+          {trackingLoading ? (
+            <div className="py-8 text-center text-sm text-[#999]">추적 이력을 불러오는 중입니다.</div>
+          ) : trackingEvents.length === 0 ? (
+            <div className="py-8 text-center text-sm text-[#999]">배송 추적 이력이 없습니다.</div>
+          ) : (
+            <div className="mt-4 space-y-2">
+              {trackingEvents.map((event) => (
+                <div key={event.id} className="border border-[#f0f1f5] px-3 py-2 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium text-[#1a1f2e]">
+                      {SHIPMENT_STATUS_LABEL[event.status] ?? event.status}
+                    </span>
+                    <span className="text-xs text-[#8a9bb5]">{formatDateTime(event.eventAt)}</span>
+                  </div>
+                  <p className="mt-1 text-[#566171]">{event.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </AdminLayout>

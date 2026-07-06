@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.6.4`
+기준 버전: `v0.6.5`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -150,6 +150,9 @@
 | Shipment Label Admin | GET | `/api/admin/shipments/{id}/labels` | - | `List<ShipmentLabelResponse>` | `SHIPMENT_READ` |
 | Shipment Label Admin | POST | `/api/admin/shipments/{id}/labels` | `ShipmentLabelRequest` | `ShipmentLabelPreviewResponse` | `SHIPPING_LABEL_PRINT` |
 | Shipment Label Admin | POST | `/api/admin/shipments/labels/{labelId}/print` | - | `ShipmentLabelPreviewResponse` | `SHIPPING_LABEL_PRINT` |
+| Shipment Tracking Admin | GET | `/api/admin/shipments/{id}/tracking-events` | - | `List<ShipmentTrackingEventResponse>` | `SHIPMENT_READ` |
+| Shipment Tracking Admin | POST | `/api/admin/shipments/{id}/tracking-events` | `ShipmentTrackingEventRequest` | `ShipmentTrackingEventResponse` | `SHIPMENT_MANAGE` |
+| Shipment Tracking Admin | PATCH | `/api/admin/shipments/{id}/status` | `ShipmentStatusUpdateRequest` | `ShipmentResponse` | `SHIPMENT_MANAGE` |
 | Shipment Admin | PATCH | `/api/admin/shipments/{id}/deliver` | - | `ShipmentResponse` | `SHIPMENT_MANAGE` |
 | Return | POST | `/api/orders/{orderId}/returns` | `ReturnCreateRequest` | `ReturnResponse` | 인증 |
 | Return | GET | `/api/returns` | - | `List<ReturnResponse>` | 인증 |
@@ -326,6 +329,9 @@
 - `ShipmentLabelRequest`: `labelFormat`. 기본값은 `SHIPMENT_100X150`.
 - `ShipmentLabelResponse`: 송장 라벨 ID, 배송/주문/수령인 요약, 송장번호, 택배사, 라벨 형식, 출력 횟수, 마지막 출력 시각, 생성자, 생성일.
 - `ShipmentLabelPreviewResponse`: 라벨 ID, 라벨 형식, 송장번호, 택배사, 주문번호, 수령인, 연락처, 주소, 출력 횟수, HTML 미리보기.
+- `ShipmentStatusUpdateRequest`: 변경할 `status`, 선택 `description`.
+- `ShipmentTrackingEventRequest`: `status`, `description`, 선택 `eventAt`, 선택 `rawPayload`.
+- `ShipmentTrackingEventResponse`: 추적 이벤트 ID, 배송 ID, 상태, 설명, 이벤트 시각, 원시 payload, 생성일.
 - `StockCountCreateRequest`: `warehouseId`, `memo`.
 - `StockCountItemsUpdateRequest`: `items[{ skuId, countedQuantity, memo }]`.
 - `StockCountResponse`: 실사 세션 요약, 상태, 창고, 시작/완료 시각, 실사 품목 목록.

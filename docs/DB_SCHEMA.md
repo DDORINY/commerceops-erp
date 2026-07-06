@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.6.4`
+기준 버전: `v0.6.5`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -29,6 +29,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 택배사/배송 방법 마이그레이션: `backend/src/main/resources/db/migration/V24__create_carriers_shipping_methods.sql`
 - 송장번호 발급 정보 마이그레이션: `backend/src/main/resources/db/migration/V25__extend_shipments_tracking_number.sql`
 - 송장 라벨 출력 이력 마이그레이션: `backend/src/main/resources/db/migration/V26__create_shipment_labels.sql`
+- 배송 추적 이벤트 마이그레이션: `backend/src/main/resources/db/migration/V27__create_shipment_tracking_events.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -71,6 +72,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `payments` | `Payment` | `order_id`, `payment_method`, `payment_status`, `paid_amount`, `transaction_id`, `idempotency_key`, `provider`, timestamps |
 | `shipments` | `Shipment` | `order_id`, `status`, `tracking_number`, `carrier`, `tracking_number_source`, `tracking_number_issued_at`, `shipped_at`, `delivered_at`, timestamps |
 | `shipment_labels` | `ShipmentLabel` | `shipment_id`, `tracking_number`, `carrier`, `label_format`, `print_count`, `last_printed_at`, `created_by`, timestamps |
+| `shipment_tracking_events` | `ShipmentTrackingEvent` | `shipment_id`, `status`, `description`, `event_at`, `raw_payload`, `created_at` |
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `status`, `created_at` |
 | `audit_logs` | `AuditLog` | `actor_id`, `actor_email`, `actor_name`, `action_type`, `target_type`, nullable `target_id`, `before_status`, `after_status`, `summary`, `ip_address`, `user_agent`, `request_method`, `request_path`, `before_json`, `after_json`, `metadata_json`, `created_at` |
@@ -189,4 +191,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.6.2 기준 `carriers`와 `shipping_methods`는 송장/배송 처리에서 선택할 master 데이터다. 실제 택배사 API 호출과 자동 운임 계산은 구현하지 않는다.
 - v0.6.3 기준 `shipments.tracking_number_source`는 `MANUAL` 또는 `SYSTEM`으로 송장번호 입력 방식을 기록하고, `tracking_number_issued_at`은 수동 저장 또는 자동 생성 시각을 기록한다. READY 상태에서 최초 송장 등록 시에만 예약 재고 출고와 주문 `SHIPPING` 전환을 수행하며, IN_TRANSIT 상태의 송장 수정은 재고 차감을 반복하지 않는다.
 - v0.6.4 기준 `shipment_labels`는 송장 라벨 생성과 출력 이력을 저장한다. 송장번호와 택배사는 생성 시점 snapshot으로 저장하며, 실제 프린터 드라이버/PDF 출력은 제공하지 않는다.
+- v0.6.5 기준 `shipment_tracking_events`는 배송 상태 변경과 수동 추적 이벤트를 저장한다. 실제 택배사 tracking API 연동과 웹훅 자동 갱신은 후속 범위다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

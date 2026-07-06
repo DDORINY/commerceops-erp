@@ -9,13 +9,18 @@ import com.commerceops.erp.domain.shipment.dto.ShipmentResponse;
 import com.commerceops.erp.domain.shipment.dto.ShipmentLabelPreviewResponse;
 import com.commerceops.erp.domain.shipment.dto.ShipmentLabelRequest;
 import com.commerceops.erp.domain.shipment.dto.ShipmentLabelResponse;
+import com.commerceops.erp.domain.shipment.dto.ShipmentStatusUpdateRequest;
+import com.commerceops.erp.domain.shipment.dto.ShipmentTrackingEventRequest;
+import com.commerceops.erp.domain.shipment.dto.ShipmentTrackingEventResponse;
 import com.commerceops.erp.domain.shipment.dto.TrackingUpdateRequest;
 import com.commerceops.erp.domain.shipment.entity.Shipment;
 import com.commerceops.erp.domain.shipment.entity.ShipmentLabel;
+import com.commerceops.erp.domain.shipment.entity.ShipmentTrackingEvent;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
 import com.commerceops.erp.domain.shipment.enums.TrackingNumberSource;
 import com.commerceops.erp.domain.shipment.repository.ShipmentLabelRepository;
 import com.commerceops.erp.domain.shipment.repository.ShipmentRepository;
+import com.commerceops.erp.domain.shipment.repository.ShipmentTrackingEventRepository;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.domain.warehouse.service.WarehouseFulfillmentService;
 import com.commerceops.erp.global.exception.BusinessException;
@@ -43,6 +48,7 @@ public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final ShipmentLabelRepository shipmentLabelRepository;
+    private final ShipmentTrackingEventRepository shipmentTrackingEventRepository;
     private final OrderRepository orderRepository;
     private final WarehouseFulfillmentService warehouseFulfillmentService;
     private final AuditLogService auditLogService;
@@ -62,6 +68,13 @@ public class ShipmentService {
         findShipment(shipmentId);
         return shipmentLabelRepository.findByShipmentIdOrderByCreatedAtDesc(shipmentId).stream()
                 .map(ShipmentLabelResponse::from)
+                .toList();
+    }
+
+    public List<ShipmentTrackingEventResponse> getTrackingEvents(Long shipmentId) {
+        findShipment(shipmentId);
+        return shipmentTrackingEventRepository.findByShipmentIdOrderByEventAtDesc(shipmentId).stream()
+                .map(ShipmentTrackingEventResponse::from)
                 .toList();
     }
 
@@ -159,6 +172,38 @@ public class ShipmentService {
     }
 
     @Transactional
+    public ShipmentResponse updateShipmentStatus(Long shipmentId, ShipmentStatusUpdateRequest request, User actor) {
+        Shipment shipment = findShipment(shipmentId);
+        ShipmentStatus before = shipment.getStatus();
+        if (before == ShipmentStatus.CANCELLED) {
+            throw new BusinessException(ErrorCode.SHIPMENT_CANCELLED);
+        }
+        shipment.changeStatus(request.status());
+        saveTrackingEvent(shipment, request.status(), defaultDescription(request.description(), request.status()), null);
+        syncOrderStatusByShipment(shipment);
+        auditLogService.record(actor, AuditActionType.SHIPMENT_STATUS_CHANGED, "SHIPMENT", shipment.getId(),
+                before.name(), request.status().name(), "배송 상태를 변경했습니다: " + request.status().name(),
+                null, toTrackingJson(shipment), null);
+        return ShipmentResponse.from(shipment);
+    }
+
+    @Transactional
+    public ShipmentTrackingEventResponse createTrackingEvent(Long shipmentId, ShipmentTrackingEventRequest request, User actor) {
+        Shipment shipment = findShipment(shipmentId);
+        ShipmentTrackingEvent event = saveTrackingEvent(
+                shipment,
+                request.status(),
+                request.description(),
+                request.rawPayload(),
+                request.eventAt()
+        );
+        auditLogService.record(actor, AuditActionType.SHIPMENT_TRACKING_EVENT_CREATED, "SHIPMENT", shipment.getId(),
+                null, request.status().name(), "배송 추적 이벤트를 추가했습니다: " + request.description(),
+                null, trackingEventMetadata(event), null);
+        return ShipmentTrackingEventResponse.from(event);
+    }
+
+    @Transactional
     public ShipmentResponse markDelivered(Long shipmentId) {
         Shipment shipment = findShipment(shipmentId);
         if (shipment.getStatus() != ShipmentStatus.IN_TRANSIT) {
@@ -171,6 +216,31 @@ public class ShipmentService {
         order.updateStatus(OrderStatus.COMPLETED);
 
         return ShipmentResponse.from(shipment);
+    }
+
+    private ShipmentTrackingEvent saveTrackingEvent(Shipment shipment, ShipmentStatus status, String description, String rawPayload) {
+        return saveTrackingEvent(shipment, status, description, rawPayload, LocalDateTime.now());
+    }
+
+    private ShipmentTrackingEvent saveTrackingEvent(Shipment shipment, ShipmentStatus status, String description,
+                                                    String rawPayload, LocalDateTime eventAt) {
+        return shipmentTrackingEventRepository.save(ShipmentTrackingEvent.builder()
+                .shipment(shipment)
+                .status(status)
+                .description(description)
+                .eventAt(eventAt != null ? eventAt : LocalDateTime.now())
+                .rawPayload(rawPayload)
+                .build());
+    }
+
+    private void syncOrderStatusByShipment(Shipment shipment) {
+        Order order = shipment.getOrder();
+        if (shipment.getStatus() == ShipmentStatus.IN_TRANSIT) {
+            order.updateStatus(OrderStatus.SHIPPING);
+        }
+        if (shipment.getStatus() == ShipmentStatus.DELIVERED) {
+            order.updateStatus(OrderStatus.COMPLETED);
+        }
     }
 
     private Shipment findShipment(Long shipmentId) {
@@ -225,6 +295,18 @@ public class ShipmentService {
                 + ",\"carrier\":\"" + escapeJson(label.getCarrier()) + "\""
                 + ",\"labelFormat\":\"" + escapeJson(label.getLabelFormat()) + "\""
                 + ",\"printCount\":" + label.getPrintCount() + "}";
+    }
+
+    private String trackingEventMetadata(ShipmentTrackingEvent event) {
+        return "{\"shipmentId\":" + event.getShipment().getId()
+                + ",\"status\":\"" + event.getStatus().name() + "\""
+                + ",\"description\":\"" + escapeJson(event.getDescription()) + "\""
+                + ",\"eventAt\":\"" + event.getEventAt() + "\"}";
+    }
+
+    private String defaultDescription(String description, ShipmentStatus status) {
+        String normalized = normalize(description);
+        return normalized != null ? normalized : "배송 상태가 " + status.name() + "(으)로 변경되었습니다.";
     }
 
     private String toTrackingJson(Shipment shipment) {
