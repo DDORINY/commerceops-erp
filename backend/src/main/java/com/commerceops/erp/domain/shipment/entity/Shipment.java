@@ -78,9 +78,18 @@ public class Shipment {
         }
     }
 
+    public void changeStatus(ShipmentStatus status) {
+        this.status = status;
+        if (status == ShipmentStatus.IN_TRANSIT && this.shippedAt == null) {
+            this.shippedAt = LocalDateTime.now();
+        }
+        if (status == ShipmentStatus.DELIVERED && this.deliveredAt == null) {
+            this.deliveredAt = LocalDateTime.now();
+        }
+    }
+
     public void markDelivered() {
-        this.status = ShipmentStatus.DELIVERED;
-        this.deliveredAt = LocalDateTime.now();
+        changeStatus(ShipmentStatus.DELIVERED);
     }
 
     public void cancel() {

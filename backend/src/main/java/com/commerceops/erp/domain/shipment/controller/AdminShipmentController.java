@@ -6,6 +6,9 @@ import com.commerceops.erp.domain.shipment.dto.ShipmentResponse;
 import com.commerceops.erp.domain.shipment.dto.ShipmentLabelPreviewResponse;
 import com.commerceops.erp.domain.shipment.dto.ShipmentLabelRequest;
 import com.commerceops.erp.domain.shipment.dto.ShipmentLabelResponse;
+import com.commerceops.erp.domain.shipment.dto.ShipmentStatusUpdateRequest;
+import com.commerceops.erp.domain.shipment.dto.ShipmentTrackingEventRequest;
+import com.commerceops.erp.domain.shipment.dto.ShipmentTrackingEventResponse;
 import com.commerceops.erp.domain.shipment.dto.TrackingNumberGenerateRequest;
 import com.commerceops.erp.domain.shipment.dto.TrackingUpdateRequest;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
@@ -57,6 +60,15 @@ public class AdminShipmentController {
         return ApiResponse.ok(shipmentService.getShipmentLabels(id));
     }
 
+    @GetMapping("/{id}/tracking-events")
+    public ApiResponse<List<ShipmentTrackingEventResponse>> getTrackingEvents(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPMENT_READ);
+        return ApiResponse.ok(shipmentService.getTrackingEvents(id));
+    }
+
     @PatchMapping("/{id}/tracking")
     public ApiResponse<ShipmentResponse> updateTracking(
             @PathVariable Long id,
@@ -106,6 +118,27 @@ public class AdminShipmentController {
         permissionChecker.require(userDetails, PermissionCodes.SHIPPING_LABEL_PRINT);
         return ApiResponse.ok("송장 라벨 출력 이력을 기록했습니다.",
                 shipmentService.markShipmentLabelPrinted(labelId, userDetails.getUser()));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ApiResponse<ShipmentResponse> updateShipmentStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ShipmentStatusUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPMENT_MANAGE);
+        return ApiResponse.ok(shipmentService.updateShipmentStatus(id, request, userDetails.getUser()));
+    }
+
+    @PostMapping("/{id}/tracking-events")
+    public ApiResponse<ShipmentTrackingEventResponse> createTrackingEvent(
+            @PathVariable Long id,
+            @Valid @RequestBody ShipmentTrackingEventRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPMENT_MANAGE);
+        return ApiResponse.created("배송 추적 이벤트를 추가했습니다.",
+                shipmentService.createTrackingEvent(id, request, userDetails.getUser()));
     }
 
     @PatchMapping("/{id}/deliver")

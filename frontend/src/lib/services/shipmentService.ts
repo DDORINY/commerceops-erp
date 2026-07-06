@@ -45,6 +45,16 @@ export interface ApiShipmentLabelPreview {
   html: string;
 }
 
+export interface ApiShipmentTrackingEvent {
+  id: number;
+  shipmentId: number;
+  status: string;
+  description: string;
+  eventAt: string;
+  rawPayload: string | null;
+  createdAt: string;
+}
+
 export const shipmentService = {
   getAdminShipments: (status?: string, keyword?: string, page = 0, size = 15) => {
     const qs = new URLSearchParams();
@@ -79,6 +89,21 @@ export const shipmentService = {
   markShipmentLabelPrinted: (labelId: number) =>
     apiClient<ApiShipmentLabelPreview>(`/admin/shipments/labels/${labelId}/print`, {
       method: 'POST',
+    }),
+
+  getTrackingEvents: (shipmentId: number) =>
+    apiClient<ApiShipmentTrackingEvent[]>(`/admin/shipments/${shipmentId}/tracking-events`),
+
+  updateShipmentStatus: (shipmentId: number, status: string, description?: string) =>
+    apiClient<ApiShipment>(`/admin/shipments/${shipmentId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, description }),
+    }),
+
+  createTrackingEvent: (shipmentId: number, status: string, description: string) =>
+    apiClient<ApiShipmentTrackingEvent>(`/admin/shipments/${shipmentId}/tracking-events`, {
+      method: 'POST',
+      body: JSON.stringify({ status, description }),
     }),
 
   markDelivered: (shipmentId: number) =>
