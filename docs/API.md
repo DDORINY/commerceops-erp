@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.4.8`
+기준 버전: `v0.5.3`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -205,6 +205,11 @@
 | SKU Admin | PATCH | `/api/admin/skus/{skuId}` | `SkuUpdateRequest` | `SkuResponse` | `SKU_MANAGE` |
 | SKU Admin | PATCH | `/api/admin/skus/{skuId}/active` | `SkuActiveUpdateRequest` | `SkuResponse` | `SKU_MANAGE` |
 | SKU Admin | POST | `/api/admin/skus/{skuId}/barcode/regenerate` | - | `SkuResponse` | `BARCODE_MANAGE` |
+| Barcode Admin | GET | `/api/admin/barcodes` | `keyword`, `page`, `size` | `PageResponse<BarcodeSkuResponse>` | `INVENTORY_READ` |
+| Barcode Admin | GET | `/api/admin/barcodes/{barcode}` | - | `BarcodeSkuResponse` | `INVENTORY_READ` |
+| Barcode Label Admin | GET | `/api/admin/barcode-labels` | `keyword`, `page`, `size` | `PageResponse<BarcodeLabelResponse>` | `INVENTORY_READ` |
+| Barcode Label Admin | POST | `/api/admin/barcodes/{skuId}/labels` | `BarcodeLabelRequest` | `BarcodeLabelPreviewResponse` | `BARCODE_MANAGE` |
+| Barcode Label Admin | POST | `/api/admin/barcode-labels/{labelId}/print` | - | `BarcodeLabelPreviewResponse` | `BARCODE_MANAGE` |
 | Production Admin | GET | `/api/admin/production-orders` | `status`, `warehouseId`, `skuId`, `keyword`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<ProductionOrderListResponse>` | `INVENTORY_READ` |
 | Production Admin | GET | `/api/admin/production-orders/{productionOrderId}` | - | `ProductionOrderResponse` | `INVENTORY_READ` |
 | Production Admin | POST | `/api/admin/production-orders` | `ProductionOrderCreateRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
@@ -255,6 +260,10 @@
 - `PaymentApproveRequest`: `orderId`, `paymentMethod`, `providerTransactionId`, `idempotencyKey`.
 - `PaymentCancelRequest`: `reason`.
 - `PaymentResponse`: `paymentId`, `orderId`, `paymentMethod`, `paymentStatus`, `paidAmount`, `transactionId`, `idempotencyKey`.
+- `BarcodeSkuResponse`: `skuId`, `skuCode`, `barcode`, `skuName`, `optionSignature`, `productId`, `productName`, `productCode`, `stockQuantity`, `safetyStockQuantity`, `active`.
+- `BarcodeLabelRequest`: `labelFormat`. 기본값은 `SKU_60X40`.
+- `BarcodeLabelResponse`: `id`, SKU/상품 요약, `barcode`, `labelFormat`, `printCount`, `lastPrintedAt`, `createdBy`, `createdAt`.
+- `BarcodeLabelPreviewResponse`: `labelId`, `labelFormat`, `barcode`, `skuCode`, `productName`, `skuName`, `html`, `createdAt`.
 - `UserSummaryResponse`: `id`, `name`, `email`, `phone`, `role`, `status`, `createdAt`, `orderCount`, `totalOrderAmount`.
 - `DashboardSummaryResponse`: 전체/오늘 주문, 전체/오늘 매출, 고객/상품/품절/재고부족 수, 상태별 주문 수.
 - `WarehouseStockResponse`: 창고, 상품, 수량, 예약 수량, 가용 수량, 상품 총 재고.

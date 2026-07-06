@@ -57,6 +57,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     items: [
       { menuKey: 'inventory', label: '재고 관리', href: '/admin/inventory', roles: ALL_ADMIN_ROLES },
       { menuKey: 'skus', label: 'SKU/바코드 관리', href: '/admin/skus', roles: ALL_ADMIN_ROLES },
+      { menuKey: 'barcodes', label: '바코드 라벨 관리', href: '/admin/barcodes', roles: ALL_ADMIN_ROLES },
       { menuKey: 'warehouses', label: '창고 관리', href: '/admin/warehouses', roles: ALL_ADMIN_ROLES },
       { menuKey: 'inbound', label: '입고 관리', href: '/admin/warehouses?focus=inbound', roles: ADMIN_ROLES },
       { menuKey: 'production', label: '생산 입고 관리', href: '/admin/production', roles: ALL_ADMIN_ROLES },

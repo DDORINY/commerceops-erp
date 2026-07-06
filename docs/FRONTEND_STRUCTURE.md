@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.4.8`
+기준 버전: `v0.5.3`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -56,6 +56,7 @@
 | `/admin/settings/permission-groups` | `app/admin/settings/permission-groups/page.tsx` | `permissionGroupService`, 권한 그룹 CRUD, 직원별 권한 그룹 할당 |
 | `/admin/settings/roles` | `app/admin/settings/roles/page.tsx` | 기존 role과 permission group 병행 운영 안내 |
 | `/admin/settings/menu-permissions` | `app/admin/settings/menu-permissions/page.tsx` | 권한 그룹별 기능 권한 매트릭스, 메뉴별 필요 권한 관리 |
+| `/admin/barcodes` | `app/admin/barcodes/page.tsx` | `barcodeService`, SKU/바코드 검색, 라벨 미리보기, 출력 이력 기록 |
 
 ## 서비스 레이어
 
@@ -86,6 +87,7 @@
 | `userService.ts` | 관리자 고객 목록/권한 변경 |
 | `staffService.ts` | 관리자 직원 목록/상세/등록/수정, 부서/직급 조회, 직원 상태 변경 |
 | `permissionGroupService.ts` | 권한 그룹 목록/상세/생성/수정/활성 변경, 사용자 권한 그룹 조회/할당, 권한 목록/그룹별 권한/유효 권한/메뉴 권한 |
+| `barcodeService.ts` | 바코드/SKU 검색, 바코드 단건 조회, 바코드 라벨 목록, 라벨 생성, 출력 이력 기록 |
 
 ## 타입 구조
 
@@ -197,3 +199,10 @@
 - `frontend/src/lib/services/productionService.ts`: `/api/admin/production-orders`와 `/api/admin/production-receipts` 호출 타입과 API 함수.
 - `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `생산 입고 관리` 메뉴를 추가한다.
 - 생산 조회는 `INVENTORY_READ`, 생성/수정/시작/완료/취소 버튼은 `PRODUCTION_MANAGE` 기준으로 비활성화한다.
+
+## v0.5.3 Barcode Label Printing UI
+
+- `frontend/src/app/admin/barcodes/page.tsx`: SKU/바코드 검색, 라벨 HTML 미리보기 생성, 최근 라벨 출력 이력 조회, 출력 이력 기록 화면.
+- `frontend/src/lib/services/barcodeService.ts`: `/api/admin/barcodes`와 `/api/admin/barcode-labels` 호출 타입과 API 함수.
+- `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `바코드 라벨 관리` 메뉴를 추가한다.
+- SKU/라벨 조회는 `INVENTORY_READ`, 라벨 생성과 출력 이력 기록 버튼은 `BARCODE_MANAGE` 기준으로 비활성화한다.
