@@ -213,6 +213,13 @@
 | Barcode Stock Admin | GET | `/api/admin/barcodes/{barcode}/stock` | - | `BarcodeStockResponse` | `INVENTORY_READ` |
 | Barcode Stock Admin | POST | `/api/admin/barcodes/{barcode}/inbound` | `BarcodeStockChangeRequest` | `BarcodeStockChangeResponse` | `INVENTORY_WRITE` |
 | Barcode Stock Admin | POST | `/api/admin/barcodes/{barcode}/outbound` | `BarcodeStockChangeRequest` | `BarcodeStockChangeResponse` | `INVENTORY_WRITE` |
+| Stock Count Admin | GET | `/api/admin/stock-counts` | `status`, `page`, `size` | `PageResponse<StockCountResponse>` | `INVENTORY_READ` |
+| Stock Count Admin | GET | `/api/admin/stock-counts/{stockCountId}` | - | `StockCountResponse` | `INVENTORY_READ` |
+| Stock Count Admin | POST | `/api/admin/stock-counts` | `StockCountCreateRequest` | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
+| Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/items` | `StockCountItemsUpdateRequest` | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
+| Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/start` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
+| Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/complete` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
+| Stock Count Admin | PATCH | `/api/admin/stock-counts/{stockCountId}/cancel` | - | `StockCountResponse` | `STOCK_COUNT_MANAGE` |
 | Production Admin | GET | `/api/admin/production-orders` | `status`, `warehouseId`, `skuId`, `keyword`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<ProductionOrderListResponse>` | `INVENTORY_READ` |
 | Production Admin | GET | `/api/admin/production-orders/{productionOrderId}` | - | `ProductionOrderResponse` | `INVENTORY_READ` |
 | Production Admin | POST | `/api/admin/production-orders` | `ProductionOrderCreateRequest` | `ProductionOrderResponse` | `PRODUCTION_MANAGE` |
@@ -270,6 +277,9 @@
 - `BarcodeStockResponse`: SKU/상품 요약, `productStockQuantity`, `safetyStockQuantity`, `warehouseStocks`.
 - `BarcodeStockChangeRequest`: `warehouseId`, `quantity`, `memo`.
 - `BarcodeStockChangeResponse`: 바코드/SKU/상품/창고 요약, 처리 수량, 상품/창고 재고 변경 전후, `type`.
+- `StockCountCreateRequest`: `warehouseId`, `memo`.
+- `StockCountItemsUpdateRequest`: `items[{ skuId, countedQuantity, memo }]`.
+- `StockCountResponse`: 실사 세션 요약, 상태, 창고, 시작/완료 시각, 실사 품목 목록.
 - `UserSummaryResponse`: `id`, `name`, `email`, `phone`, `role`, `status`, `createdAt`, `orderCount`, `totalOrderAmount`.
 - `DashboardSummaryResponse`: 전체/오늘 주문, 전체/오늘 매출, 고객/상품/품절/재고부족 수, 상태별 주문 수.
 - `WarehouseStockResponse`: 창고, 상품, 수량, 예약 수량, 가용 수량, 상품 총 재고.

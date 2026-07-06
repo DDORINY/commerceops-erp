@@ -1,6 +1,6 @@
 ﻿# 프론트엔드 구조 문서
 
-기준 버전: `v0.5.4`
+기준 버전: `v0.5.5`
 기준 코드: `frontend/src`
 
 ## 기술 스택
@@ -58,6 +58,7 @@
 | `/admin/settings/menu-permissions` | `app/admin/settings/menu-permissions/page.tsx` | 권한 그룹별 기능 권한 매트릭스, 메뉴별 필요 권한 관리 |
 | `/admin/barcodes` | `app/admin/barcodes/page.tsx` | `barcodeService`, SKU/바코드 검색, 라벨 미리보기, 출력 이력 기록 |
 | `/admin/barcode-stock` | `app/admin/barcode-stock/page.tsx` | `barcodeStockService`, 바코드 재고 조회, 입고/출고 처리 |
+| `/admin/stock-counts` | `app/admin/stock-counts/page.tsx` | `stockCountService`, 실사 세션, 품목 저장, 완료 조정 |
 
 ## 서비스 레이어
 
@@ -90,6 +91,7 @@
 | `permissionGroupService.ts` | 권한 그룹 목록/상세/생성/수정/활성 변경, 사용자 권한 그룹 조회/할당, 권한 목록/그룹별 권한/유효 권한/메뉴 권한 |
 | `barcodeService.ts` | 바코드/SKU 검색, 바코드 단건 조회, 바코드 라벨 목록, 라벨 생성, 출력 이력 기록 |
 | `barcodeStockService.ts` | 바코드 재고 조회, 바코드 입고, 바코드 출고 |
+| `stockCountService.ts` | 재고 실사 목록/상세/생성, 품목 저장, 시작/완료/취소 |
 
 ## 타입 구조
 
@@ -215,3 +217,10 @@
 - `frontend/src/lib/services/barcodeStockService.ts`: `/api/admin/barcodes/{barcode}/stock`, `/inbound`, `/outbound` 호출 타입과 API 함수.
 - `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `바코드 입출고` 메뉴를 추가한다.
 - 재고 조회는 `INVENTORY_READ`, 입고/출고 버튼은 `INVENTORY_WRITE` 기준으로 비활성화한다.
+
+## v0.5.5 Stock Count Adjustment UI
+
+- `frontend/src/app/admin/stock-counts/page.tsx`: 실사 세션 생성, 상태 필터 목록, 상세 조회, SKU 품목 저장, 실사 수량 입력, 시작/완료/취소 화면.
+- `frontend/src/lib/services/stockCountService.ts`: `/api/admin/stock-counts` 호출 타입과 API 함수.
+- `frontend/src/lib/adminMenu.ts`: 재고/창고 관리 그룹에 `재고 실사` 메뉴를 추가한다.
+- 실사 조회는 `INVENTORY_READ`, 생성/품목 저장/완료/취소는 `STOCK_COUNT_MANAGE` 기준으로 비활성화한다.
