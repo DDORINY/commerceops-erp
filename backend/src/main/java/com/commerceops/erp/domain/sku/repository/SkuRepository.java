@@ -22,4 +22,6 @@ public interface SkuRepository extends JpaRepository<Sku, Long>, JpaSpecificatio
     List<Sku> findByProductIdOrderByIdAsc(Long productId);
 
     Optional<Sku> findTopByProductIdOrderByIdDesc(Long productId);
+
+    Optional<Sku> findByBarcode(String barcode);
 }

@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.6.6`
+기준 버전: `v0.6.7`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -231,6 +231,7 @@
 | Outbound Admin | POST | `/api/admin/outbound-orders` | `OutboundOrderCreateRequest` | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}` | `OutboundOrderUpdateRequest` | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}/pick` | - | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
+| Outbound Admin | POST | `/api/admin/outbound-orders/{outboundOrderId}/scan` | `OutboundBarcodeScanRequest` | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Outbound Admin | PATCH | `/api/admin/outbound-orders/{outboundOrderId}/cancel` | - | `OutboundOrderResponse` | `OUTBOUND_MANAGE` |
 | Carrier Admin | GET | `/api/admin/carriers` | `keyword`, `active`, `page`, `size` | `PageResponse<CarrierResponse>` | `CARRIER_MANAGE` |
 | Carrier Admin | POST | `/api/admin/carriers` | `CarrierRequest` | `CarrierResponse` | `CARRIER_MANAGE` |

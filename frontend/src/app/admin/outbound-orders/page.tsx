@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -51,12 +51,15 @@ export default function AdminOutboundOrdersPage() {
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [scanSaving, setScanSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ApiOutboundOrder | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [scanBarcode, setScanBarcode] = useState('');
+  const [scanQuantity, setScanQuantity] = useState('1');
   const [permissionCodes, setPermissionCodes] = useState<string[]>([]);
 
   const role = getUserRole();
@@ -191,11 +194,45 @@ export default function AdminOutboundOrdersPage() {
       return;
     }
     try {
-      await outboundOrderService.pickOutboundOrder(row.id);
+      const updated = await outboundOrderService.pickOutboundOrder(row.id);
       setMessage('출고 지시가 피킹 완료 처리되었습니다.');
+      setSelected((prev) => (prev?.id === updated.id ? updated : prev));
       setReloadKey((prev) => prev + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : '피킹 처리에 실패했습니다.');
+    }
+  };
+
+  const handleScan = async () => {
+    if (!selected) return;
+    if (!hasOutboundManage) {
+      setError('출고 검수를 처리할 권한이 없습니다.');
+      return;
+    }
+    const quantity = Number(scanQuantity || '1');
+    if (!scanBarcode.trim()) {
+      setError('검수할 바코드를 입력해주세요.');
+      return;
+    }
+    if (!quantity || Number.isNaN(quantity) || quantity < 1) {
+      setError('검수 수량은 1 이상으로 입력해주세요.');
+      return;
+    }
+
+    setScanSaving(true);
+    setError('');
+    setMessage('');
+    try {
+      const updated = await outboundOrderService.scanOutboundItem(selected.id, scanBarcode.trim(), quantity);
+      setSelected(updated);
+      setScanBarcode('');
+      setScanQuantity('1');
+      setMessage('바코드 검수가 기록되었습니다.');
+      setReloadKey((prev) => prev + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '바코드 검수에 실패했습니다.');
+    } finally {
+      setScanSaving(false);
     }
   };
 
@@ -220,7 +257,7 @@ export default function AdminOutboundOrdersPage() {
         <div>
           <h1 className="text-xl font-semibold text-[#1a1f2e]">출고 관리</h1>
           <p className="mt-1 text-sm text-[#6f7a8a]">
-            주문 기준으로 출고 지시를 생성하고 피킹 준비 상태를 관리합니다.
+            주문 기준 출고 지시를 생성하고 SKU/바코드 검수 상태를 관리합니다.
           </p>
         </div>
         <Button variant="primary" size="sm" onClick={openCreateForm} disabled={!hasOutboundManage}>
@@ -292,6 +329,7 @@ export default function AdminOutboundOrdersPage() {
               { key: 'status', header: '상태', render: (row) => STATUS_LABEL[row.status] },
               { key: 'totalQuantity', header: '총 수량', render: (row) => `${row.totalQuantity}개` },
               { key: 'pickedQuantity', header: '피킹 수량', render: (row) => `${row.pickedQuantity}개` },
+              { key: 'scannedQuantity', header: '검수 수량', render: (row) => `${row.scannedQuantity}개` },
               { key: 'requestedAt', header: '요청일', render: (row) => formatDate(row.requestedAt) },
               {
                 key: 'actions',
@@ -299,7 +337,7 @@ export default function AdminOutboundOrdersPage() {
                 render: (row) => (
                   <div className="flex flex-wrap gap-2">
                     <Button variant="outline" size="sm" onClick={() => setSelected(row)}>
-                      상세
+                      상세/검수
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => openEditForm(row)} disabled={!hasOutboundManage || row.status === 'SHIPPED' || row.status === 'CANCELLED'}>
                       수정
@@ -331,6 +369,41 @@ export default function AdminOutboundOrdersPage() {
             </div>
             <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>닫기</Button>
           </div>
+
+          <div className="mb-4 grid grid-cols-1 lg:grid-cols-[1fr_220px_120px_auto] gap-3 border border-[#edf0f5] bg-[#f8f9fb] p-4">
+            <input
+              type="text"
+              value={scanBarcode}
+              onChange={(event) => setScanBarcode(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') handleScan();
+              }}
+              placeholder="검수할 바코드를 입력 또는 스캔"
+              className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e] bg-white"
+              disabled={!hasOutboundManage || selected.status === 'SHIPPED' || selected.status === 'CANCELLED'}
+            />
+            <input
+              type="number"
+              min="1"
+              value={scanQuantity}
+              onChange={(event) => setScanQuantity(event.target.value)}
+              placeholder="검수 수량"
+              className="border border-[#e0e0e0] px-3 py-2 text-sm outline-none focus:border-[#1a1f2e] bg-white"
+              disabled={!hasOutboundManage || selected.status === 'SHIPPED' || selected.status === 'CANCELLED'}
+            />
+            <div className="text-xs text-[#6f7a8a] self-center">
+              {selected.scannedQuantity}/{selected.totalQuantity}개 검수
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleScan}
+              disabled={scanSaving || !hasOutboundManage || selected.status === 'SHIPPED' || selected.status === 'CANCELLED'}
+            >
+              {scanSaving ? '기록 중...' : '검수 기록'}
+            </Button>
+          </div>
+
           <DataTable<ApiOutboundOrderItem>
             keyField="id"
             data={selected.items}
@@ -341,7 +414,7 @@ export default function AdminOutboundOrdersPage() {
               { key: 'barcode', header: '바코드', render: (row) => row.barcode || '-' },
               { key: 'quantity', header: '지시 수량', render: (row) => `${row.quantity}개` },
               { key: 'pickedQuantity', header: '피킹 수량', render: (row) => `${row.pickedQuantity}개` },
-              { key: 'scannedQuantity', header: '스캔 수량', render: (row) => `${row.scannedQuantity}개` },
+              { key: 'scannedQuantity', header: '검수 수량', render: (row) => `${row.scannedQuantity}개` },
             ]}
           />
         </div>
@@ -393,7 +466,7 @@ export default function AdminOutboundOrdersPage() {
                   취소
                 </Button>
                 <Button type="submit" variant="primary" size="sm" disabled={saving || !hasOutboundManage}>
-                  {saving ? '저장 중' : '저장'}
+                  {saving ? '저장 중...' : '저장'}
                 </Button>
               </div>
             </form>

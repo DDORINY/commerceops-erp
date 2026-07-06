@@ -6,6 +6,7 @@ import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.entity.OrderItem;
 import com.commerceops.erp.domain.order.repository.OrderItemRepository;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
+import com.commerceops.erp.domain.outbound.dto.OutboundBarcodeScanRequest;
 import com.commerceops.erp.domain.outbound.dto.OutboundOrderCreateRequest;
 import com.commerceops.erp.domain.outbound.dto.OutboundOrderResponse;
 import com.commerceops.erp.domain.outbound.dto.OutboundOrderUpdateRequest;
@@ -13,6 +14,8 @@ import com.commerceops.erp.domain.outbound.entity.OutboundOrder;
 import com.commerceops.erp.domain.outbound.entity.OutboundOrderItem;
 import com.commerceops.erp.domain.outbound.enums.OutboundOrderStatus;
 import com.commerceops.erp.domain.outbound.repository.OutboundOrderRepository;
+import com.commerceops.erp.domain.outbound.entity.OutboundScanLog;
+import com.commerceops.erp.domain.outbound.repository.OutboundScanLogRepository;
 import com.commerceops.erp.domain.sku.entity.Sku;
 import com.commerceops.erp.domain.sku.repository.SkuRepository;
 import com.commerceops.erp.domain.user.entity.User;
@@ -48,6 +51,7 @@ public class OutboundOrderService {
     private final OrderItemRepository orderItemRepository;
     private final WarehouseRepository warehouseRepository;
     private final SkuRepository skuRepository;
+    private final OutboundScanLogRepository outboundScanLogRepository;
     private final AuditLogService auditLogService;
 
     public PageResponse<OutboundOrderResponse> getOutboundOrders(OutboundOrderStatus status, Long warehouseId,
@@ -117,6 +121,50 @@ public class OutboundOrderService {
         auditLogService.record(actor, AuditActionType.OUTBOUND_ORDER_PICKED, "OUTBOUND_ORDER", outboundOrder.getId(),
                 before.name(), outboundOrder.getStatus().name(), "출고 지시를 피킹 완료 처리했습니다: " + outboundOrder.getOutboundNumber(),
                 null, toJson(outboundOrder), null);
+        return OutboundOrderResponse.from(outboundOrder);
+    }
+
+    @Transactional
+    public OutboundOrderResponse scanOutboundItem(Long outboundOrderId, OutboundBarcodeScanRequest request, User actor) {
+        OutboundOrder outboundOrder = outboundOrderRepository.findWithItemsById(outboundOrderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "출고 지시를 찾을 수 없습니다."));
+        if (outboundOrder.getStatus() == OutboundOrderStatus.SHIPPED || outboundOrder.getStatus() == OutboundOrderStatus.CANCELLED) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "배송 완료 또는 취소된 출고 지시는 검수할 수 없습니다.");
+        }
+
+        String barcode = normalize(request.barcode());
+        if (barcode == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "바코드를 입력해주세요.");
+        }
+        int scanQuantity = request.quantity() == null ? 1 : request.quantity();
+        Sku sku = skuRepository.findByBarcode(barcode)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "바코드와 일치하는 SKU를 찾을 수 없습니다."));
+        OutboundOrderItem matchedItem = outboundOrder.getItems().stream()
+                .filter(item -> item.getSku() != null && item.getSku().getId().equals(sku.getId()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "해당 출고 지시에 포함되지 않은 바코드입니다."));
+
+        try {
+            matchedItem.scan(scanQuantity);
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, ex.getMessage());
+        }
+
+        outboundOrder.markPicking(actor);
+        outboundOrder.markPickedIfFullyScanned(actor);
+        outboundScanLogRepository.save(OutboundScanLog.builder()
+                .outboundOrder(outboundOrder)
+                .outboundOrderItem(matchedItem)
+                .sku(sku)
+                .barcode(barcode)
+                .quantity(scanQuantity)
+                .scannedBy(actor)
+                .build());
+
+        auditLogService.record(actor, AuditActionType.OUTBOUND_ORDER_ITEM_SCANNED, "OUTBOUND_ORDER", outboundOrder.getId(),
+                null, outboundOrder.getStatus().name(),
+                "출고 바코드 검수를 기록했습니다: " + outboundOrder.getOutboundNumber(),
+                null, toJson(outboundOrder), "{\"barcode\":\"" + escapeJson(barcode) + "\",\"quantity\":" + scanQuantity + "}");
         return OutboundOrderResponse.from(outboundOrder);
     }
 

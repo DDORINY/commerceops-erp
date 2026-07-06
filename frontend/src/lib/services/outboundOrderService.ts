@@ -88,6 +88,12 @@ export const outboundOrderService = {
       method: 'PATCH',
     }),
 
+  scanOutboundItem: (outboundOrderId: number, barcode: string, quantity = 1) =>
+    apiClient<ApiOutboundOrder>(`/admin/outbound-orders/${outboundOrderId}/scan`, {
+      method: 'POST',
+      body: JSON.stringify({ barcode, quantity }),
+    }),
+
   cancelOutboundOrder: (outboundOrderId: number) =>
     apiClient<ApiOutboundOrder>(`/admin/outbound-orders/${outboundOrderId}/cancel`, {
       method: 'PATCH',
