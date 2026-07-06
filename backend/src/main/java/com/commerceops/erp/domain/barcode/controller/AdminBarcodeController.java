@@ -4,6 +4,9 @@ import com.commerceops.erp.domain.barcode.dto.BarcodeLabelPreviewResponse;
 import com.commerceops.erp.domain.barcode.dto.BarcodeLabelRequest;
 import com.commerceops.erp.domain.barcode.dto.BarcodeLabelResponse;
 import com.commerceops.erp.domain.barcode.dto.BarcodeSkuResponse;
+import com.commerceops.erp.domain.barcode.dto.BarcodeStockChangeRequest;
+import com.commerceops.erp.domain.barcode.dto.BarcodeStockChangeResponse;
+import com.commerceops.erp.domain.barcode.dto.BarcodeStockResponse;
 import com.commerceops.erp.domain.barcode.service.BarcodeService;
 import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.service.PermissionChecker;
@@ -48,6 +51,35 @@ public class AdminBarcodeController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.INVENTORY_READ);
         return ResponseEntity.ok(ApiResponse.ok("바코드 SKU를 조회했습니다.", barcodeService.getByBarcode(barcode)));
+    }
+
+    @GetMapping("/barcodes/{barcode}/stock")
+    public ResponseEntity<ApiResponse<BarcodeStockResponse>> getStockByBarcode(
+            @PathVariable String barcode,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.INVENTORY_READ);
+        return ResponseEntity.ok(ApiResponse.ok("바코드 재고를 조회했습니다.", barcodeService.getStockByBarcode(barcode)));
+    }
+
+    @PostMapping("/barcodes/{barcode}/inbound")
+    public ResponseEntity<ApiResponse<BarcodeStockChangeResponse>> inboundByBarcode(
+            @PathVariable String barcode,
+            @Valid @RequestBody BarcodeStockChangeRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.INVENTORY_WRITE);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created("바코드 입고를 처리했습니다.",
+                        barcodeService.inboundByBarcode(barcode, request, userDetails.getUser())));
+    }
+
+    @PostMapping("/barcodes/{barcode}/outbound")
+    public ResponseEntity<ApiResponse<BarcodeStockChangeResponse>> outboundByBarcode(
+            @PathVariable String barcode,
+            @Valid @RequestBody BarcodeStockChangeRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        permissionChecker.require(userDetails, PermissionCodes.INVENTORY_WRITE);
+        return ResponseEntity.ok(ApiResponse.ok("바코드 출고를 처리했습니다.",
+                barcodeService.outboundByBarcode(barcode, request, userDetails.getUser())));
     }
 
     @GetMapping("/barcode-labels")
