@@ -1,6 +1,6 @@
 ﻿# API 명세
 
-기준 버전: `v0.4.6`
+기준 버전: `v0.4.7`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 이 문서는 실제 Spring MVC Controller 기준으로 정리한다. 공통 응답은 `ApiResponse<T>` 래핑 구조이며, 페이지 응답은 `PageResponse<T>`를 사용한다.
@@ -163,7 +163,8 @@
 | Review Admin | PATCH | `/api/admin/reviews/{reviewId}/hide` | - | `null` | 관리자 |
 | Review Admin | PATCH | `/api/admin/reviews/{reviewId}/show` | - | `null` | 관리자 |
 | Review Admin | DELETE | `/api/admin/reviews/{reviewId}` | - | `null` | 관리자 |
-| Audit Admin | GET | `/api/admin/audit-logs` | `targetType`, `page`, `size` | `PageResponse<AuditLogResponse>` | 관리자 |
+| Audit Admin | GET | `/api/admin/audit-logs` | `actorKeyword`, `actionType`, `targetType`, `targetId`, `dateFrom`, `dateTo`, `page`, `size` | `PageResponse<AuditLogResponse>` | `AUDIT_LOG_READ` |
+| Audit Admin | GET | `/api/admin/audit-logs/{auditLogId}` | - | `AuditLogResponse` | `AUDIT_LOG_READ` |
 | Notification | GET | `/api/notifications` | `page`, `size` | `PageResponse<NotificationResponse>` | 인증 |
 | Notification | GET | `/api/notifications/unread-count` | - | `UnreadNotificationCountResponse` | 인증 |
 | Notification | PATCH | `/api/notifications/{notificationId}/read` | - | `NotificationResponse` | 인증 |
@@ -243,7 +244,7 @@
 | `ProductDisplayStatus` | `VISIBLE`, `HIDDEN` |
 | `StockDisplayStatus` | `IN_STOCK`, `LOW_STOCK`, `SOLD_OUT` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
-| `AuditActionType` | `REVIEW_HIDE`, `REVIEW_SHOW`, `REVIEW_DELETE`, `PRODUCT_STATUS_UPDATE`, `PRODUCT_BULK_STATUS_UPDATE`, `PRODUCT_OPERATION_NOTE_CREATE` |
+| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `PERMISSION_DENIED` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
 | `PaymentStatus` | `READY`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |

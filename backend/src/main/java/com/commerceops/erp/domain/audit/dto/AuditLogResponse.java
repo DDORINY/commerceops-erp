@@ -15,6 +15,13 @@ public record AuditLogResponse(
         String beforeStatus,
         String afterStatus,
         String summary,
+        String ipAddress,
+        String userAgent,
+        String requestMethod,
+        String requestPath,
+        String beforeJson,
+        String afterJson,
+        String metadataJson,
         LocalDateTime createdAt
 ) {
     public static AuditLogResponse from(AuditLog auditLog) {
@@ -29,6 +36,13 @@ public record AuditLogResponse(
                 auditLog.getBeforeStatus(),
                 auditLog.getAfterStatus(),
                 auditLog.getSummary(),
+                auditLog.getIpAddress(),
+                auditLog.getUserAgent(),
+                auditLog.getRequestMethod(),
+                auditLog.getRequestPath(),
+                auditLog.getBeforeJson(),
+                auditLog.getAfterJson(),
+                auditLog.getMetadataJson(),
                 auditLog.getCreatedAt()
         );
     }

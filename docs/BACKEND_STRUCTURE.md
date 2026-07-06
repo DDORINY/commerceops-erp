@@ -1,6 +1,6 @@
 ﻿# 백엔드 구조 문서
 
-기준 버전: `v0.4.6`
+기준 버전: `v0.4.7`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
 ## 기술 스택
@@ -104,6 +104,7 @@ com.commerceops.erp
 - 권한 그룹 관리: v0.4.3 기준 `AdminPermissionGroupController`가 `/api/admin/permission-groups` 목록/상세/생성/수정/활성 상태 변경 API와 `/api/admin/users/{userId}/permission-groups` 조회/할당 API를 제공한다. 기존 role 기반 접근 제어는 유지하고, 조회는 `ADMIN`, `SUPER_ADMIN`, 변경은 `SUPER_ADMIN`으로 제한한다. 권한 그룹 작업은 `AuditLog`에 기록한다.
 - 메뉴/기능 권한 매트릭스: v0.4.5 기준 `AdminPermissionMatrixController`가 `/api/admin/permissions`, `/api/admin/permission-groups/{groupId}/permissions`, `/api/admin/users/{userId}/permissions`, `/api/admin/users/me/permissions`, `/api/admin/menu-permissions`를 제공한다. 현재 사용자 권한과 메뉴 권한 조회는 관리자 사이드바 연동을 위해 `MANAGER`도 접근 가능하며, 변경은 `SUPER_ADMIN`으로 제한한다. `SUPER_ADMIN`은 모든 활성 권한, 그 외 관리자는 사용자 권한 그룹 또는 role 기본 시스템 그룹 기준으로 유효 권한을 계산한다.
 - API permission 정책: v0.4.6 기준 `PermissionChecker`가 Controller method 시작부에서 현재 사용자의 effective permission code를 검증한다. `SecurityConfig`는 `/api/admin/**`에 대한 role 기반 1차 접근을 유지하고, 상품/주문/결제/재고/창고/회계/쿠폰/리뷰/문의/직원/권한/감사 로그 등 주요 관리자 API는 permission code로 세부 실행 권한을 나눈다. 권한 없음은 403과 한국어 안내 메시지로 반환한다.
+- 감사 로그 확장: v0.4.7 기준 `AuditLogService`는 관리자 변경 작업의 action/target/status 요약과 함께 요청 IP, User-Agent, method/path, before/after/metadata JSON을 기록한다. `AdminAuditLogController`는 actor/action/target/date 필터와 상세 조회를 제공하며, `PermissionChecker`는 인증된 관리자의 permission code 부족으로 인한 403을 `PERMISSION_DENIED`로 남긴다.
 
 ## 환경 프로파일
 
@@ -124,7 +125,7 @@ com.commerceops.erp
 ## 명시적 미구현
 
 - 실제 PG 벤더 키/웹훅/리다이렉트 연동. 현재 `PaymentController`는 `/api/payments/approve`, `/api/payments/{paymentId}/cancel`, 하위 호환 `/api/payments/mock/complete`를 제공하며 `MOCK_PROVIDER` 기반으로 동작한다.
-- 전체 관리자 기능 감사 로그. 현재는 리뷰 숨김/해제/삭제, 상품 상태 변경/대량 변경/운영 메모 작성, 직원 관리, 권한 그룹 관리, 메뉴/기능 권한 매트릭스 변경 작업을 `audit_logs`에 기록한다.
+- 감사 로그 CSV 다운로드, 장기 보관/아카이빙, 외부 SIEM 연동. v0.4.7 기준 주요 관리자 변경 작업과 인증된 관리자의 권한 실패는 `audit_logs`에 기록한다.
 - S3/CDN, 이미지 리사이징, 썸네일, 다중 이미지 갤러리.
 - 고급 WMS 피킹/패킹/출고 자동화.
 - 복식부기 기반 정산/마감 리포트.

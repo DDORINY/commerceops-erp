@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.product.controller;
 
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.domain.product.dto.AdminProductListResponse;
@@ -27,7 +29,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -39,6 +50,7 @@ public class AdminProductController {
     private final ProductService productService;
     private final ProductDetailBlockService productDetailBlockService;
     private final PermissionChecker permissionChecker;
+    private final AuditLogService auditLogService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminProductListResponse>>> getProducts(
@@ -72,26 +84,33 @@ public class AdminProductController {
     }
 
     @GetMapping("/{productId}/detail-blocks")
-    public ResponseEntity<ApiResponse<java.util.List<ProductDetailBlockResponse>>> getDetailBlocks(
+    public ResponseEntity<ApiResponse<List<ProductDetailBlockResponse>>> getDetailBlocks(
             @PathVariable Long productId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
-                ApiResponse.ok("Product detail blocks loaded.",
+                ApiResponse.ok("상품 상세 블록 조회가 완료되었습니다.",
                         productDetailBlockService.getAdminBlocks(productId))
         );
     }
 
     @PutMapping("/{productId}/detail-blocks")
-    public ResponseEntity<ApiResponse<java.util.List<ProductDetailBlockResponse>>> replaceDetailBlocks(
+    public ResponseEntity<ApiResponse<List<ProductDetailBlockResponse>>> replaceDetailBlocks(
             @PathVariable Long productId,
-            @RequestBody java.util.List<ProductDetailBlockRequest> requests,
+            @RequestBody List<ProductDetailBlockRequest> requests,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
-        return ResponseEntity.ok(
-                ApiResponse.ok("Product detail blocks saved.",
-                        productDetailBlockService.replaceAdminBlocks(productId, requests))
+        List<ProductDetailBlockResponse> response = productDetailBlockService.replaceAdminBlocks(productId, requests);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.PRODUCT_UPDATED,
+                "PRODUCT",
+                productId,
+                null,
+                "detailBlocks=" + response.size(),
+                "상품 상세 블록을 저장했습니다."
         );
+        return ResponseEntity.ok(ApiResponse.ok("상품 상세 블록이 저장되었습니다.", response));
     }
 
     @PostMapping
@@ -100,6 +119,15 @@ public class AdminProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         AdminProductResponse response = productService.createProduct(request);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.PRODUCT_CREATED,
+                "PRODUCT",
+                response.id(),
+                null,
+                response.name(),
+                "상품을 등록했습니다: " + response.name()
+        );
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created("상품이 등록되었습니다.", response));
@@ -111,10 +139,17 @@ public class AdminProductController {
             @Valid @RequestBody ProductUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
-        return ResponseEntity.ok(
-                ApiResponse.ok("상품이 수정되었습니다.",
-                        productService.updateProduct(productId, request, userDetails.getUser()))
+        AdminProductResponse response = productService.updateProduct(productId, request, userDetails.getUser());
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.PRODUCT_UPDATED,
+                "PRODUCT",
+                productId,
+                null,
+                response.name(),
+                "상품 정보를 수정했습니다: " + response.name()
         );
+        return ResponseEntity.ok(ApiResponse.ok("상품이 수정되었습니다.", response));
     }
 
     @PatchMapping("/{productId}/status")
@@ -124,7 +159,7 @@ public class AdminProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_STATUS_CHANGE);
         return ResponseEntity.ok(
-                ApiResponse.ok("Product operation status updated.",
+                ApiResponse.ok("상품 운영 상태가 변경되었습니다.",
                         productService.updateProductStatus(productId, request, userDetails.getUser()))
         );
     }
@@ -135,7 +170,7 @@ public class AdminProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_BULK_UPDATE);
         return ResponseEntity.ok(
-                ApiResponse.ok("Product operation statuses updated.",
+                ApiResponse.ok("상품 운영 상태가 일괄 변경되었습니다.",
                         productService.bulkUpdateProductStatus(request, userDetails.getUser()))
         );
     }
@@ -147,7 +182,7 @@ public class AdminProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
-                ApiResponse.ok("Product status history loaded.",
+                ApiResponse.ok("상품 상태 이력 조회가 완료되었습니다.",
                         productService.getProductStatusHistory(productId, limit))
         );
     }
@@ -159,7 +194,7 @@ public class AdminProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_READ);
         return ResponseEntity.ok(
-                ApiResponse.ok("Product operation notes loaded.",
+                ApiResponse.ok("상품 운영 메모 조회가 완료되었습니다.",
                         productService.getProductOperationNotes(productId, limit))
         );
     }
@@ -172,7 +207,7 @@ public class AdminProductController {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.created("Product operation note created.",
+                .body(ApiResponse.created("상품 운영 메모가 등록되었습니다.",
                         productService.createProductOperationNote(productId, request, userDetails.getUser()))
         );
     }
@@ -183,6 +218,15 @@ public class AdminProductController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.PRODUCT_WRITE);
         productService.deleteProduct(productId);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.PRODUCT_DELETED,
+                "PRODUCT",
+                productId,
+                null,
+                "DELETED",
+                "상품을 삭제했습니다."
+        );
         return ResponseEntity.ok(ApiResponse.<Void>ok("상품이 삭제되었습니다.", null));
     }
 }

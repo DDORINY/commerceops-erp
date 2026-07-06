@@ -108,7 +108,7 @@ public class ReviewService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
         ReviewStatus beforeStatus = review.getEffectiveStatus();
         review.hide();
-        recordReviewAudit(admin, AuditActionType.REVIEW_HIDE, review, beforeStatus, review.getEffectiveStatus());
+        recordReviewAudit(admin, AuditActionType.REVIEW_HIDDEN, review, beforeStatus, review.getEffectiveStatus());
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class ReviewService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
         ReviewStatus beforeStatus = review.getEffectiveStatus();
         review.show();
-        recordReviewAudit(admin, AuditActionType.REVIEW_SHOW, review, beforeStatus, review.getEffectiveStatus());
+        recordReviewAudit(admin, AuditActionType.REVIEW_SHOWN, review, beforeStatus, review.getEffectiveStatus());
     }
 
     @Transactional
@@ -126,7 +126,7 @@ public class ReviewService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
         ReviewStatus beforeStatus = review.getEffectiveStatus();
         review.softDelete();
-        recordReviewAudit(admin, AuditActionType.REVIEW_DELETE, review, beforeStatus, review.getEffectiveStatus());
+        recordReviewAudit(admin, AuditActionType.REVIEW_DELETED, review, beforeStatus, review.getEffectiveStatus());
     }
 
     private void recordReviewAudit(User admin, AuditActionType actionType, Review review,

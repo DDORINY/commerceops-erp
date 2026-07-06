@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.inquiry.controller;
 
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.inquiry.dto.InquiryAnswerRequest;
 import com.commerceops.erp.domain.inquiry.dto.InquiryResponse;
 import com.commerceops.erp.domain.inquiry.enums.InquiryStatus;
@@ -12,7 +14,13 @@ import com.commerceops.erp.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin/inquiries")
@@ -21,6 +29,7 @@ public class AdminInquiryController {
 
     private final InquiryService inquiryService;
     private final PermissionChecker permissionChecker;
+    private final AuditLogService auditLogService;
 
     @GetMapping
     public ApiResponse<PageResponse<InquiryResponse>> getInquiries(
@@ -41,7 +50,17 @@ public class AdminInquiryController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         permissionChecker.require(userDetails, PermissionCodes.INQUIRY_REPLY);
-        return ApiResponse.ok(inquiryService.answerInquiry(id, request));
+        InquiryResponse response = inquiryService.answerInquiry(id, request);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.INQUIRY_ANSWERED,
+                "INQUIRY",
+                id,
+                null,
+                response.status(),
+                "문의에 답변했습니다: " + response.subject()
+        );
+        return ApiResponse.ok(response);
     }
 
     @PatchMapping("/{id}/close")
@@ -49,6 +68,16 @@ public class AdminInquiryController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.INQUIRY_REPLY);
-        return ApiResponse.ok(inquiryService.closeInquiry(id));
+        InquiryResponse response = inquiryService.closeInquiry(id);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.INQUIRY_CLOSED,
+                "INQUIRY",
+                id,
+                null,
+                response.status(),
+                "문의를 종료했습니다: " + response.subject()
+        );
+        return ApiResponse.ok(response);
     }
 }

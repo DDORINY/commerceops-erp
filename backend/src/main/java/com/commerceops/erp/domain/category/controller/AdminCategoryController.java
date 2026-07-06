@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.category.controller;
 
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.category.dto.CategoryCreateRequest;
 import com.commerceops.erp.domain.category.dto.CategoryResponse;
 import com.commerceops.erp.domain.category.dto.CategoryTreeResponse;
@@ -31,13 +33,14 @@ public class AdminCategoryController {
 
     private final CategoryService categoryService;
     private final PermissionChecker permissionChecker;
+    private final AuditLogService auditLogService;
 
     @GetMapping("/tree")
     public ResponseEntity<ApiResponse<List<CategoryTreeResponse>>> getCategoryTree(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.CATEGORY_MANAGE);
         return ResponseEntity.ok(
-                ApiResponse.ok("Admin category tree loaded.", categoryService.getAdminCategoryTree())
+                ApiResponse.ok("관리자 카테고리 트리 조회가 완료되었습니다.", categoryService.getAdminCategoryTree())
         );
     }
 
@@ -47,18 +50,36 @@ public class AdminCategoryController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.CATEGORY_MANAGE);
         CategoryResponse response = categoryService.createCategory(request);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.CATEGORY_CREATED,
+                "CATEGORY",
+                response.id(),
+                null,
+                response.name(),
+                "카테고리를 생성했습니다: " + response.name()
+        );
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.created("카테고리가 등록되었습니다.", response));
     }
+
     @PatchMapping("/{categoryId}")
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
             @PathVariable Long categoryId,
             @RequestBody CategoryUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.CATEGORY_MANAGE);
-        return ResponseEntity.ok(
-                ApiResponse.ok("Category updated.", categoryService.updateCategory(categoryId, request))
+        CategoryResponse response = categoryService.updateCategory(categoryId, request);
+        auditLogService.record(
+                userDetails.getUser(),
+                Boolean.FALSE.equals(response.active()) ? AuditActionType.CATEGORY_ACTIVE_CHANGED : AuditActionType.CATEGORY_UPDATED,
+                "CATEGORY",
+                categoryId,
+                null,
+                response.name(),
+                "카테고리를 수정했습니다: " + response.name()
         );
+        return ResponseEntity.ok(ApiResponse.ok("카테고리가 수정되었습니다.", response));
     }
 }

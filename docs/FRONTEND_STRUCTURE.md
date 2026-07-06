@@ -51,7 +51,7 @@
 | `/admin/coupons` | `app/admin/coupons/page.tsx` | `couponService` |
 | `/admin/warehouses` | `app/admin/warehouses/page.tsx` | `warehouseService` |
 | `/admin/settings` | `app/admin/settings/page.tsx` | 시스템 설정 진입점 |
-| `/admin/settings/audit-logs` | `app/admin/settings/audit-logs/page.tsx` | `auditService.getAuditLogs` |
+| `/admin/settings/audit-logs` | `app/admin/settings/audit-logs/page.tsx` | `auditService.getAuditLogs`, `auditService.getAuditLog`, 필터/상세 보기 |
 | `/admin/settings/staff` | `app/admin/settings/staff/page.tsx` | `staffService`, 직원 목록/등록/수정/상태 변경 |
 | `/admin/settings/permission-groups` | `app/admin/settings/permission-groups/page.tsx` | `permissionGroupService`, 권한 그룹 CRUD, 직원별 권한 그룹 할당 |
 | `/admin/settings/roles` | `app/admin/settings/roles/page.tsx` | 기존 role과 permission group 병행 운영 안내 |
@@ -73,7 +73,7 @@
 | `wishlistService.ts` | 찜 토글/목록/상태 |
 | `inquiryService.ts` | 사용자/상품 문의, 관리자 문의 답변/종료 |
 | `reviewService.ts` | 사용자 리뷰, 상품 리뷰, 관리자 리뷰 목록/숨김/해제/삭제 |
-| `auditService.ts` | 관리자 작업 이력 조회 |
+| `auditService.ts` | 관리자 작업 이력 목록/상세 조회, actor/action/target/date 필터 |
 | `notificationService.ts` | 사용자 알림 목록/읽음 처리, 관리자 최근 알림 조회 |
 | `opsAnalyticsService.ts` | 운영 분석 기초 overview 조회 |
 | `returnService.ts` | 반품 요청/목록, 관리자 승인/거절 |
@@ -126,7 +126,7 @@
 - `frontend/src/components/admin/AdminSidebar.tsx`: 구형 사이드바 진입점은 `AdminSidebarV2`를 재사용한다.
 - 권한별 메뉴 노출은 `getUserRole()` 기준으로 `SUPER_ADMIN`, `ADMIN`, `MANAGER`를 최소 분기한다.
 - `frontend/src/app/admin/settings/page.tsx`: 사업자 설정, 약관 설정, 정책 설정, 관리자 작업 이력, 직원 관리, 권한 관리 진입점.
-- `frontend/src/app/admin/settings/audit-logs/page.tsx`: 기존 `auditService.getAuditLogs()`와 `/api/admin/audit-logs`를 사용해 관리자 작업 이력을 표시한다.
+- `frontend/src/app/admin/settings/audit-logs/page.tsx`: `/api/admin/audit-logs` 필터 조회와 `/api/admin/audit-logs/{auditLogId}` 상세 조회를 사용해 actionType, 작업자, 대상, 기간 필터와 JSON 요약을 표시한다.
 - 직원/부서/직급/권한 그룹/역할별 상세 권한 화면은 v0.4.0으로 이관한다.
 
 ## v0.3.5.2 Admin Sidebar Accordion Fix

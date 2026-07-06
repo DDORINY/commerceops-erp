@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.order.controller;
 
+import com.commerceops.erp.domain.audit.enums.AuditActionType;
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.order.dto.AdminOrderResponse;
 import com.commerceops.erp.domain.order.dto.OrderStatusUpdateRequest;
 import com.commerceops.erp.domain.order.dto.OrderStatusUpdateResponse;
@@ -14,7 +16,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin/orders")
@@ -23,6 +31,7 @@ public class AdminOrderController {
 
     private final OrderService orderService;
     private final PermissionChecker permissionChecker;
+    private final AuditLogService auditLogService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminOrderResponse>>> getAdminOrders(
@@ -43,6 +52,15 @@ public class AdminOrderController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.ORDER_STATUS_CHANGE);
         OrderStatusUpdateResponse response = orderService.updateOrderStatus(orderId, request);
+        auditLogService.record(
+                userDetails.getUser(),
+                AuditActionType.ORDER_STATUS_CHANGED,
+                "ORDER",
+                orderId,
+                null,
+                response.status(),
+                "주문 상태를 변경했습니다."
+        );
         return ResponseEntity.ok(ApiResponse.ok("주문 상태가 변경되었습니다.", response));
     }
 }

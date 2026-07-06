@@ -1,5 +1,6 @@
 package com.commerceops.erp.domain.permission.service;
 
+import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.permission.dto.EffectivePermissionResponse;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.domain.user.enums.UserRole;
@@ -16,6 +17,7 @@ public class PermissionChecker {
     private static final String FORBIDDEN_MESSAGE = "해당 작업을 수행할 권한이 없습니다. 관리자에게 권한을 요청하세요.";
 
     private final PermissionMatrixService permissionMatrixService;
+    private final AuditLogService auditLogService;
 
     public void require(CustomUserDetails userDetails, String permissionCode) {
         if (userDetails == null || userDetails.getUser() == null) {
@@ -30,6 +32,7 @@ public class PermissionChecker {
         }
         EffectivePermissionResponse effectivePermissions = permissionMatrixService.getEffectivePermissions(user);
         if (!effectivePermissions.permissionCodes().contains(permissionCode)) {
+            auditLogService.recordPermissionDenied(user, permissionCode);
             throw new BusinessException(ErrorCode.FORBIDDEN, FORBIDDEN_MESSAGE);
         }
     }

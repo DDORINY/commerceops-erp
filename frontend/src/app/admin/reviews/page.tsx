@@ -80,7 +80,7 @@ export default function AdminReviewsPage() {
 
   useEffect(() => {
     let mounted = true;
-    auditService.getAuditLogs('REVIEW', 0, 8)
+    auditService.getAuditLogs({ targetType: 'REVIEW' }, 0, 8)
       .then((res) => {
         if (mounted) setAuditLogs(res.content);
       })

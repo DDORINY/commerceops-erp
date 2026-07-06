@@ -37,7 +37,7 @@ export default function Pagination({
           >
             1
           </button>
-          {start > 2 && <span className="px-1 text-[#bbb]">…</span>}
+          {start > 2 && <span className="px-1 text-[#bbb]">...</span>}
         </>
       )}
 
@@ -58,7 +58,7 @@ export default function Pagination({
 
       {end < totalPages && (
         <>
-          {end < totalPages - 1 && <span className="px-1 text-[#bbb]">…</span>}
+          {end < totalPages - 1 && <span className="px-1 text-[#bbb]">...</span>}
           <button
             onClick={() => onPageChange(totalPages)}
             className="w-9 h-9 flex items-center justify-center border border-[#e5e5e5] text-sm hover:border-[#222] hover:text-[#222] transition-colors"

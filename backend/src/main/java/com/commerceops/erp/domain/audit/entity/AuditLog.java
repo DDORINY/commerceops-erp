@@ -36,7 +36,7 @@ public class AuditLog {
     @Column(nullable = false, length = 50)
     private String targetType;
 
-    @Column(nullable = false)
+    @Column
     private Long targetId;
 
     @Column(length = 50)
@@ -47,6 +47,30 @@ public class AuditLog {
 
     @Column(length = 500)
     private String summary;
+
+    @Column(length = 100)
+    private String ipAddress;
+
+    @Column(length = 500)
+    private String userAgent;
+
+    @Column(length = 10)
+    private String requestMethod;
+
+    @Column(length = 500)
+    private String requestPath;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String beforeJson;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String afterJson;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String metadataJson;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

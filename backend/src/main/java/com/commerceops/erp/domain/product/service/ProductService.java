@@ -215,7 +215,7 @@ public class ProductService {
 
         auditLogService.record(
                 actor,
-                AuditActionType.PRODUCT_BULK_STATUS_UPDATE,
+                AuditActionType.PRODUCT_BULK_STATUS_CHANGED,
                 "PRODUCT",
                 0L,
                 null,
@@ -261,7 +261,7 @@ public class ProductService {
 
         auditLogService.record(
                 actor,
-                AuditActionType.PRODUCT_OPERATION_NOTE_CREATE,
+                AuditActionType.PRODUCT_OPERATION_NOTE_CREATED,
                 "PRODUCT",
                 productId,
                 null,
@@ -473,7 +473,7 @@ public class ProductService {
 
         auditLogService.record(
                 actor,
-                AuditActionType.PRODUCT_STATUS_UPDATE,
+                AuditActionType.PRODUCT_STATUS_CHANGED,
                 "PRODUCT",
                 product.getId(),
                 statusSummary(previousSalesStatus, previousDisplayStatus),
