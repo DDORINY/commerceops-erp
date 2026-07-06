@@ -1,6 +1,6 @@
 ﻿# DB 스키마 문서
 
-기준 버전: `v0.6.3`
+기준 버전: `v0.6.4`
 기준 코드: JPA Entity (`backend/src/main/java/com/commerceops/erp/domain/**/entity`)
 
 v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
@@ -28,6 +28,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - 출고 지시 마이그레이션: `backend/src/main/resources/db/migration/V23__create_outbound_orders.sql`
 - 택배사/배송 방법 마이그레이션: `backend/src/main/resources/db/migration/V24__create_carriers_shipping_methods.sql`
 - 송장번호 발급 정보 마이그레이션: `backend/src/main/resources/db/migration/V25__extend_shipments_tracking_number.sql`
+- 송장 라벨 출력 이력 마이그레이션: `backend/src/main/resources/db/migration/V26__create_shipment_labels.sql`
 - v0.2.8 운영 분석 기초 API는 기존 회계/주문/결제/창고/재고 예약 테이블을 읽기 전용으로 집계하므로 신규 테이블과 마이그레이션을 추가하지 않는다.
 - 기준 DB: MySQL 8.0
 - 테스트 프로파일: 기존 H2 `create-drop` 테스트를 유지하기 위해 Flyway 비활성화
@@ -69,6 +70,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `order_items` | `OrderItem` | `order_id`, `product_id`, snapshot `product_name`, `price`, `quantity`, `selected_options`, `created_at` |
 | `payments` | `Payment` | `order_id`, `payment_method`, `payment_status`, `paid_amount`, `transaction_id`, `idempotency_key`, `provider`, timestamps |
 | `shipments` | `Shipment` | `order_id`, `status`, `tracking_number`, `carrier`, `tracking_number_source`, `tracking_number_issued_at`, `shipped_at`, `delivered_at`, timestamps |
+| `shipment_labels` | `ShipmentLabel` | `shipment_id`, `tracking_number`, `carrier`, `label_format`, `print_count`, `last_printed_at`, `created_by`, timestamps |
 | `return_requests` | `ReturnRequest` | `order_id`, `user_id`, `reason`, `reason_detail`, `status`, `admin_note`, timestamps |
 | `reviews` | `Review` | `product_id`, `user_id`, `order_item_id`, `rating`, `content`, `status`, `created_at` |
 | `audit_logs` | `AuditLog` | `actor_id`, `actor_email`, `actor_name`, `action_type`, `target_type`, nullable `target_id`, `before_status`, `after_status`, `summary`, `ip_address`, `user_agent`, `request_method`, `request_path`, `before_json`, `after_json`, `metadata_json`, `created_at` |
@@ -99,7 +101,7 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `ProductDetailBlockType` | `HEADING`, `TEXT`, `IMAGE`, `NOTICE`, `SPEC_TABLE`, `HTML` |
 | `BannerPosition` | `MAIN_TOP`, `MAIN_MIDDLE`, `MAIN_BOTTOM` |
 | `ReviewStatus` | `VISIBLE`, `HIDDEN`, `DELETED` |
-| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `STOCK_INBOUNDED`, `STOCK_OUTBOUNDED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `BUSINESS_SETTINGS_UPDATED`, `TERMS_VERSION_CREATED`, `POLICY_VERSION_CREATED`, `SKU_CREATED`, `SKU_UPDATED`, `SKU_ACTIVE_CHANGED`, `SKU_BARCODE_REGENERATED`, `PRODUCTION_ORDER_CREATED`, `PRODUCTION_ORDER_UPDATED`, `PRODUCTION_ORDER_STARTED`, `PRODUCTION_ORDER_COMPLETED`, `PRODUCTION_ORDER_CANCELLED`, `PRODUCTION_RECEIPT_CREATED`, `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED`, `PERMISSION_DENIED` |
+| `AuditActionType` | `PRODUCT_CREATED`, `PRODUCT_UPDATED`, `PRODUCT_DELETED`, `PRODUCT_STATUS_CHANGED`, `PRODUCT_BULK_STATUS_CHANGED`, `PRODUCT_OPERATION_NOTE_CREATED`, `CATEGORY_CREATED`, `CATEGORY_UPDATED`, `CATEGORY_ACTIVE_CHANGED`, `BANNER_CREATED`, `BANNER_UPDATED`, `BANNER_ACTIVE_CHANGED`, `ORDER_STATUS_CHANGED`, `PAYMENT_CANCELLED`, `REFUND_PROCESSED`, `INVENTORY_ADJUSTED`, `INVENTORY_INBOUNDED`, `STOCK_INBOUNDED`, `STOCK_OUTBOUNDED`, `STOCK_COUNT_CREATED`, `STOCK_COUNT_STARTED`, `STOCK_COUNT_COMPLETED`, `STOCK_COUNT_CANCELLED`, `STOCK_COUNT_ADJUSTMENT_CREATED`, `SKU_CREATED`, `SKU_UPDATED`, `SKU_ACTIVE_CHANGED`, `SKU_BARCODE_REGENERATED`, `BARCODE_LABEL_CREATED`, `BARCODE_LABEL_PRINTED`, `PRODUCTION_ORDER_CREATED`, `PRODUCTION_ORDER_UPDATED`, `PRODUCTION_ORDER_STARTED`, `PRODUCTION_ORDER_COMPLETED`, `PRODUCTION_ORDER_CANCELLED`, `PRODUCTION_RECEIPT_CREATED`, `OUTBOUND_ORDER_CREATED`, `OUTBOUND_ORDER_UPDATED`, `OUTBOUND_ORDER_PICKED`, `OUTBOUND_ORDER_CANCELLED`, `CARRIER_CREATED`, `CARRIER_UPDATED`, `CARRIER_ACTIVE_CHANGED`, `SHIPPING_METHOD_CREATED`, `SHIPPING_METHOD_UPDATED`, `SHIPPING_METHOD_ACTIVE_CHANGED`, `TRACKING_NUMBER_GENERATED`, `TRACKING_NUMBER_UPDATED`, `SHIPMENT_LABEL_CREATED`, `SHIPMENT_LABEL_PRINTED`, `WAREHOUSE_CREATED`, `WAREHOUSE_UPDATED`, `WAREHOUSE_LOCATION_CREATED`, `WAREHOUSE_LOCATION_UPDATED`, `WAREHOUSE_LOCATION_ACTIVE_CHANGED`, `WAREHOUSE_LOCATION_STOCK_UPDATED`, `INVENTORY_ALERT_RULE_CREATED`, `INVENTORY_ALERT_RULE_UPDATED`, `INVENTORY_ALERT_RULE_ACTIVE_CHANGED`, `LOW_STOCK_ALERT_GENERATED`, `STOCK_TRANSFERRED`, `COUPON_CREATED`, `COUPON_UPDATED`, `COUPON_DELETED`, `REVIEW_HIDDEN`, `REVIEW_SHOWN`, `REVIEW_DELETED`, `INQUIRY_ANSWERED`, `INQUIRY_CLOSED`, `STAFF_CREATED`, `STAFF_UPDATED`, `STAFF_STATUS_CHANGED`, `STAFF_ACTIVE_CHANGED`, `PERMISSION_GROUP_CREATED`, `PERMISSION_GROUP_UPDATED`, `PERMISSION_GROUP_ACTIVE_CHANGED`, `USER_PERMISSION_GROUPS_UPDATED`, `PERMISSION_MATRIX_UPDATED`, `MENU_PERMISSION_UPDATED`, `SETTINGS_UPDATED`, `BUSINESS_SETTINGS_UPDATED`, `TERMS_VERSION_CREATED`, `POLICY_VERSION_CREATED`, `PERMISSION_DENIED` |
 | `TermsType` | `TERMS_OF_SERVICE`, `PRIVACY_POLICY`, `SHIPPING_RETURN_POLICY` |
 | `NotificationType` | `ORDER_STATUS`, `INQUIRY_ANSWERED`, `RETURN_PROCESSED`, `SYSTEM` |
 | `OrderStatus` | `PENDING`, `PAID`, `PREPARING`, `SHIPPING`, `COMPLETED`, `CANCELLED`, `REFUNDED` |
@@ -186,4 +188,5 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.6.1 기준 `outbound_orders`는 `outbound_number`, 주문, 창고, 상태, 요청/피킹/배송 일시와 메모를 저장한다. `outbound_order_items`는 주문 품목, 상품, nullable SKU, 지시/피킹/스캔 수량을 저장한다. 실제 바코드 스캔 검수와 재고 차감은 후속 v0.6.x 범위다.
 - v0.6.2 기준 `carriers`와 `shipping_methods`는 송장/배송 처리에서 선택할 master 데이터다. 실제 택배사 API 호출과 자동 운임 계산은 구현하지 않는다.
 - v0.6.3 기준 `shipments.tracking_number_source`는 `MANUAL` 또는 `SYSTEM`으로 송장번호 입력 방식을 기록하고, `tracking_number_issued_at`은 수동 저장 또는 자동 생성 시각을 기록한다. READY 상태에서 최초 송장 등록 시에만 예약 재고 출고와 주문 `SHIPPING` 전환을 수행하며, IN_TRANSIT 상태의 송장 수정은 재고 차감을 반복하지 않는다.
+- v0.6.4 기준 `shipment_labels`는 송장 라벨 생성과 출력 이력을 저장한다. 송장번호와 택배사는 생성 시점 snapshot으로 저장하며, 실제 프린터 드라이버/PDF 출력은 제공하지 않는다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.

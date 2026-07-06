@@ -3,6 +3,9 @@ package com.commerceops.erp.domain.shipment.controller;
 import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.domain.shipment.dto.ShipmentResponse;
+import com.commerceops.erp.domain.shipment.dto.ShipmentLabelPreviewResponse;
+import com.commerceops.erp.domain.shipment.dto.ShipmentLabelRequest;
+import com.commerceops.erp.domain.shipment.dto.ShipmentLabelResponse;
 import com.commerceops.erp.domain.shipment.dto.TrackingNumberGenerateRequest;
 import com.commerceops.erp.domain.shipment.dto.TrackingUpdateRequest;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
@@ -14,6 +17,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/shipments")
@@ -41,6 +46,15 @@ public class AdminShipmentController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.SHIPMENT_READ);
         return ApiResponse.ok(shipmentService.getAdminShipment(id));
+    }
+
+    @GetMapping("/{id}/labels")
+    public ApiResponse<List<ShipmentLabelResponse>> getShipmentLabels(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPMENT_READ);
+        return ApiResponse.ok(shipmentService.getShipmentLabels(id));
     }
 
     @PatchMapping("/{id}/tracking")
@@ -71,6 +85,27 @@ public class AdminShipmentController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.SHIPMENT_MANAGE);
         return ApiResponse.ok(shipmentService.updateTracking(id, request, userDetails.getUser()));
+    }
+
+    @PostMapping("/{id}/labels")
+    public ApiResponse<ShipmentLabelPreviewResponse> createShipmentLabel(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) ShipmentLabelRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPPING_LABEL_PRINT);
+        return ApiResponse.created("송장 라벨을 생성했습니다.",
+                shipmentService.createShipmentLabel(id, request, userDetails.getUser()));
+    }
+
+    @PostMapping("/labels/{labelId}/print")
+    public ApiResponse<ShipmentLabelPreviewResponse> markShipmentLabelPrinted(
+            @PathVariable Long labelId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPPING_LABEL_PRINT);
+        return ApiResponse.ok("송장 라벨 출력 이력을 기록했습니다.",
+                shipmentService.markShipmentLabelPrinted(labelId, userDetails.getUser()));
     }
 
     @PatchMapping("/{id}/deliver")

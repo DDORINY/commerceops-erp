@@ -5,7 +5,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import DataTable from '@/components/admin/DataTable';
 import Pagination from '@/components/common/Pagination';
 import Button from '@/components/common/Button';
-import { shipmentService, type ApiShipment } from '@/lib/services/shipmentService';
+import { shipmentService, type ApiShipment, type ApiShipmentLabelPreview } from '@/lib/services/shipmentService';
 import {
   formatDateTime,
   SHIPMENT_STATUS_LABEL,
@@ -35,7 +35,10 @@ export default function AdminShipmentsPage() {
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
+  const [labelPreview, setLabelPreview] = useState<ApiShipmentLabelPreview | null>(null);
 
   // inline tracking form state: shipmentId → { trackingNumber, carrier }
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -97,9 +100,35 @@ export default function AdminShipmentsPage() {
   const handleGenerateTrackingNumber = async (shipmentId: number) => {
     try {
       await shipmentService.generateTrackingNumber(shipmentId, carrierInput);
+      setActionMessage('송장번호를 자동 생성했습니다.');
+      setActionError('');
       setReloadKey((prev) => prev + 1);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '송장번호 자동 생성에 실패했습니다.');
+      setActionError(err instanceof Error ? err.message : '송장번호 자동 생성에 실패했습니다.');
+    }
+  };
+
+  const handleCreateShipmentLabel = async (shipmentId: number) => {
+    try {
+      const result = await shipmentService.createShipmentLabel(shipmentId);
+      setLabelPreview(result);
+      setActionMessage('송장 라벨 미리보기를 생성했습니다.');
+      setActionError('');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : '송장 라벨 생성에 실패했습니다.');
+    }
+  };
+
+  const handleMarkShipmentLabelPrinted = async () => {
+    if (!labelPreview) return;
+
+    try {
+      const result = await shipmentService.markShipmentLabelPrinted(labelPreview.labelId);
+      setLabelPreview(result);
+      setActionMessage('송장 라벨 출력 이력을 기록했습니다.');
+      setActionError('');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : '송장 라벨 출력 이력 기록에 실패했습니다.');
     }
   };
 
@@ -147,6 +176,17 @@ export default function AdminShipmentsPage() {
           검색
         </Button>
       </div>
+
+      {actionMessage && (
+        <div className="mb-3 border border-[#b7dfc1] bg-[#f0fff4] px-4 py-3 text-sm text-[#246b38]">
+          {actionMessage}
+        </div>
+      )}
+      {actionError && (
+        <div className="mb-3 border border-[#f1c7c7] bg-[#fff6f6] px-4 py-3 text-sm text-[#c43a3a]">
+          {actionError}
+        </div>
+      )}
 
       {/* 테이블 */}
       {loading ? (
@@ -211,10 +251,17 @@ export default function AdminShipmentsPage() {
               ),
             },
             {
-              key: 'shipmentId',
+              key: 'actions',
               header: '관리',
               render: (row) => {
                 if (row.status === 'DELIVERED' || row.status === 'CANCELLED') {
+                  if (row.status === 'DELIVERED' && row.trackingNumber) {
+                    return (
+                      <Button variant="outline" size="sm" onClick={() => handleCreateShipmentLabel(row.shipmentId)}>
+                        라벨 미리보기
+                      </Button>
+                    );
+                  }
                   return (
                     <span className="text-xs text-[#aaa]">
                       {row.status === 'CANCELLED' ? '취소됨' : row.deliveredAt ? formatDateTime(row.deliveredAt) : '완료'}
@@ -286,7 +333,7 @@ export default function AdminShipmentsPage() {
 
                 // IN_TRANSIT
                 return (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -301,6 +348,11 @@ export default function AdminShipmentsPage() {
                     <Button variant="outline" size="sm" onClick={() => handleDeliver(row.shipmentId)}>
                       배송완료
                     </Button>
+                    {row.trackingNumber && (
+                      <Button variant="outline" size="sm" onClick={() => handleCreateShipmentLabel(row.shipmentId)}>
+                        라벨 미리보기
+                      </Button>
+                    )}
                   </div>
                 );
               },
@@ -314,6 +366,27 @@ export default function AdminShipmentsPage() {
       )}
       {!loading && !error && (
         <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+      )}
+
+      {labelPreview && (
+        <div className="mt-6 border border-[#dfe3ea] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-[#1a1f2e]">송장 라벨 미리보기</h2>
+            <Button variant="primary" size="sm" onClick={handleMarkShipmentLabelPrinted}>
+              출력 이력 기록
+            </Button>
+          </div>
+          <div className="mt-4 inline-block min-w-[320px] border border-[#1a1f2e] bg-white p-4 text-sm">
+            <p className="text-lg font-bold text-[#1a1f2e]">{labelPreview.carrier}</p>
+            <p className="mt-2 font-mono text-2xl font-bold tracking-[1px] text-[#111]">{labelPreview.trackingNumber}</p>
+            <p className="mt-3 text-[#566171]">주문번호: {labelPreview.orderNumber}</p>
+            <p className="mt-1 text-[#566171]">수령인: {labelPreview.receiverName} / {labelPreview.receiverPhone}</p>
+            <p className="mt-1 max-w-[360px] text-[#566171]">주소: {labelPreview.address}</p>
+          </div>
+          <p className="mt-3 text-xs text-[#8a9bb5]">
+            실제 프린터 SDK 연동은 제외하고, 현재는 HTML 라벨 미리보기와 출력 이력만 기록합니다. 출력 횟수: {labelPreview.printCount}회
+          </p>
+        </div>
       )}
     </AdminLayout>
   );
