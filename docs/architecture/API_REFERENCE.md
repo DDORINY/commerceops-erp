@@ -467,6 +467,8 @@
 
 v0.8.3부터 `PRODUCT_REVIEWS` key를 추가로 지원한다. 이 데이터셋은 상품 속성(`productCode`, `brand`, `price`, `tags`)과 리뷰 속성(`rating`, `content`, `reviewStatus`)을 결합해 상품 추천과 리뷰 분석 학습 후보로 사용한다.
 
+v0.8.4부터 `ORDER_DEMAND` key를 추가로 지원한다. 이 데이터셋은 주문일, 주문 시간, 요일, 금액, 할인, 주문 상태, 결제 상태를 포함해 수요 예측 학습 후보로 사용한다.
+
 ## v0.8.2 AI 데이터셋 마스킹 기준
 
 `GET /api/admin/ai/datasets/{key}/export` 응답에는 `privacyMasked` 필드가 포함된다. v0.8.2 기준 export 응답은 기본적으로 마스킹된 데이터만 반환한다.
