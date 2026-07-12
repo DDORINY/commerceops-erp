@@ -1386,3 +1386,19 @@ v0.2.0 완료 조건:
 - [x] frontend lint 검증
 - [x] frontend build 검증
 - [x] main 병합 및 `v0.7.7` 태그 생성
+
+### v0.7.8 체크리스트
+
+목적: 주문/결제/반품/배송 원천 데이터와 회계 거래 내역의 누락 후보를 검증하는 관리자 API와 화면 기반을 만든다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.7.8-accounting-data-consistency` 브랜치 생성
+- [x] 회계 정합성 검증 기준 정의
+- [x] 정합성 점검 API 추가
+- [x] 관리자 회계 화면 정합성 섹션 추가
+- [x] 회계 화면 한국어 문구 정리
+- [x] 관련 문서 갱신
+- [x] backend test 검증
+- [x] frontend lint 검증
+- [x] frontend build 검증
+- [ ] main 병합 및 `v0.7.8` 태그 생성

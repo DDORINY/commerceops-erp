@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.order.repository;
 
+import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
+import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.user.entity.User;
@@ -42,4 +44,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o WHERE o.user = :user")
     Long sumTotalPriceByUser(@Param("user") User user);
+
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.status IN :statuses
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = o.id
+                    AND t.type = :transactionType
+              )
+            ORDER BY o.createdAt DESC
+            """)
+    Page<Order> findMissingAccountingTransactions(
+            @Param("statuses") List<OrderStatus> statuses,
+            @Param("referenceType") AccountingReferenceType referenceType,
+            @Param("transactionType") AccountingTransactionType transactionType,
+            Pageable pageable
+    );
 }

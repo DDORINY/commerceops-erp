@@ -1,6 +1,8 @@
 package com.commerceops.erp.domain.accounting.service;
 
 import com.commerceops.erp.domain.accounting.dto.AccountingEntryResponse;
+import com.commerceops.erp.domain.accounting.dto.AccountingConsistencyIssueResponse;
+import com.commerceops.erp.domain.accounting.dto.AccountingConsistencyReportResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingLedgerResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
@@ -55,6 +57,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -230,6 +234,105 @@ public class AccountingService {
                 order,
                 transaction,
                 transaction != null ? "매출 인식 거래가 있습니다." : "매출 인식 거래가 없습니다."
+        );
+    }
+
+    public AccountingConsistencyReportResponse getConsistencyReport(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        Pageable pageable = PageRequest.of(0, safeLimit, Sort.by("updatedAt").descending());
+        List<AccountingConsistencyIssueResponse> issues = new ArrayList<>();
+
+        var missingRevenue = orderRepository.findMissingAccountingTransactions(
+                List.of(OrderStatus.PAID, OrderStatus.PREPARING, OrderStatus.SHIPPING, OrderStatus.COMPLETED),
+                AccountingReferenceType.ORDER,
+                AccountingTransactionType.SALES,
+                pageable
+        );
+        missingRevenue.forEach(order -> issues.add(new AccountingConsistencyIssueResponse(
+                "MISSING_REVENUE",
+                "ORDER",
+                order.getId(),
+                order.getOrderNumber(),
+                AccountingTransactionType.SALES,
+                toLong(order.getTotalPrice()),
+                order.getStatus().name(),
+                "결제 완료 이후 매출 회계 거래가 생성되지 않은 주문입니다.",
+                order.getCreatedAt()
+        )));
+
+        var missingRefund = paymentRepository.findMissingAccountingTransactions(
+                PaymentStatus.REFUNDED,
+                AccountingReferenceType.PAYMENT,
+                AccountingTransactionType.REFUND,
+                pageable
+        );
+        missingRefund.forEach(payment -> issues.add(new AccountingConsistencyIssueResponse(
+                "MISSING_PAYMENT_REFUND",
+                "PAYMENT",
+                payment.getId(),
+                payment.getOrder().getOrderNumber(),
+                AccountingTransactionType.REFUND,
+                toLong(payment.getPaidAmount()),
+                payment.getPaymentStatus().name(),
+                "환불 처리된 결제에 환불 회계 거래가 없습니다.",
+                payment.getUpdatedAt()
+        )));
+
+        var missingReturnRefund = returnRequestRepository.findMissingAccountingTransactions(
+                ReturnStatus.APPROVED,
+                AccountingReferenceType.RETURN,
+                AccountingTransactionType.REFUND,
+                pageable
+        );
+        missingReturnRefund.forEach(returnRequest -> issues.add(new AccountingConsistencyIssueResponse(
+                "MISSING_RETURN_REFUND",
+                "RETURN",
+                returnRequest.getId(),
+                returnRequest.getOrder().getOrderNumber(),
+                AccountingTransactionType.REFUND,
+                toLong(returnRequest.getOrder().getTotalPrice()),
+                returnRequest.getStatus().name(),
+                "승인된 반품 요청에 환불 회계 거래가 없습니다.",
+                returnRequest.getUpdatedAt()
+        )));
+
+        var missingReturnFeeCandidates = returnRequestRepository.findMissingAccountingTransactions(
+                ReturnStatus.APPROVED,
+                AccountingReferenceType.RETURN,
+                AccountingTransactionType.RETURN_FEE,
+                pageable
+        );
+        List<AccountingConsistencyIssueResponse> missingReturnFees = missingReturnFeeCandidates.stream()
+                .map(this::toReturnFeeIssue)
+                .flatMap(List::stream)
+                .toList();
+        issues.addAll(missingReturnFees);
+
+        var missingShippingCost = shipmentRepository.findMissingAccountingTransactions(
+                List.of(ShipmentStatus.IN_TRANSIT, ShipmentStatus.DELIVERED),
+                AccountingReferenceType.SHIPMENT,
+                AccountingTransactionType.SHIPPING_COST,
+                pageable
+        );
+        missingShippingCost.forEach(shipment -> issues.add(new AccountingConsistencyIssueResponse(
+                "MISSING_SHIPPING_COST",
+                "SHIPMENT",
+                shipment.getId(),
+                shipment.getOrder().getOrderNumber(),
+                AccountingTransactionType.SHIPPING_COST,
+                null,
+                shipment.getStatus().name(),
+                "배송중 또는 배송완료 처리된 배송 건에 택배비 매입 회계 거래가 없습니다.",
+                shipment.getUpdatedAt()
+        )));
+
+        return new AccountingConsistencyReportResponse(
+                missingRevenue.getTotalElements(),
+                missingRefund.getTotalElements(),
+                missingReturnRefund.getTotalElements(),
+                missingReturnFees.size(),
+                missingShippingCost.getTotalElements(),
+                issues
         );
     }
 
@@ -506,6 +609,29 @@ public class AccountingService {
 
     public PageResponse<AccountingTransactionResponse> getShippingCostEvents(int page, int size) {
         return getTransactions(null, AccountingTransactionType.SHIPPING_COST, null, null, null, null, null, page, size);
+    }
+
+    private List<AccountingConsistencyIssueResponse> toReturnFeeIssue(ReturnRequest returnRequest) {
+        return returnShipmentInfoRepository.findByReturnRequestId(returnRequest.getId())
+                .filter(info -> info.getShippingFee() != null)
+                .filter(info -> info.getShippingFee().signum() > 0)
+                .filter(info -> info.getFeePayer() != ReturnShippingFeePayer.UNDECIDED)
+                .map(info -> List.of(new AccountingConsistencyIssueResponse(
+                        "MISSING_RETURN_FEE",
+                        "RETURN",
+                        returnRequest.getId(),
+                        returnRequest.getOrder().getOrderNumber(),
+                        AccountingTransactionType.RETURN_FEE,
+                        info.getShippingFee().longValue(),
+                        returnRequest.getStatus().name(),
+                        "반품 배송비가 확정됐지만 반품 배송비 회계 거래가 없습니다.",
+                        returnRequest.getUpdatedAt()
+                )))
+                .orElseGet(List::of);
+    }
+
+    private Long toLong(Integer value) {
+        return value == null ? null : value.longValue();
     }
 
     private Specification<AccountingLedger> buildLedgerSpec(AccountingLedgerStatus status, String period) {

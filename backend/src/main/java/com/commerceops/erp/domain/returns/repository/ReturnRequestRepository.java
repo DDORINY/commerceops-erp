@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.returns.repository;
 
+import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
+import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
 import com.commerceops.erp.domain.returns.entity.ReturnRequest;
 import com.commerceops.erp.domain.returns.enums.ReturnStatus;
 import com.commerceops.erp.domain.user.entity.User;
@@ -28,6 +30,36 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
     Page<ReturnRequest> findAllForAdmin(
             @Param("status") ReturnStatus status,
             @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @Query(
+            value = """
+            SELECT r FROM ReturnRequest r JOIN FETCH r.order o
+            WHERE r.status = :status
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = r.id
+                    AND t.type = :transactionType
+              )
+            ORDER BY r.updatedAt DESC
+            """,
+            countQuery = """
+            SELECT COUNT(r) FROM ReturnRequest r
+            WHERE r.status = :status
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = r.id
+                    AND t.type = :transactionType
+              )
+            """
+    )
+    Page<ReturnRequest> findMissingAccountingTransactions(
+            @Param("status") ReturnStatus status,
+            @Param("referenceType") AccountingReferenceType referenceType,
+            @Param("transactionType") AccountingTransactionType transactionType,
             Pageable pageable
     );
 }

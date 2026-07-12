@@ -286,3 +286,13 @@
 - 관리자 회계 화면을 정상 한국어 문구로 정리했다.
 - 회계 요약, 회계 내역, 회계 원장, 최근 회계 거래, 택배비 비용, 정산 배치 섹션을 한 화면에 배치했다.
 - 정산 배치 생성/마감 전용 화면과 고급 차트는 후속 UI 고도화 범위로 이관한다.
+## v0.7.8 관리자 회계 정합성 화면
+
+- `frontend/src/app/admin/accounting/page.tsx`
+  - 회계 요약, 회계 내역, 원장, 거래, 택배비, 정산 배치 섹션을 유지한다.
+  - `GET /api/admin/accounting/consistency-report` 응답을 사용해 회계 정합성 점검 섹션을 표시한다.
+  - 매출/환불/반품/택배비 회계 거래 누락 후보 집계와 최근 이슈 목록을 한국어로 표시한다.
+
+- `frontend/src/lib/services/accountingService.ts`
+  - `ApiAccountingConsistencyReport`, `ApiAccountingConsistencyIssue` 타입을 추가했다.
+  - `getConsistencyReport(limit)` 호출 함수를 추가했다.

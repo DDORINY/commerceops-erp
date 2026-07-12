@@ -1,8 +1,12 @@
 package com.commerceops.erp.domain.payment.repository;
 
+import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
+import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.payment.entity.Payment;
 import com.commerceops.erp.domain.payment.enums.PaymentStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -50,5 +54,35 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Object[]> findMonthlySales(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
+    );
+
+    @Query(
+            value = """
+            SELECT p FROM Payment p JOIN FETCH p.order o
+            WHERE p.paymentStatus = :status
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = p.id
+                    AND t.type = :transactionType
+              )
+            ORDER BY p.updatedAt DESC
+            """,
+            countQuery = """
+            SELECT COUNT(p) FROM Payment p
+            WHERE p.paymentStatus = :status
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = p.id
+                    AND t.type = :transactionType
+              )
+            """
+    )
+    Page<Payment> findMissingAccountingTransactions(
+            @Param("status") PaymentStatus status,
+            @Param("referenceType") AccountingReferenceType referenceType,
+            @Param("transactionType") AccountingTransactionType transactionType,
+            Pageable pageable
     );
 }

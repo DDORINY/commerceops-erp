@@ -1,5 +1,7 @@
 package com.commerceops.erp.domain.shipment.repository;
 
+import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
+import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
 import com.commerceops.erp.domain.shipment.entity.Shipment;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
 import org.springframework.data.domain.Page;
@@ -9,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
@@ -30,6 +33,36 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     Page<Shipment> findAllForAdmin(
             @Param("status") ShipmentStatus status,
             @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @Query(
+            value = """
+            SELECT s FROM Shipment s JOIN FETCH s.order o
+            WHERE s.status IN :statuses
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = s.id
+                    AND t.type = :transactionType
+              )
+            ORDER BY s.updatedAt DESC
+            """,
+            countQuery = """
+            SELECT COUNT(s) FROM Shipment s
+            WHERE s.status IN :statuses
+              AND NOT EXISTS (
+                  SELECT t.id FROM AccountingTransaction t
+                  WHERE t.referenceType = :referenceType
+                    AND t.referenceId = s.id
+                    AND t.type = :transactionType
+              )
+            """
+    )
+    Page<Shipment> findMissingAccountingTransactions(
+            @Param("statuses") List<ShipmentStatus> statuses,
+            @Param("referenceType") AccountingReferenceType referenceType,
+            @Param("transactionType") AccountingTransactionType transactionType,
             Pageable pageable
     );
 }

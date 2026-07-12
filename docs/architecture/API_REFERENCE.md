@@ -446,3 +446,11 @@
 | 정산 배치 마감 | `PATCH /api/admin/accounting/settlements/{settlementId}/close` | `ACCOUNTING_CLOSE` |
 
 주요 회계 실행 작업은 감사 로그에 기록한다. 권한이 없는 사용자가 실행을 시도하면 `PERMISSION_DENIED` 감사 로그가 기록되고 403 응답을 반환한다.
+
+## v0.7.8 회계 정합성 점검 API
+
+| Method | Path | 권한 | 설명 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/accounting/consistency-report?limit=20` | `ACCOUNTING_READ` | 주문/결제/반품/배송 원천 데이터 기준으로 회계 거래 누락 후보를 조회한다. |
+
+응답은 누락 후보 집계와 이슈 목록을 포함한다. 이슈 유형은 `MISSING_REVENUE`, `MISSING_PAYMENT_REFUND`, `MISSING_RETURN_REFUND`, `MISSING_RETURN_FEE`, `MISSING_SHIPPING_COST`를 사용한다.
