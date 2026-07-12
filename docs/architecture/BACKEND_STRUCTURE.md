@@ -188,3 +188,13 @@ com.commerceops.erp
 - `closeBatch`는 중복 마감을 막고 `closedAt`, `closedBy`를 기록한다.
 - `AdminAccountingController`는 정산 목록/상세/생성/마감 API를 제공한다.
 - `SETTLEMENT_MANAGE`는 정산 생성, `ACCOUNTING_CLOSE`는 정산 마감 권한으로 사용한다.
+## v0.8.1 AI 데이터셋 추출 도메인
+
+- `domain/ai/controller/AdminAiDatasetController.java`
+  - AI 데이터셋 카탈로그와 샘플 export API를 제공한다.
+- `domain/ai/service/AiDatasetExportService.java`
+  - 상품, 주문, 리뷰, 회계 거래 데이터를 학습 후보 rows로 변환한다.
+- `domain/ai/dto/*`
+  - 데이터셋 카탈로그와 export 응답 DTO를 정의한다.
+- `domain/ai/enums/AiDatasetKey.java`
+  - 지원 데이터셋 key를 관리한다.

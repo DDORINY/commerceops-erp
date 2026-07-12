@@ -42,4 +42,5 @@ public final class PermissionCodes {
     public static final String STAFF_MANAGE = "STAFF_MANAGE";
     public static final String ROLE_MANAGE = "ROLE_MANAGE";
     public static final String AUDIT_LOG_READ = "AUDIT_LOG_READ";
+    public static final String AI_DATASET_EXPORT = "AI_DATASET_EXPORT";
 }
