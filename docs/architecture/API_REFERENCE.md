@@ -454,3 +454,13 @@
 | `GET` | `/api/admin/accounting/consistency-report?limit=20` | `ACCOUNTING_READ` | 주문/결제/반품/배송 원천 데이터 기준으로 회계 거래 누락 후보를 조회한다. |
 
 응답은 누락 후보 집계와 이슈 목록을 포함한다. 이슈 유형은 `MISSING_REVENUE`, `MISSING_PAYMENT_REFUND`, `MISSING_RETURN_REFUND`, `MISSING_RETURN_FEE`, `MISSING_SHIPPING_COST`를 사용한다.
+## v0.8.1 AI 데이터셋 추출 API
+
+관리자 AI 데이터셋 API는 `AI_DATASET_EXPORT` 권한이 필요하다.
+
+| Method | Path | 설명 |
+| --- | --- | --- |
+| `GET` | `/api/admin/ai/datasets` | export 가능한 AI 데이터셋 카탈로그를 조회한다. |
+| `GET` | `/api/admin/ai/datasets/{key}/export?limit=100` | 지정한 데이터셋의 샘플 rows를 JSON 형태로 조회한다. |
+
+지원하는 dataset key는 `PRODUCTS`, `ORDERS`, `REVIEWS`, `ACCOUNTING_TRANSACTIONS`다. 개인정보 마스킹과 파일 저장은 v0.8.2 이후 단계에서 확장한다.
