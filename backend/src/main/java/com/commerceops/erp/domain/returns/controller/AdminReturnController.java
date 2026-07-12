@@ -44,7 +44,8 @@ public class AdminReturnController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.ORDER_STATUS_CHANGE);
         return ApiResponse.ok(returnService.approveReturn(id,
-                request != null ? request : new ReturnAdminActionRequest(null)));
+                request != null ? request : new ReturnAdminActionRequest(null),
+                userDetails.getUser()));
     }
 
     @PatchMapping("/{id}/reject")

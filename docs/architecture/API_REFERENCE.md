@@ -395,3 +395,16 @@
 - 완전한 감사 로그 시스템. 현재는 리뷰 숨김/해제/삭제와 상품 상태 변경/대량 변경/운영 메모 작성 이력을 최소 기록한다.
 - 고급 BI, 복식부기, 정산 리포트 API는 미구현이다. v0.2.8 기준으로는 `/api/admin/ops-analytics/overview`에서 기초 운영 지표만 제공한다.
 - 피킹, 패킹, 출고 자동화 API.
+
+## v0.7.3 환불/반품 배송비 회계 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `POST` | `/api/admin/accounting/payments/{paymentId}/recognize-refund` | 결제 환불 회계 거래 수동 반영 | `PAYMENT_REFUND` |
+| `POST` | `/api/admin/accounting/returns/{returnId}/recognize-refund` | 반품 승인 환불 회계 거래 수동 반영 | `PAYMENT_REFUND` |
+| `POST` | `/api/admin/accounting/returns/{returnId}/recognize-return-fee` | 반품 배송비 회계 거래 수동 반영 | `RETURN_FEE_MANAGE` |
+| `GET` | `/api/admin/accounting/returns/{returnId}/return-fee` | 반품 배송비 회계 반영 상태 조회 | `ACCOUNTING_READ` |
+| `GET` | `/api/admin/accounting/refund-events` | 환불 회계 거래 목록 조회 | `ACCOUNTING_READ` |
+| `GET` | `/api/admin/accounting/return-fees` | 반품 배송비 회계 거래 목록 조회 | `ACCOUNTING_READ` |
+
+`AccountingRecognitionResponse`는 거래 유형, 참조 유형/ID, 원천 주문/반품/결제 정보, 금액, 회계 거래 생성 여부, 거래 번호, 발생 일시, 메시지를 반환한다.

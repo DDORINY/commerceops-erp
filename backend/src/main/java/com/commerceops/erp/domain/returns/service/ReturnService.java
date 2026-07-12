@@ -99,7 +99,7 @@ public class ReturnService {
     }
 
     @Transactional
-    public ReturnResponse approveReturn(Long returnId, ReturnAdminActionRequest request) {
+    public ReturnResponse approveReturn(Long returnId, ReturnAdminActionRequest request, User actor) {
         ReturnRequest returnRequest = findReturn(returnId);
         if (returnRequest.getStatus() != ReturnStatus.REQUESTED) {
             throw new BusinessException(ErrorCode.RETURN_ALREADY_PROCESSED);
@@ -128,9 +128,15 @@ public class ReturnService {
         order.updateStatus(OrderStatus.REFUNDED);
 
         accountingService.recordRefund(order.getOrderNumber(), order.getTotalPrice());
+        accountingService.recognizeReturnRefund(returnRequest, actor);
         notifyReturnProcessed(returnRequest);
 
         return ReturnResponse.from(returnRequest);
+    }
+
+    @Transactional
+    public ReturnResponse approveReturn(Long returnId, ReturnAdminActionRequest request) {
+        return approveReturn(returnId, request, null);
     }
 
     @Transactional
@@ -188,6 +194,7 @@ public class ReturnService {
         }
 
         ReturnShipmentInfo saved = returnShipmentInfoRepository.save(info);
+        accountingService.recognizeReturnShippingFee(saved, actor);
         AuditActionType action = resolveReturnShipmentAction(created, beforeStatus, saved.getStatus().name());
         auditLogService.record(actor, action, "RETURN_SHIPMENT", saved.getId(),
                 beforeStatus, saved.getStatus().name(),

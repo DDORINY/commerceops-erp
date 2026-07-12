@@ -82,6 +82,20 @@ export interface ApiOrderRevenueRecognition {
   message: string;
 }
 
+export interface ApiAccountingRecognition {
+  transactionType: ApiAccountingTransactionType;
+  referenceType: ApiAccountingReferenceType;
+  referenceId: number;
+  sourceId: number;
+  sourceNumber: string;
+  amount: number;
+  recognized: boolean;
+  transactionId: number | null;
+  transactionNumber: string | null;
+  occurredAt: string | null;
+  message: string;
+}
+
 export const accountingService = {
   getSummary: () => apiClient<ApiAccountingSummary>('/admin/accounting/summary'),
 
@@ -137,5 +151,37 @@ export const accountingService = {
     qs.set('page', String(page));
     qs.set('size', String(size));
     return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/revenue-events?${qs.toString()}`);
+  },
+
+  recognizePaymentRefund: (paymentId: number) =>
+    apiClient<ApiAccountingRecognition>(`/admin/accounting/payments/${paymentId}/recognize-refund`, {
+      method: 'POST',
+    }),
+
+  recognizeReturnRefund: (returnId: number) =>
+    apiClient<ApiAccountingRecognition>(`/admin/accounting/returns/${returnId}/recognize-refund`, {
+      method: 'POST',
+    }),
+
+  recognizeReturnFee: (returnId: number) =>
+    apiClient<ApiAccountingRecognition>(`/admin/accounting/returns/${returnId}/recognize-return-fee`, {
+      method: 'POST',
+    }),
+
+  getReturnFeeAccounting: (returnId: number) =>
+    apiClient<ApiAccountingRecognition>(`/admin/accounting/returns/${returnId}/return-fee`),
+
+  getRefundEvents: (page = 0, size = 20) => {
+    const qs = new URLSearchParams();
+    qs.set('page', String(page));
+    qs.set('size', String(size));
+    return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/refund-events?${qs.toString()}`);
+  },
+
+  getReturnFeeEvents: (page = 0, size = 20) => {
+    const qs = new URLSearchParams();
+    qs.set('page', String(page));
+    qs.set('size', String(size));
+    return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/return-fees?${qs.toString()}`);
   },
 };
