@@ -1385,4 +1385,4 @@ v0.2.0 완료 조건:
 - [x] backend test 검증
 - [x] frontend lint 검증
 - [x] frontend build 검증
-- [ ] main 병합 및 `v0.7.7` 태그 생성
+- [x] main 병합 및 `v0.7.7` 태그 생성
