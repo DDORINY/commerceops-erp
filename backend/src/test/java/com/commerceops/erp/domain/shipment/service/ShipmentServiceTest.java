@@ -1,6 +1,7 @@
 package com.commerceops.erp.domain.shipment.service;
 
 import com.commerceops.erp.domain.audit.service.AuditLogService;
+import com.commerceops.erp.domain.accounting.service.AccountingService;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
@@ -24,6 +25,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class ShipmentServiceTest {
@@ -39,6 +43,9 @@ class ShipmentServiceTest {
 
     @Mock
     private AuditLogService auditLogService;
+
+    @Mock
+    private AccountingService accountingService;
 
     @InjectMocks
     private ShipmentService shipmentService;
@@ -66,6 +73,7 @@ class ShipmentServiceTest {
         assertThat(response.trackingNumberSource()).isEqualTo("MANUAL");
         assertThat(response.trackingNumberIssuedAt()).isNotNull();
         assertThat(response.shippedAt()).isNotNull();
+        verify(accountingService).recognizeShippingCost(eq(shipment), any(User.class));
     }
 
     @Test

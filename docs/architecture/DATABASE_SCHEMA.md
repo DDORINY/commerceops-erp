@@ -200,3 +200,21 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 - v0.6.4 기준 `shipment_labels`는 송장 라벨 생성과 출력 이력을 저장한다. 송장번호와 택배사는 생성 시점 snapshot으로 저장하며, 실제 프린터 드라이버/PDF 출력은 제공하지 않는다.
 - v0.6.5 기준 `shipment_tracking_events`는 배송 상태 변경과 수동 추적 이벤트를 저장한다. 실제 택배사 tracking API 연동과 웹훅 자동 갱신은 후속 범위다.
 - `media_files` 운영 DDL과 인덱스는 `V1__initial_schema.sql`에 포함했다.
+
+## v0.7.4 택배비 매입/배송비 정산 DB
+
+`shipping_cost_entries` 테이블을 추가했다.
+
+| 컬럼 | 설명 |
+| --- | --- |
+| `id` | 택배비 비용 항목 ID |
+| `shipment_id` | 배송 ID, 1건당 1개 항목으로 unique 처리 |
+| `carrier_id` | 택배사 ID |
+| `shipping_method_id` | 배송 방법 ID |
+| `cost_amount` | 내부 택배비 매입 비용 |
+| `charged_amount` | 고객 청구 배송비. 현재 주문 배송비 컬럼이 없어 0으로 저장 |
+| `occurred_at` | 비용 발생 일시 |
+| `settlement_status` | `PENDING`, `SETTLED`, `EXCLUDED` |
+| `memo` | 처리 메모 |
+
+`SHIPPING_COST_MANAGE` 권한 seed도 함께 추가했다.

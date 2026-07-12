@@ -6,17 +6,21 @@ import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
 import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
+import com.commerceops.erp.domain.accounting.dto.ShippingCostEntryResponse;
 import com.commerceops.erp.domain.accounting.entity.AccountingEntry;
 import com.commerceops.erp.domain.accounting.entity.AccountingLedger;
 import com.commerceops.erp.domain.accounting.entity.AccountingTransaction;
+import com.commerceops.erp.domain.accounting.entity.ShippingCostEntry;
 import com.commerceops.erp.domain.accounting.enums.AccountingEntryType;
 import com.commerceops.erp.domain.accounting.enums.AccountingLedgerStatus;
 import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
 import com.commerceops.erp.domain.accounting.enums.AccountingTransactionDirection;
 import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
+import com.commerceops.erp.domain.accounting.enums.ShippingCostSettlementStatus;
 import com.commerceops.erp.domain.accounting.repository.AccountingEntryRepository;
 import com.commerceops.erp.domain.accounting.repository.AccountingLedgerRepository;
 import com.commerceops.erp.domain.accounting.repository.AccountingTransactionRepository;
+import com.commerceops.erp.domain.accounting.repository.ShippingCostEntryRepository;
 import com.commerceops.erp.domain.audit.enums.AuditActionType;
 import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.order.entity.Order;
@@ -31,6 +35,13 @@ import com.commerceops.erp.domain.returns.enums.ReturnShippingFeePayer;
 import com.commerceops.erp.domain.returns.enums.ReturnStatus;
 import com.commerceops.erp.domain.returns.repository.ReturnRequestRepository;
 import com.commerceops.erp.domain.returns.repository.ReturnShipmentInfoRepository;
+import com.commerceops.erp.domain.shipment.entity.Shipment;
+import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
+import com.commerceops.erp.domain.shipment.repository.ShipmentRepository;
+import com.commerceops.erp.domain.shipping.entity.Carrier;
+import com.commerceops.erp.domain.shipping.entity.ShippingMethod;
+import com.commerceops.erp.domain.shipping.repository.CarrierRepository;
+import com.commerceops.erp.domain.shipping.repository.ShippingMethodRepository;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
@@ -53,10 +64,14 @@ public class AccountingService {
     private final AccountingEntryRepository accountingEntryRepository;
     private final AccountingLedgerRepository accountingLedgerRepository;
     private final AccountingTransactionRepository accountingTransactionRepository;
+    private final ShippingCostEntryRepository shippingCostEntryRepository;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final ReturnRequestRepository returnRequestRepository;
     private final ReturnShipmentInfoRepository returnShipmentInfoRepository;
+    private final ShipmentRepository shipmentRepository;
+    private final CarrierRepository carrierRepository;
+    private final ShippingMethodRepository shippingMethodRepository;
     private final AuditLogService auditLogService;
 
     @Transactional
@@ -379,6 +394,120 @@ public class AccountingService {
         return getTransactions(null, AccountingTransactionType.RETURN_FEE, null, null, null, null, null, page, size);
     }
 
+    @Transactional
+    public AccountingRecognitionResponse recognizeShippingCost(Long shipmentId, User actor) {
+        Shipment shipment = shipmentRepository.findById(shipmentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SHIPMENT_NOT_FOUND));
+        return recognizeShippingCost(shipment, actor);
+    }
+
+    @Transactional
+    public AccountingRecognitionResponse recognizeShippingCost(Shipment shipment, User actor) {
+        if (shipment.getStatus() != ShipmentStatus.IN_TRANSIT && shipment.getStatus() != ShipmentStatus.DELIVERED) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "배송중 또는 배송완료 상태에서만 택배비 회계 거래를 생성할 수 있습니다.");
+        }
+
+        var existing = accountingTransactionRepository
+                .findFirstByReferenceTypeAndReferenceIdAndTypeOrderByOccurredAtDesc(
+                        AccountingReferenceType.SHIPMENT,
+                        shipment.getId(),
+                        AccountingTransactionType.SHIPPING_COST
+                )
+                .orElse(null);
+        if (existing != null) {
+            if (actor != null) {
+                auditLogService.record(
+                        actor,
+                        AuditActionType.ACCOUNTING_TRANSACTION_DUPLICATE_SKIPPED,
+                        "SHIPMENT",
+                        shipment.getId(),
+                        null,
+                        existing.getTransactionNumber(),
+                        "이미 배송비 회계 거래가 있어 중복 생성을 건너뛰었습니다."
+                );
+            }
+            return AccountingRecognitionResponse.from(
+                    AccountingTransactionType.SHIPPING_COST,
+                    AccountingReferenceType.SHIPMENT,
+                    shipment.getId(),
+                    shipment.getOrder().getId(),
+                    shipment.getOrder().getOrderNumber(),
+                    existing.getAmount(),
+                    existing,
+                    "이미 배송비 회계 거래가 있습니다."
+            );
+        }
+
+        Carrier carrier = resolveCarrier(shipment.getCarrier());
+        ShippingMethod method = resolveShippingMethod(carrier);
+        long costAmount = method != null && method.getDefaultFee() != null ? method.getDefaultFee().longValue() : 0L;
+        if (costAmount <= 0) {
+            return AccountingRecognitionResponse.from(
+                    AccountingTransactionType.SHIPPING_COST,
+                    AccountingReferenceType.SHIPMENT,
+                    shipment.getId(),
+                    shipment.getOrder().getId(),
+                    shipment.getOrder().getOrderNumber(),
+                    0L,
+                    null,
+                    "배송 방법 기본 택배비가 없어 회계 거래를 생성하지 않았습니다."
+            );
+        }
+
+        ShippingCostEntry entry = shippingCostEntryRepository.findByShipmentId(shipment.getId())
+                .orElseGet(() -> shippingCostEntryRepository.save(ShippingCostEntry.builder()
+                        .shipment(shipment)
+                        .carrier(carrier)
+                        .shippingMethod(method)
+                        .costAmount(costAmount)
+                        .chargedAmount(0L)
+                        .occurredAt(LocalDateTime.now())
+                        .settlementStatus(ShippingCostSettlementStatus.PENDING)
+                        .memo("택배비 매입 회계 후보 - 주문번호: " + shipment.getOrder().getOrderNumber())
+                        .build()));
+
+        AccountingTransaction transaction = saveTransactionIfAbsent(
+                "SHIP-COST-" + shipment.getId(),
+                AccountingTransactionType.SHIPPING_COST,
+                AccountingTransactionDirection.EXPENSE,
+                entry.getCostAmount(),
+                AccountingReferenceType.SHIPMENT,
+                shipment.getId(),
+                "택배비 매입 회계 반영 - 주문번호: " + shipment.getOrder().getOrderNumber(),
+                actor,
+                AuditActionType.SHIPPING_COST_ACCOUNTING_RECOGNIZED,
+                "SHIPMENT",
+                shipment.getId()
+        );
+        return AccountingRecognitionResponse.from(
+                AccountingTransactionType.SHIPPING_COST,
+                AccountingReferenceType.SHIPMENT,
+                shipment.getId(),
+                shipment.getOrder().getId(),
+                shipment.getOrder().getOrderNumber(),
+                entry.getCostAmount(),
+                transaction,
+                "택배비 매입 거래가 회계에 반영되었습니다."
+        );
+    }
+
+    public ShippingCostEntryResponse getShippingCostEntry(Long shipmentId) {
+        return shippingCostEntryRepository.findByShipmentId(shipmentId)
+                .map(ShippingCostEntryResponse::from)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+    }
+
+    public PageResponse<ShippingCostEntryResponse> getShippingCostEntries(int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(1, Math.min(size, 100)),
+                Sort.by("occurredAt").descending().and(Sort.by("createdAt").descending()));
+        return PageResponse.from(shippingCostEntryRepository.findAllByOrderByOccurredAtDesc(pageable)
+                .map(ShippingCostEntryResponse::from));
+    }
+
+    public PageResponse<AccountingTransactionResponse> getShippingCostEvents(int page, int size) {
+        return getTransactions(null, AccountingTransactionType.SHIPPING_COST, null, null, null, null, null, page, size);
+    }
+
     private Specification<AccountingLedger> buildLedgerSpec(AccountingLedgerStatus status, String period) {
         return (root, query, cb) -> {
             var predicates = cb.conjunction();
@@ -445,6 +574,22 @@ public class AccountingService {
                 && payment.getPaymentStatus() != PaymentStatus.CANCELLED) {
             throw new BusinessException(ErrorCode.PAYMENT_FAILED);
         }
+    }
+
+    private Carrier resolveCarrier(String carrierNameOrCode) {
+        if (carrierNameOrCode == null || carrierNameOrCode.isBlank()) {
+            return null;
+        }
+        return carrierRepository.findFirstByCodeIgnoreCaseOrNameIgnoreCase(carrierNameOrCode.trim(), carrierNameOrCode.trim())
+                .orElse(null);
+    }
+
+    private ShippingMethod resolveShippingMethod(Carrier carrier) {
+        if (carrier != null) {
+            return shippingMethodRepository.findFirstByCarrierIdAndActiveTrueOrderByIdAsc(carrier.getId())
+                    .orElse(null);
+        }
+        return shippingMethodRepository.findFirstByActiveTrueOrderByIdAsc().orElse(null);
     }
 
     private AccountingTransaction saveTransactionIfAbsent(

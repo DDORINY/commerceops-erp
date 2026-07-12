@@ -172,3 +172,11 @@ com.commerceops.erp
 - `ReturnService`는 반품 승인과 반품 배송 정보 저장 시 환불/반품 배송비 회계 거래 생성을 호출한다.
 - `AdminAccountingController`는 환불/반품 배송비 수동 반영과 이벤트 목록 조회 API를 제공한다.
 - `RETURN_FEE_MANAGE` 권한은 반품 배송비 회계 처리 실행 권한으로 사용한다.
+
+## v0.7.4 택배비 매입/배송비 정산 처리
+
+- `ShippingCostEntry`는 배송 건별 내부 택배비 매입 비용과 고객 청구 배송비 후보를 저장한다.
+- `AccountingService`는 배송 건의 `SHIPPING_COST` 회계 거래를 생성한다.
+- `ShipmentService`는 운송장 입력, 운송장 자동 생성, 배송 상태 변경 시 택배비 회계 반영을 시도한다.
+- `AdminAccountingController`는 배송비 수동 반영, 배송비 항목 조회, 배송비 거래 목록 API를 제공한다.
+- `SHIPPING_COST_MANAGE` 권한은 택배비 비용 회계 반영 실행 권한으로 사용한다.

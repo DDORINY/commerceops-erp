@@ -96,6 +96,25 @@ export interface ApiAccountingRecognition {
   message: string;
 }
 
+export interface ApiShippingCostEntry {
+  id: number;
+  shipmentId: number;
+  orderId: number;
+  orderNumber: string;
+  carrierId: number | null;
+  carrierName: string | null;
+  shippingMethodId: number | null;
+  shippingMethodName: string | null;
+  costAmount: number;
+  chargedAmount: number;
+  marginAmount: number;
+  settlementStatus: string;
+  occurredAt: string;
+  memo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const accountingService = {
   getSummary: () => apiClient<ApiAccountingSummary>('/admin/accounting/summary'),
 
@@ -183,5 +202,27 @@ export const accountingService = {
     qs.set('page', String(page));
     qs.set('size', String(size));
     return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/return-fees?${qs.toString()}`);
+  },
+
+  recognizeShippingCost: (shipmentId: number) =>
+    apiClient<ApiAccountingRecognition>(`/admin/accounting/shipments/${shipmentId}/recognize-shipping-cost`, {
+      method: 'POST',
+    }),
+
+  getShippingCost: (shipmentId: number) =>
+    apiClient<ApiShippingCostEntry>(`/admin/accounting/shipments/${shipmentId}/shipping-cost`),
+
+  getShippingCosts: (page = 0, size = 20) => {
+    const qs = new URLSearchParams();
+    qs.set('page', String(page));
+    qs.set('size', String(size));
+    return apiClient<PageResponse<ApiShippingCostEntry>>(`/admin/accounting/shipping-costs?${qs.toString()}`);
+  },
+
+  getShippingCostEvents: (page = 0, size = 20) => {
+    const qs = new URLSearchParams();
+    qs.set('page', String(page));
+    qs.set('size', String(size));
+    return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/shipping-cost-events?${qs.toString()}`);
   },
 };

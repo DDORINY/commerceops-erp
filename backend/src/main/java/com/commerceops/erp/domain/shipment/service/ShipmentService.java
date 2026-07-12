@@ -2,6 +2,7 @@ package com.commerceops.erp.domain.shipment.service;
 
 import com.commerceops.erp.domain.audit.enums.AuditActionType;
 import com.commerceops.erp.domain.audit.service.AuditLogService;
+import com.commerceops.erp.domain.accounting.service.AccountingService;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
@@ -51,6 +52,7 @@ public class ShipmentService {
     private final ShipmentTrackingEventRepository shipmentTrackingEventRepository;
     private final OrderRepository orderRepository;
     private final WarehouseFulfillmentService warehouseFulfillmentService;
+    private final AccountingService accountingService;
     private final AuditLogService auditLogService;
 
     public PageResponse<ShipmentResponse> getAdminShipments(ShipmentStatus status, String keyword, int page, int size) {
@@ -110,6 +112,7 @@ public class ShipmentService {
                 before, shipment.getTrackingNumber(), "송장번호를 수동 저장했습니다: " + shipment.getTrackingNumber(),
                 "{\"trackingNumber\":\"" + escapeJson(before) + "\"}", toTrackingJson(shipment), null);
 
+        accountingService.recognizeShippingCost(shipment, actor);
         return ShipmentResponse.from(shipment);
     }
 
@@ -130,6 +133,7 @@ public class ShipmentService {
             order.updateStatus(OrderStatus.SHIPPING);
         }
         shipment.updateTracking(generateTrackingNumberCandidate(), carrier, TrackingNumberSource.SYSTEM);
+        accountingService.recognizeShippingCost(shipment, actor);
         auditLogService.record(actor, AuditActionType.TRACKING_NUMBER_GENERATED, "SHIPMENT", shipment.getId(),
                 before, shipment.getTrackingNumber(), "송장번호를 자동 생성했습니다: " + shipment.getTrackingNumber(),
                 "{\"trackingNumber\":\"" + escapeJson(before) + "\"}", toTrackingJson(shipment), null);
@@ -181,6 +185,9 @@ public class ShipmentService {
         shipment.changeStatus(request.status());
         saveTrackingEvent(shipment, request.status(), defaultDescription(request.description(), request.status()), null);
         syncOrderStatusByShipment(shipment);
+        if (request.status() == ShipmentStatus.IN_TRANSIT || request.status() == ShipmentStatus.DELIVERED) {
+            accountingService.recognizeShippingCost(shipment, actor);
+        }
         auditLogService.record(actor, AuditActionType.SHIPMENT_STATUS_CHANGED, "SHIPMENT", shipment.getId(),
                 before.name(), request.status().name(), "배송 상태를 변경했습니다: " + request.status().name(),
                 null, toTrackingJson(shipment), null);

@@ -6,6 +6,7 @@ import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
 import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
+import com.commerceops.erp.domain.accounting.dto.ShippingCostEntryResponse;
 import com.commerceops.erp.domain.accounting.enums.AccountingEntryType;
 import com.commerceops.erp.domain.accounting.enums.AccountingLedgerStatus;
 import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
@@ -180,5 +181,43 @@ public class AdminAccountingController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
         return ApiResponse.ok(accountingService.getReturnFeeEvents(page, size));
+    }
+
+    @PostMapping("/shipments/{shipmentId}/recognize-shipping-cost")
+    public ApiResponse<AccountingRecognitionResponse> recognizeShippingCost(
+            @PathVariable Long shipmentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SHIPPING_COST_MANAGE);
+        return ApiResponse.ok(accountingService.recognizeShippingCost(shipmentId, userDetails.getUser()));
+    }
+
+    @GetMapping("/shipments/{shipmentId}/shipping-cost")
+    public ApiResponse<ShippingCostEntryResponse> getShippingCost(
+            @PathVariable Long shipmentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getShippingCostEntry(shipmentId));
+    }
+
+    @GetMapping("/shipping-costs")
+    public ApiResponse<PageResponse<ShippingCostEntryResponse>> getShippingCosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getShippingCostEntries(page, size));
+    }
+
+    @GetMapping("/shipping-cost-events")
+    public ApiResponse<PageResponse<AccountingTransactionResponse>> getShippingCostEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getShippingCostEvents(page, size));
     }
 }
