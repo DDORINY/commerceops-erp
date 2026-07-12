@@ -1402,3 +1402,19 @@ v0.2.0 완료 조건:
 - [x] frontend lint 검증
 - [x] frontend build 검증
 - [x] main 병합 및 `v0.7.8` 태그 생성
+
+### v0.7.9 체크리스트
+
+목적: v0.7 회계/정산 고도화 작업을 최종 검증하고 v0.8 AI 데이터셋 구축 범위로 이관할 후보를 정리한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.7.9-accounting-release-verification` 브랜치 생성
+- [x] v0.7.0 ~ v0.7.8 태그 확인
+- [x] v0.7.0 ~ v0.7.8 체크리스트 확인
+- [x] v0.7 구현 범위 문서 기준 검증
+- [x] v0.8 AI 데이터셋 계획 문서 생성
+- [x] 관련 문서 갱신
+- [x] backend test 검증
+- [x] frontend lint 검증
+- [x] frontend build 검증
+- [ ] main 병합 및 `v0.7.9` 태그 생성
