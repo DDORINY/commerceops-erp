@@ -92,3 +92,9 @@ SUPER_ADMIN은 전체 권한을 보유한다. 기존 role 기반 1차 관리자 
 - `RETURN_FEE_MANAGE`: 반품 배송비 회계 반영 작업을 수행할 수 있는 권한이다.
 - 결제 환불 회계 반영은 기존 `PAYMENT_REFUND` 권한을 사용한다.
 - 환불/반품 배송비 회계 거래 조회는 `ACCOUNTING_READ` 권한을 사용한다.
+
+## v0.7.4 회계 권한 보강
+
+- `SHIPPING_COST_MANAGE`: 택배비 비용 회계 반영 작업을 수행할 수 있는 권한이다.
+- 택배비 비용 항목과 회계 거래 조회는 `ACCOUNTING_READ` 권한을 사용한다.
+- `SUPER_ADMIN`과 `ADMIN` 기본 권한 그룹에 `SHIPPING_COST_MANAGE`를 부여한다.

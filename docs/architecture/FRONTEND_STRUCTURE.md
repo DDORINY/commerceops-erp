@@ -269,3 +269,9 @@
 - `accountingService`에 결제 환불, 반품 환불, 반품 배송비 회계 반영 API 호출 메서드를 추가했다.
 - `getRefundEvents`, `getReturnFeeEvents`로 환불 거래와 반품 배송비 거래 목록을 조회할 수 있다.
 - 관리자 회계 화면은 기존 구조를 유지하고, 상세 리포트 UI 고도화는 v0.7.6에서 확장한다.
+
+## v0.7.4 회계 프론트 서비스
+
+- `accountingService`에 택배비 비용 항목 조회와 수동 회계 반영 API 호출 메서드를 추가했다.
+- `getShippingCosts`, `getShippingCostEvents`로 비용 항목과 회계 거래를 분리 조회할 수 있다.
+- 관리자 회계 리포트 화면 고도화는 v0.7.6에서 확장한다.

@@ -408,3 +408,14 @@
 | `GET` | `/api/admin/accounting/return-fees` | 반품 배송비 회계 거래 목록 조회 | `ACCOUNTING_READ` |
 
 `AccountingRecognitionResponse`는 거래 유형, 참조 유형/ID, 원천 주문/반품/결제 정보, 금액, 회계 거래 생성 여부, 거래 번호, 발생 일시, 메시지를 반환한다.
+
+## v0.7.4 택배비 매입/배송비 정산 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `POST` | `/api/admin/accounting/shipments/{shipmentId}/recognize-shipping-cost` | 배송 건의 택배비 비용 회계 거래 수동 반영 | `SHIPPING_COST_MANAGE` |
+| `GET` | `/api/admin/accounting/shipments/{shipmentId}/shipping-cost` | 배송 건의 택배비 비용 항목 조회 | `ACCOUNTING_READ` |
+| `GET` | `/api/admin/accounting/shipping-costs` | 택배비 비용 항목 목록 조회 | `ACCOUNTING_READ` |
+| `GET` | `/api/admin/accounting/shipping-cost-events` | 택배비 회계 거래 목록 조회 | `ACCOUNTING_READ` |
+
+`ShippingCostEntryResponse`는 배송 ID, 주문 번호, 택배사, 배송 방법, 비용 금액, 고객 청구 금액, 차액, 정산 상태, 발생 일시를 반환한다.
