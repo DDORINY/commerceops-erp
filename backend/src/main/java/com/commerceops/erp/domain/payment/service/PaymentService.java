@@ -134,7 +134,7 @@ public class PaymentService {
         }
 
         validateCancelable(order);
-        orderCancellationService.cancel(order);
+        orderCancellationService.cancel(order, user);
         return PaymentResponse.from(payment, order);
     }
 

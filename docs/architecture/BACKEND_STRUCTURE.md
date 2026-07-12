@@ -164,3 +164,11 @@ com.commerceops.erp
 - `PATCH /api/admin/products/bulk-status`: 선택 상품의 판매 상태와 전시 상태를 전체 성공/전체 실패 방식으로 일괄 변경한다.
 - `GET /api/admin/products/{productId}/status-history`: 최근 상태 변경 이력을 조회한다.
 - `GET /api/admin/products/{productId}/operation-notes`, `POST /api/admin/products/{productId}/operation-notes`: 상품 운영 메모 조회/작성.
+
+## v0.7.3 환불/반품 배송비 회계 처리
+
+- `AccountingService`는 결제 환불, 반품 승인 환불, 반품 배송비를 `accounting_transactions`에 반영한다.
+- `PaymentService`와 `OrderCancellationService`는 결제 취소/환불 시 환불 회계 거래 생성을 호출한다.
+- `ReturnService`는 반품 승인과 반품 배송 정보 저장 시 환불/반품 배송비 회계 거래 생성을 호출한다.
+- `AdminAccountingController`는 환불/반품 배송비 수동 반영과 이벤트 목록 조회 API를 제공한다.
+- `RETURN_FEE_MANAGE` 권한은 반품 배송비 회계 처리 실행 권한으로 사용한다.

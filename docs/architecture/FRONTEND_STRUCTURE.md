@@ -263,3 +263,9 @@
 - `frontend/src/lib/services/shippingSettingService.ts`: `/api/admin/carriers`와 `/api/admin/shipping-methods` 호출 타입과 함수.
 - `frontend/src/lib/adminMenu.ts`: 주문/배송/CS 관리 그룹에 `택배사 관리`, `배송 방법 관리` 메뉴를 추가한다.
 - 두 화면 모두 `CARRIER_MANAGE` permission 기준으로 노출/실행한다.
+
+## v0.7.3 회계 프론트 서비스
+
+- `accountingService`에 결제 환불, 반품 환불, 반품 배송비 회계 반영 API 호출 메서드를 추가했다.
+- `getRefundEvents`, `getReturnFeeEvents`로 환불 거래와 반품 배송비 거래 목록을 조회할 수 있다.
+- 관리자 회계 화면은 기존 구조를 유지하고, 상세 리포트 UI 고도화는 v0.7.6에서 확장한다.

@@ -2,6 +2,7 @@ package com.commerceops.erp.domain.accounting.service;
 
 import com.commerceops.erp.domain.accounting.dto.AccountingEntryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingLedgerResponse;
+import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
 import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
@@ -21,7 +22,15 @@ import com.commerceops.erp.domain.audit.service.AuditLogService;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
+import com.commerceops.erp.domain.payment.entity.Payment;
 import com.commerceops.erp.domain.payment.enums.PaymentStatus;
+import com.commerceops.erp.domain.payment.repository.PaymentRepository;
+import com.commerceops.erp.domain.returns.entity.ReturnRequest;
+import com.commerceops.erp.domain.returns.entity.ReturnShipmentInfo;
+import com.commerceops.erp.domain.returns.enums.ReturnShippingFeePayer;
+import com.commerceops.erp.domain.returns.enums.ReturnStatus;
+import com.commerceops.erp.domain.returns.repository.ReturnRequestRepository;
+import com.commerceops.erp.domain.returns.repository.ReturnShipmentInfoRepository;
 import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
@@ -45,6 +54,9 @@ public class AccountingService {
     private final AccountingLedgerRepository accountingLedgerRepository;
     private final AccountingTransactionRepository accountingTransactionRepository;
     private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+    private final ReturnRequestRepository returnRequestRepository;
+    private final ReturnShipmentInfoRepository returnShipmentInfoRepository;
     private final AuditLogService auditLogService;
 
     @Transactional
@@ -210,6 +222,163 @@ public class AccountingService {
         return getTransactions(null, AccountingTransactionType.SALES, null, null, null, null, null, page, size);
     }
 
+    @Transactional
+    public AccountingRecognitionResponse recognizePaymentRefund(Long paymentId, User actor) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+        return recognizePaymentRefund(payment, actor);
+    }
+
+    @Transactional
+    public AccountingRecognitionResponse recognizePaymentRefund(Payment payment, User actor) {
+        validateRefundRecognizable(payment);
+        AccountingTransaction transaction = saveTransactionIfAbsent(
+                "REFUND-PAYMENT-" + payment.getId(),
+                AccountingTransactionType.REFUND,
+                AccountingTransactionDirection.EXPENSE,
+                payment.getPaidAmount() != null ? payment.getPaidAmount().longValue() : 0L,
+                AccountingReferenceType.PAYMENT,
+                payment.getId(),
+                "결제 환불 회계 반영 - 주문번호: " + payment.getOrder().getOrderNumber(),
+                actor,
+                AuditActionType.REFUND_ACCOUNTING_RECOGNIZED,
+                "PAYMENT",
+                payment.getId()
+        );
+        return AccountingRecognitionResponse.from(
+                AccountingTransactionType.REFUND,
+                AccountingReferenceType.PAYMENT,
+                payment.getId(),
+                payment.getOrder().getId(),
+                payment.getOrder().getOrderNumber(),
+                payment.getPaidAmount() != null ? payment.getPaidAmount().longValue() : 0L,
+                transaction,
+                transaction != null ? "결제 환불 거래가 회계에 반영되었습니다." : "환불 거래 생성 조건을 충족하지 않습니다."
+        );
+    }
+
+    @Transactional
+    public AccountingRecognitionResponse recognizeReturnRefund(Long returnId, User actor) {
+        ReturnRequest returnRequest = returnRequestRepository.findById(returnId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RETURN_NOT_FOUND));
+        return recognizeReturnRefund(returnRequest, actor);
+    }
+
+    @Transactional
+    public AccountingRecognitionResponse recognizeReturnRefund(ReturnRequest returnRequest, User actor) {
+        if (returnRequest.getStatus() != ReturnStatus.APPROVED) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        Order order = returnRequest.getOrder();
+        AccountingTransaction transaction = saveTransactionIfAbsent(
+                "REFUND-RETURN-" + returnRequest.getId(),
+                AccountingTransactionType.REFUND,
+                AccountingTransactionDirection.EXPENSE,
+                order.getTotalPrice().longValue(),
+                AccountingReferenceType.RETURN,
+                returnRequest.getId(),
+                "반품 환불 회계 반영 - 주문번호: " + order.getOrderNumber(),
+                actor,
+                AuditActionType.REFUND_ACCOUNTING_RECOGNIZED,
+                "RETURN",
+                returnRequest.getId()
+        );
+        return AccountingRecognitionResponse.from(
+                AccountingTransactionType.REFUND,
+                AccountingReferenceType.RETURN,
+                returnRequest.getId(),
+                order.getId(),
+                order.getOrderNumber(),
+                order.getTotalPrice().longValue(),
+                transaction,
+                "반품 환불 거래가 회계에 반영되었습니다."
+        );
+    }
+
+    @Transactional
+    public AccountingRecognitionResponse recognizeReturnShippingFee(Long returnId, User actor) {
+        ReturnRequest returnRequest = returnRequestRepository.findById(returnId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RETURN_NOT_FOUND));
+        ReturnShipmentInfo info = returnShipmentInfoRepository.findByReturnRequestId(returnRequest.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+        return recognizeReturnShippingFee(info, actor);
+    }
+
+    @Transactional
+    public AccountingRecognitionResponse recognizeReturnShippingFee(ReturnShipmentInfo info, User actor) {
+        if (info.getShippingFee() == null || info.getShippingFee().signum() <= 0
+                || info.getFeePayer() == ReturnShippingFeePayer.UNDECIDED) {
+            return AccountingRecognitionResponse.from(
+                    AccountingTransactionType.RETURN_FEE,
+                    AccountingReferenceType.RETURN,
+                    info.getReturnRequest().getId(),
+                    info.getReturnRequest().getOrder().getId(),
+                    info.getReturnRequest().getOrder().getOrderNumber(),
+                    info.getShippingFee() != null ? info.getShippingFee().longValue() : 0L,
+                    null,
+                    "반품 배송비 또는 부담 주체가 확정되지 않아 회계 거래를 생성하지 않았습니다."
+            );
+        }
+
+        AccountingTransactionDirection direction = info.getFeePayer() == ReturnShippingFeePayer.CUSTOMER
+                ? AccountingTransactionDirection.INCOME
+                : AccountingTransactionDirection.EXPENSE;
+        String payerLabel = info.getFeePayer() == ReturnShippingFeePayer.CUSTOMER ? "고객 부담" : "회사 부담";
+        AccountingTransaction transaction = saveTransactionIfAbsent(
+                "RETURN-FEE-" + info.getReturnRequest().getId(),
+                AccountingTransactionType.RETURN_FEE,
+                direction,
+                info.getShippingFee().longValue(),
+                AccountingReferenceType.RETURN,
+                info.getReturnRequest().getId(),
+                "반품 배송비 회계 반영 - " + payerLabel,
+                actor,
+                AuditActionType.RETURN_FEE_ACCOUNTING_RECOGNIZED,
+                "RETURN",
+                info.getReturnRequest().getId()
+        );
+        return AccountingRecognitionResponse.from(
+                AccountingTransactionType.RETURN_FEE,
+                AccountingReferenceType.RETURN,
+                info.getReturnRequest().getId(),
+                info.getReturnRequest().getOrder().getId(),
+                info.getReturnRequest().getOrder().getOrderNumber(),
+                info.getShippingFee().longValue(),
+                transaction,
+                "반품 배송비 거래가 회계에 반영되었습니다."
+        );
+    }
+
+    public AccountingRecognitionResponse getReturnShippingFeeAccounting(Long returnId) {
+        ReturnRequest returnRequest = returnRequestRepository.findById(returnId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RETURN_NOT_FOUND));
+        AccountingTransaction transaction = accountingTransactionRepository
+                .findFirstByReferenceTypeAndReferenceIdAndTypeOrderByOccurredAtDesc(
+                        AccountingReferenceType.RETURN,
+                        returnRequest.getId(),
+                        AccountingTransactionType.RETURN_FEE
+                )
+                .orElse(null);
+        return AccountingRecognitionResponse.from(
+                AccountingTransactionType.RETURN_FEE,
+                AccountingReferenceType.RETURN,
+                returnRequest.getId(),
+                returnRequest.getOrder().getId(),
+                returnRequest.getOrder().getOrderNumber(),
+                transaction != null ? transaction.getAmount() : 0L,
+                transaction,
+                transaction != null ? "반품 배송비 회계 거래가 있습니다." : "반품 배송비 회계 거래가 없습니다."
+        );
+    }
+
+    public PageResponse<AccountingTransactionResponse> getRefundEvents(int page, int size) {
+        return getTransactions(null, AccountingTransactionType.REFUND, null, null, null, null, null, page, size);
+    }
+
+    public PageResponse<AccountingTransactionResponse> getReturnFeeEvents(int page, int size) {
+        return getTransactions(null, AccountingTransactionType.RETURN_FEE, null, null, null, null, null, page, size);
+    }
+
     private Specification<AccountingLedger> buildLedgerSpec(AccountingLedgerStatus status, String period) {
         return (root, query, cb) -> {
             var predicates = cb.conjunction();
@@ -269,6 +438,72 @@ public class AccountingService {
                 && order.getStatus() != OrderStatus.COMPLETED) {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
+    }
+
+    private void validateRefundRecognizable(Payment payment) {
+        if (payment.getPaymentStatus() != PaymentStatus.REFUNDED
+                && payment.getPaymentStatus() != PaymentStatus.CANCELLED) {
+            throw new BusinessException(ErrorCode.PAYMENT_FAILED);
+        }
+    }
+
+    private AccountingTransaction saveTransactionIfAbsent(
+            String transactionNumber,
+            AccountingTransactionType type,
+            AccountingTransactionDirection direction,
+            Long amount,
+            AccountingReferenceType referenceType,
+            Long referenceId,
+            String memo,
+            User actor,
+            AuditActionType auditAction,
+            String targetType,
+            Long targetId
+    ) {
+        AccountingTransaction existing = accountingTransactionRepository
+                .findFirstByReferenceTypeAndReferenceIdAndTypeOrderByOccurredAtDesc(referenceType, referenceId, type)
+                .orElse(null);
+        if (existing != null) {
+            if (actor != null) {
+                auditLogService.record(
+                        actor,
+                        AuditActionType.ACCOUNTING_TRANSACTION_DUPLICATE_SKIPPED,
+                        targetType,
+                        targetId,
+                        null,
+                        existing.getTransactionNumber(),
+                        "이미 회계 거래가 있어 중복 생성을 건너뛰었습니다."
+                );
+            }
+            return existing;
+        }
+
+        AccountingTransaction transaction = accountingTransactionRepository.save(AccountingTransaction.builder()
+                .transactionNumber(transactionNumber)
+                .type(type)
+                .direction(direction)
+                .amount(amount)
+                .referenceType(referenceType)
+                .referenceId(referenceId)
+                .occurredAt(LocalDateTime.now())
+                .memo(memo)
+                .createdBy(actor)
+                .build());
+        if (actor != null) {
+            auditLogService.record(
+                    actor,
+                    auditAction,
+                    targetType,
+                    targetId,
+                    null,
+                    transaction.getTransactionNumber(),
+                    memo,
+                    null,
+                    toTransactionJson(transaction),
+                    null
+            );
+        }
+        return transaction;
     }
 
     private String toTransactionJson(AccountingTransaction transaction) {

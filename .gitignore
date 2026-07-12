@@ -58,6 +58,7 @@ yarn-error.log*
 
 # Java / Gradle
 backend/.gradle/
+backend/.gradle-cache/
 backend/build/
 !backend/gradle/wrapper/gradle-wrapper.jar
 backend/**/build/

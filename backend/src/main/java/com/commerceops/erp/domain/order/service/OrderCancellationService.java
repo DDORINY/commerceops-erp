@@ -14,6 +14,7 @@ import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
 import com.commerceops.erp.domain.shipment.repository.ShipmentRepository;
+import com.commerceops.erp.domain.user.entity.User;
 import com.commerceops.erp.domain.warehouse.service.WarehouseFulfillmentService;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
@@ -37,7 +38,7 @@ public class OrderCancellationService {
     private final ShipmentRepository shipmentRepository;
 
     @Transactional
-    public void cancel(Order order) {
+    public void cancel(Order order, User actor) {
         Payment payment = paymentRepository.findByOrder(order)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
         boolean paid = payment.getPaymentStatus() == PaymentStatus.PAID;
@@ -47,6 +48,7 @@ public class OrderCancellationService {
             restoreProductStock(order);
             payment.refund();
             accountingService.recordRefund(order.getOrderNumber(), order.getTotalPrice());
+            accountingService.recognizePaymentRefund(payment, actor);
         } else {
             payment.cancelReadyPayment();
         }
@@ -57,6 +59,11 @@ public class OrderCancellationService {
                 shipment.cancel();
             }
         });
+    }
+
+    @Transactional
+    public void cancel(Order order) {
+        cancel(order, null);
     }
 
     private void restoreProductStock(Order order) {

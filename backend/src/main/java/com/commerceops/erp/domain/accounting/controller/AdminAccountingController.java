@@ -2,6 +2,7 @@ package com.commerceops.erp.domain.accounting.controller;
 
 import com.commerceops.erp.domain.accounting.dto.AccountingEntryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingLedgerResponse;
+import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
 import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
@@ -123,5 +124,61 @@ public class AdminAccountingController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
         return ApiResponse.ok(accountingService.getRevenueEvents(page, size));
+    }
+
+    @PostMapping("/payments/{paymentId}/recognize-refund")
+    public ApiResponse<AccountingRecognitionResponse> recognizePaymentRefund(
+            @PathVariable Long paymentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.PAYMENT_REFUND);
+        return ApiResponse.ok(accountingService.recognizePaymentRefund(paymentId, userDetails.getUser()));
+    }
+
+    @PostMapping("/returns/{returnId}/recognize-refund")
+    public ApiResponse<AccountingRecognitionResponse> recognizeReturnRefund(
+            @PathVariable Long returnId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.PAYMENT_REFUND);
+        return ApiResponse.ok(accountingService.recognizeReturnRefund(returnId, userDetails.getUser()));
+    }
+
+    @PostMapping("/returns/{returnId}/recognize-return-fee")
+    public ApiResponse<AccountingRecognitionResponse> recognizeReturnFee(
+            @PathVariable Long returnId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.RETURN_FEE_MANAGE);
+        return ApiResponse.ok(accountingService.recognizeReturnShippingFee(returnId, userDetails.getUser()));
+    }
+
+    @GetMapping("/returns/{returnId}/return-fee")
+    public ApiResponse<AccountingRecognitionResponse> getReturnFeeAccounting(
+            @PathVariable Long returnId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getReturnShippingFeeAccounting(returnId));
+    }
+
+    @GetMapping("/refund-events")
+    public ApiResponse<PageResponse<AccountingTransactionResponse>> getRefundEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getRefundEvents(page, size));
+    }
+
+    @GetMapping("/return-fees")
+    public ApiResponse<PageResponse<AccountingTransactionResponse>> getReturnFeeEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getReturnFeeEvents(page, size));
     }
 }
