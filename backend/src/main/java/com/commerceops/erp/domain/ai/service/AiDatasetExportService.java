@@ -1,7 +1,11 @@
 package com.commerceops.erp.domain.ai.service;
 
+import com.commerceops.erp.domain.accounting.dto.AccountingConsistencyIssueResponse;
 import com.commerceops.erp.domain.accounting.entity.AccountingTransaction;
+import com.commerceops.erp.domain.accounting.entity.SettlementBatch;
 import com.commerceops.erp.domain.accounting.repository.AccountingTransactionRepository;
+import com.commerceops.erp.domain.accounting.repository.SettlementBatchRepository;
+import com.commerceops.erp.domain.accounting.service.AccountingService;
 import com.commerceops.erp.domain.ai.dto.AiDatasetCatalogResponse;
 import com.commerceops.erp.domain.ai.dto.AiDatasetExportResponse;
 import com.commerceops.erp.domain.ai.enums.AiDatasetKey;
@@ -44,6 +48,8 @@ public class AiDatasetExportService {
     private final SkuRepository skuRepository;
     private final WarehouseStockRepository warehouseStockRepository;
     private final ShipmentRepository shipmentRepository;
+    private final SettlementBatchRepository settlementBatchRepository;
+    private final AccountingService accountingService;
 
     public List<AiDatasetCatalogResponse> getCatalog() {
         return List.of(
@@ -53,7 +59,7 @@ public class AiDatasetExportService {
                         List.of("orderId", "orderNumber", "totalPrice", "discountAmount", "orderStatus", "paymentStatus", "createdAt")),
                 catalog(AiDatasetKey.ORDER_DEMAND, "주문/수요 예측 데이터셋", "주문 일자, 금액, 상태, 할인 피처 기반 수요 예측 후보",
                         List.of("orderId", "orderNumber", "orderedDate", "orderedHour", "dayOfWeek", "totalPrice", "discountAmount", "netAmount", "orderStatus", "paymentStatus")),
-                catalog(AiDatasetKey.REVIEWS, "리뷰 데이터셋", "평점, 본문, 숨김 상태 기반 리뷰 분석 후보",
+                catalog(AiDatasetKey.REVIEWS, "리뷰 데이터셋", "평점, 본문, 공개 상태 기반 리뷰 분석 후보",
                         List.of("reviewId", "productId", "rating", "content", "status", "createdAt")),
                 catalog(AiDatasetKey.PRODUCT_REVIEWS, "상품/리뷰 결합 데이터셋", "상품 속성과 리뷰 평점/본문을 결합한 추천/리뷰 분석 후보",
                         List.of("reviewId", "productId", "productCode", "productName", "categoryId", "brand", "price", "tags", "rating", "content", "reviewStatus", "createdAt")),
@@ -62,7 +68,11 @@ public class AiDatasetExportService {
                 catalog(AiDatasetKey.SHIPPING_LEADTIME, "배송 리드타임 데이터셋", "배송 상태와 송장/출고/배송완료 시점 기반 배송 지연 예측 후보",
                         List.of("shipmentId", "orderId", "orderNumber", "carrier", "status", "trackingIssuedAt", "shippedAt", "deliveredAt", "leadTimeHours")),
                 catalog(AiDatasetKey.ACCOUNTING_TRANSACTIONS, "회계 거래 데이터셋", "매출, 환불, 배송비, 정산 기반 손익/이상 탐지 후보",
-                        List.of("transactionId", "transactionNumber", "type", "direction", "amount", "referenceType", "referenceId", "occurredAt"))
+                        List.of("transactionId", "transactionNumber", "type", "direction", "amount", "referenceType", "referenceId", "occurredAt")),
+                catalog(AiDatasetKey.SETTLEMENT_BATCHES, "정산 배치 데이터셋", "정산 기간, 매출/환불/배송비/순액 기반 정산 분석 후보",
+                        List.of("settlementBatchId", "batchNumber", "periodStart", "periodEnd", "status", "totalSales", "totalRefunds", "totalShippingFee", "totalShippingCost", "netAmount", "closedAt", "createdAt")),
+                catalog(AiDatasetKey.ACCOUNTING_CONSISTENCY_ISSUES, "회계 정합성 이슈 데이터셋", "누락 매출/환불/배송비 거래 후보 기반 회계 이상 탐지 후보",
+                        List.of("issueType", "sourceType", "sourceId", "sourceNumber", "expectedTransactionType", "expectedAmount", "status", "message", "createdAt"))
         );
     }
 
@@ -77,6 +87,8 @@ public class AiDatasetExportService {
             case INVENTORY_SHIPPING -> exportInventoryShipping(safeLimit);
             case SHIPPING_LEADTIME -> exportShippingLeadtime(safeLimit);
             case ACCOUNTING_TRANSACTIONS -> exportAccountingTransactions(safeLimit);
+            case SETTLEMENT_BATCHES -> exportSettlementBatches(safeLimit);
+            case ACCOUNTING_CONSISTENCY_ISSUES -> exportAccountingConsistencyIssues(safeLimit);
         };
     }
 
@@ -147,6 +159,21 @@ public class AiDatasetExportService {
                 .map(this::accountingTransactionRow)
                 .toList();
         return response(AiDatasetKey.ACCOUNTING_TRANSACTIONS, rows);
+    }
+
+    private AiDatasetExportResponse exportSettlementBatches(int limit) {
+        var pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        List<Map<String, Object>> rows = settlementBatchRepository.findAll(pageable).stream()
+                .map(this::settlementBatchRow)
+                .toList();
+        return response(AiDatasetKey.SETTLEMENT_BATCHES, rows);
+    }
+
+    private AiDatasetExportResponse exportAccountingConsistencyIssues(int limit) {
+        List<Map<String, Object>> rows = accountingService.getConsistencyReport(limit).issues().stream()
+                .map(this::accountingConsistencyIssueRow)
+                .toList();
+        return response(AiDatasetKey.ACCOUNTING_CONSISTENCY_ISSUES, rows);
     }
 
     private Map<String, Object> productRow(Product product) {
@@ -287,6 +314,39 @@ public class AiDatasetExportService {
                 Map.entry("referenceType", transaction.getReferenceType().name()),
                 Map.entry("referenceId", transaction.getReferenceId()),
                 Map.entry("occurredAt", transaction.getOccurredAt())
+        );
+    }
+
+    private Map<String, Object> settlementBatchRow(SettlementBatch batch) {
+        long netAmount = batch.getTotalSales() + batch.getTotalShippingFee()
+                - batch.getTotalRefunds() - batch.getTotalShippingCost();
+        return Map.ofEntries(
+                Map.entry("settlementBatchId", batch.getId()),
+                Map.entry("batchNumber", batch.getBatchNumber()),
+                Map.entry("periodStart", batch.getPeriodStart()),
+                Map.entry("periodEnd", batch.getPeriodEnd()),
+                Map.entry("status", batch.getStatus().name()),
+                Map.entry("totalSales", batch.getTotalSales()),
+                Map.entry("totalRefunds", batch.getTotalRefunds()),
+                Map.entry("totalShippingFee", batch.getTotalShippingFee()),
+                Map.entry("totalShippingCost", batch.getTotalShippingCost()),
+                Map.entry("netAmount", netAmount),
+                Map.entry("closedAt", nullable(batch.getClosedAt())),
+                Map.entry("createdAt", batch.getCreatedAt())
+        );
+    }
+
+    private Map<String, Object> accountingConsistencyIssueRow(AccountingConsistencyIssueResponse issue) {
+        return Map.ofEntries(
+                Map.entry("issueType", issue.issueType()),
+                Map.entry("sourceType", issue.sourceType()),
+                Map.entry("sourceId", nullable(issue.sourceId())),
+                Map.entry("sourceNumber", nullable(issue.sourceNumber())),
+                Map.entry("expectedTransactionType", issue.expectedTransactionType().name()),
+                Map.entry("expectedAmount", nullable(issue.expectedAmount())),
+                Map.entry("status", nullable(issue.status())),
+                Map.entry("message", nullable(issue.message())),
+                Map.entry("createdAt", nullable(issue.createdAt()))
         );
     }
 
