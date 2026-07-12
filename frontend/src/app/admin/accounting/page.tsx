@@ -1,27 +1,27 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import StatCard from '@/components/admin/StatCard';
 import DataTable from '@/components/admin/DataTable';
 import Pagination from '@/components/common/Pagination';
+import StatCard from '@/components/admin/StatCard';
 import {
   accountingService,
   type ApiAccountingEntry,
-  type ApiAccountingSummary,
   type ApiAccountingEntryType,
   type ApiAccountingLedger,
+  type ApiAccountingSummary,
   type ApiAccountingTransaction,
+  type ApiSettlementBatch,
+  type ApiShippingCostEntry,
 } from '@/lib/services/accountingService';
-import {
-  formatPrice,
-  formatDateTime,
-  ACCOUNTING_TYPE_LABEL,
-  ACCOUNTING_TYPE_COLOR,
-  downloadCsv,
-} from '@/lib/format';
+import { ACCOUNTING_TYPE_COLOR, ACCOUNTING_TYPE_LABEL, downloadCsv, formatDateTime, formatPrice } from '@/lib/format';
 
 type TypeFilter = 'ALL' | ApiAccountingEntryType;
+
+const PAGE_SIZE = 20;
+const PREVIEW_SIZE = 8;
 
 const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
   { value: 'ALL', label: '전체' },
@@ -29,9 +29,6 @@ const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
   { value: 'REFUND', label: '환불' },
   { value: 'INBOUND', label: '입고' },
 ];
-
-const PAGE_SIZE = 20;
-const PREVIEW_SIZE = 10;
 
 const LEDGER_STATUS_LABEL: Record<ApiAccountingLedger['status'], string> = {
   OPEN: '진행 중',
@@ -67,6 +64,13 @@ const REFERENCE_TYPE_LABEL: Record<ApiAccountingTransaction['referenceType'], st
   SETTLEMENT_BATCH: '정산 배치',
 };
 
+const SETTLEMENT_STATUS_LABEL: Record<ApiSettlementBatch['status'], string> = {
+  DRAFT: '작성 중',
+  CONFIRMED: '확정',
+  CLOSED: '마감',
+  CANCELLED: '취소',
+};
+
 export default function AdminAccountingPage() {
   const [summary, setSummary] = useState<ApiAccountingSummary | null>(null);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
@@ -79,8 +83,9 @@ export default function AdminAccountingPage() {
   const [entriesError, setEntriesError] = useState<string | null>(null);
   const [ledgers, setLedgers] = useState<ApiAccountingLedger[]>([]);
   const [transactions, setTransactions] = useState<ApiAccountingTransaction[]>([]);
-  const [ledgerError, setLedgerError] = useState<string | null>(null);
-  const [transactionError, setTransactionError] = useState<string | null>(null);
+  const [shippingCosts, setShippingCosts] = useState<ApiShippingCostEntry[]>([]);
+  const [settlements, setSettlements] = useState<ApiSettlementBatch[]>([]);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
     accountingService
@@ -118,26 +123,25 @@ export default function AdminAccountingPage() {
   }, [fetchEntries]);
 
   useEffect(() => {
-    accountingService
-      .getLedgers({ size: PREVIEW_SIZE })
-      .then((res) => {
-        setLedgers(res.content);
-        setLedgerError(null);
+    Promise.all([
+      accountingService.getLedgers({ size: PREVIEW_SIZE }),
+      accountingService.getTransactions({ size: PREVIEW_SIZE }),
+      accountingService.getShippingCosts(0, PREVIEW_SIZE),
+      accountingService.getSettlementBatches({ size: PREVIEW_SIZE }),
+    ])
+      .then(([ledgerRes, transactionRes, shippingCostRes, settlementRes]) => {
+        setLedgers(ledgerRes.content);
+        setTransactions(transactionRes.content);
+        setShippingCosts(shippingCostRes.content);
+        setSettlements(settlementRes.content);
+        setPreviewError(null);
       })
       .catch((err) => {
         setLedgers([]);
-        setLedgerError(err instanceof Error ? err.message : '회계 원장을 불러오지 못했습니다.');
-      });
-
-    accountingService
-      .getTransactions({ size: PREVIEW_SIZE })
-      .then((res) => {
-        setTransactions(res.content);
-        setTransactionError(null);
-      })
-      .catch((err) => {
         setTransactions([]);
-        setTransactionError(err instanceof Error ? err.message : '회계 거래를 불러오지 못했습니다.');
+        setShippingCosts([]);
+        setSettlements([]);
+        setPreviewError(err instanceof Error ? err.message : '회계 리포트 데이터를 불러오지 못했습니다.');
       });
   }, []);
 
@@ -156,225 +160,177 @@ export default function AdminAccountingPage() {
 
   return (
     <AdminLayout title="회계 관리">
-      {/* 요약 카드 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          title="총 매출"
-          value={formatPrice(summary?.totalSales ?? 0)}
-          iconBgColor="bg-blue-100"
-          icon={
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-          }
-        />
-        <StatCard
-          title="총 환불"
-          value={formatPrice(summary?.totalRefunds ?? 0)}
-          iconBgColor="bg-red-100"
-          icon={
-            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-            </svg>
-          }
-        />
-        <StatCard
-          title="총 입고 금액"
-          value={formatPrice(summary?.totalInbound ?? 0)}
-          iconBgColor="bg-purple-100"
-          icon={
-            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-          }
-        />
-        <StatCard
-          title="순매출"
-          value={formatPrice(summary?.netSales ?? 0)}
-          subtitle="매출 − 환불"
-          iconBgColor="bg-green-100"
-          icon={
-            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          }
-        />
+        <StatCard title="총 매출" value={formatPrice(summary?.totalSales ?? 0)} iconBgColor="bg-blue-100" icon={<span className="text-blue-600 text-sm font-bold">매</span>} />
+        <StatCard title="총 환불" value={formatPrice(summary?.totalRefunds ?? 0)} iconBgColor="bg-red-100" icon={<span className="text-red-500 text-sm font-bold">환</span>} />
+        <StatCard title="총 입고 금액" value={formatPrice(summary?.totalInbound ?? 0)} iconBgColor="bg-purple-100" icon={<span className="text-purple-600 text-sm font-bold">입</span>} />
+        <StatCard title="순매출" value={formatPrice(summary?.netSales ?? 0)} subtitle="매출 - 환불" iconBgColor="bg-green-100" icon={<span className="text-green-600 text-sm font-bold">순</span>} />
       </div>
 
-      {/* 전표 목록 */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        {TYPE_FILTERS.map((f) => (
+      {summaryError && <StatusMessage tone="error" message={summaryError} />}
+      {entriesError && <StatusMessage tone="error" message={entriesError} />}
+
+      <section className="mb-10">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {TYPE_FILTERS.map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => handleTypeFilterChange(filter.value)}
+              className={[
+                'px-4 py-1.5 text-xs font-medium border transition-colors',
+                typeFilter === filter.value
+                  ? 'border-[#1a1f2e] bg-[#1a1f2e] text-white'
+                  : 'border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white',
+              ].join(' ')}
+            >
+              {filter.label}
+            </button>
+          ))}
           <button
-            key={f.value}
-            onClick={() => handleTypeFilterChange(f.value)}
-            className={[
-              'px-4 py-1.5 text-xs font-medium border transition-colors',
-              typeFilter === f.value
-                ? 'border-[#1a1f2e] bg-[#1a1f2e] text-white'
-                : 'border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white',
-            ].join(' ')}
+            disabled={entries.length === 0}
+            onClick={() => {
+              downloadCsv(
+                `accounting_${new Date().toISOString().slice(0, 10)}.csv`,
+                ['ID', '구분', '금액', '내용', '참조ID', '일시'],
+                entries.map((entry) => [
+                  entry.entryId,
+                  ACCOUNTING_TYPE_LABEL[entry.type] ?? entry.type,
+                  entry.amount,
+                  entry.description,
+                  entry.referenceId ?? '',
+                  formatDateTime(entry.createdAt),
+                ]),
+              );
+            }}
+            className="ml-auto px-3 py-1.5 text-xs font-medium border border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {f.label}
+            CSV 다운로드
           </button>
-        ))}
-        <button
-          disabled={entries.length === 0}
-          onClick={() => {
-            downloadCsv(
-              `accounting_${new Date().toISOString().slice(0,10)}.csv`,
-              ['ID', '구분', '금액', '설명', '참조ID', '일시'],
-              entries.map((e) => [e.entryId, ACCOUNTING_TYPE_LABEL[e.type] ?? e.type, e.amount, e.description, e.referenceId ?? '', formatDateTime(e.createdAt)])
-            );
-          }}
-          className="ml-auto px-3 py-1.5 text-xs font-medium border border-[#e8eaf0] text-[#8a9bb5] hover:border-[#1a1f2e] hover:text-[#1a1f2e] bg-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-[#e8eaf0] disabled:hover:text-[#8a9bb5]"
-        >
-          CSV 다운로드
-        </button>
-      </div>
-
-      {summaryError && (
-        <div className="mb-4 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-          {summaryError}
         </div>
-      )}
 
-      {entriesError && (
-        <div className="mb-4 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-          {entriesError}
-        </div>
-      )}
+        {loading ? (
+          <div className="py-12 text-center text-[#bbb] text-sm">로딩 중...</div>
+        ) : (
+          <DataTable<ApiAccountingEntry>
+            keyField="entryId"
+            data={entries}
+            emptyMessage="회계 내역이 없습니다."
+            columns={[
+              { key: 'entryId', header: 'ID', render: (row) => <span className="text-xs text-[#aaa]">#{row.entryId}</span> },
+              {
+                key: 'type',
+                header: '구분',
+                render: (row) => (
+                  <span className={`text-xs font-medium px-2 py-0.5 ${ACCOUNTING_TYPE_COLOR[row.type] ?? ''}`}>
+                    {ACCOUNTING_TYPE_LABEL[row.type] ?? row.type}
+                  </span>
+                ),
+              },
+              {
+                key: 'amount',
+                header: '금액',
+                render: (row) => (
+                  <span className={`font-semibold text-sm tabular-nums ${row.type === 'REFUND' ? 'text-red-500' : 'text-[#1a1f2e]'}`}>
+                    {row.type === 'REFUND' ? '-' : '+'}
+                    {formatPrice(row.amount)}
+                  </span>
+                ),
+              },
+              { key: 'description', header: '내용', render: (row) => <span className="text-xs text-[#555]">{row.description}</span> },
+              { key: 'referenceId', header: '참조번호', render: (row) => <span className="text-xs font-mono text-[#aaa]">{row.referenceId ?? '-'}</span> },
+              { key: 'createdAt', header: '일시', render: (row) => <span className="text-xs">{formatDateTime(row.createdAt)}</span> },
+            ]}
+          />
+        )}
+        <div className="mt-2 text-xs text-[#aaa]">총 {totalElements}건</div>
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+      </section>
 
-      {loading ? (
-        <div className="py-12 text-center text-[#bbb] text-sm">로딩 중...</div>
-      ) : (
-        <DataTable<ApiAccountingEntry>
-          keyField="entryId"
-          data={entries}
-          emptyMessage="회계 내역이 없습니다."
-          columns={[
-            { key: 'entryId', header: 'ID', render: (row) => <span className="text-xs text-[#aaa]">#{row.entryId}</span> },
-            {
-              key: 'type',
-              header: '구분',
-              render: (row) => (
-                <span className={`text-xs font-medium px-2 py-0.5 ${ACCOUNTING_TYPE_COLOR[row.type] ?? ''}`}>
-                  {ACCOUNTING_TYPE_LABEL[row.type] ?? row.type}
-                </span>
-              ),
-            },
-            {
-              key: 'amount',
-              header: '금액',
-              render: (row) => (
-                <span className={`font-semibold text-sm tabular-nums ${
-                  row.type === 'REFUND' ? 'text-red-500' : 'text-[#1a1f2e]'
-                }`}>
-                  {row.type === 'REFUND' ? '−' : '+'}{formatPrice(row.amount)}
-                </span>
-              ),
-            },
-            { key: 'description', header: '내용', render: (row) => <span className="text-xs text-[#555]">{row.description}</span> },
-            {
-              key: 'referenceId',
-              header: '참조번호',
-              render: (row) => <span className="text-xs font-mono text-[#aaa]">{row.referenceId ?? '—'}</span>,
-            },
-            {
-              key: 'createdAt',
-              header: '일시',
-              render: (row) => <span className="text-xs">{formatDateTime(row.createdAt)}</span>,
-            },
-          ]}
-        />
-      )}
+      {previewError && <StatusMessage tone="error" message={previewError} />}
 
-      <div className="mt-2 text-xs text-[#aaa]">총 {totalElements}건</div>
-      <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
-
-      <div className="mt-10 grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <section>
-          <div className="mb-3">
-            <h2 className="text-sm font-semibold text-[#1a1f2e]">회계 원장</h2>
-            <p className="mt-1 text-xs text-[#8a9bb5]">v0.7.1부터 사용하는 기간별 원장 조회 기반입니다.</p>
-          </div>
-          {ledgerError && (
-            <div className="mb-3 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-              {ledgerError}
-            </div>
-          )}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <ReportSection title="회계 원장" description="기간별 원장과 마감 상태를 확인합니다.">
           <DataTable<ApiAccountingLedger>
             keyField="ledgerId"
             data={ledgers}
             emptyMessage="회계 원장이 없습니다."
             columns={[
-              {
-                key: 'ledgerNumber',
-                header: '원장 번호',
-                render: (row) => <span className="text-xs font-mono text-[#555]">{row.ledgerNumber}</span>,
-              },
+              { key: 'ledgerNumber', header: '원장 번호', render: (row) => <span className="text-xs font-mono">{row.ledgerNumber}</span> },
               { key: 'period', header: '기간', render: (row) => <span className="text-xs">{row.period}</span> },
-              {
-                key: 'status',
-                header: '상태',
-                render: (row) => <span className="text-xs">{LEDGER_STATUS_LABEL[row.status] ?? row.status}</span>,
-              },
-              {
-                key: 'closedAt',
-                header: '마감일',
-                render: (row) => <span className="text-xs">{row.closedAt ? formatDateTime(row.closedAt) : '-'}</span>,
-              },
+              { key: 'status', header: '상태', render: (row) => <span className="text-xs">{LEDGER_STATUS_LABEL[row.status] ?? row.status}</span> },
+              { key: 'closedAt', header: '마감일', render: (row) => <span className="text-xs">{row.closedAt ? formatDateTime(row.closedAt) : '-'}</span> },
             ]}
           />
-        </section>
+        </ReportSection>
 
-        <section>
-          <div className="mb-3">
-            <h2 className="text-sm font-semibold text-[#1a1f2e]">회계 거래</h2>
-            <p className="mt-1 text-xs text-[#8a9bb5]">주문 결제 완료 시 생성되는 매출 인식 거래와 후속 배송/반품 거래 조회 기반입니다.</p>
-          </div>
-          {transactionError && (
-            <div className="mb-3 border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-              {transactionError}
-            </div>
-          )}
+        <ReportSection title="최근 회계 거래" description="매출, 환불, 배송비, 정산 거래를 함께 확인합니다.">
           <DataTable<ApiAccountingTransaction>
             keyField="transactionId"
             data={transactions}
             emptyMessage="회계 거래가 없습니다."
             columns={[
-              {
-                key: 'transactionNumber',
-                header: '거래 번호',
-                render: (row) => <span className="text-xs font-mono text-[#555]">{row.transactionNumber}</span>,
-              },
-              {
-                key: 'type',
-                header: '유형',
-                render: (row) => <span className="text-xs">{TRANSACTION_TYPE_LABEL[row.type] ?? row.type}</span>,
-              },
-              {
-                key: 'amount',
-                header: '금액',
-                render: (row) => <span className="text-xs font-semibold tabular-nums">{formatPrice(row.amount)}</span>,
-              },
+              { key: 'transactionNumber', header: '거래 번호', render: (row) => <span className="text-xs font-mono">{row.transactionNumber}</span> },
+              { key: 'type', header: '유형', render: (row) => <span className="text-xs">{TRANSACTION_TYPE_LABEL[row.type] ?? row.type}</span> },
+              { key: 'amount', header: '금액', render: (row) => <span className="text-xs font-semibold">{formatPrice(row.amount)}</span> },
               {
                 key: 'reference',
                 header: '참조',
-                render: (row) => (
-                  <span className="text-xs">
-                    {REFERENCE_TYPE_LABEL[row.referenceType] ?? row.referenceType} #{row.referenceId}
-                  </span>
-                ),
+                render: (row) => <span className="text-xs">{REFERENCE_TYPE_LABEL[row.referenceType] ?? row.referenceType} #{row.referenceId}</span>,
               },
-              {
-                key: 'direction',
-                header: '방향',
-                render: (row) => <span className="text-xs">{TRANSACTION_DIRECTION_LABEL[row.direction] ?? row.direction}</span>,
-              },
+              { key: 'direction', header: '방향', render: (row) => <span className="text-xs">{TRANSACTION_DIRECTION_LABEL[row.direction] ?? row.direction}</span> },
             ]}
           />
-        </section>
+        </ReportSection>
+
+        <ReportSection title="택배비 비용" description="배송 방법 기본비 기준의 택배비 매입 후보입니다.">
+          <DataTable<ApiShippingCostEntry>
+            keyField="id"
+            data={shippingCosts}
+            emptyMessage="택배비 비용 항목이 없습니다."
+            columns={[
+              { key: 'orderNumber', header: '주문번호', render: (row) => <span className="text-xs font-mono">{row.orderNumber}</span> },
+              { key: 'carrierName', header: '택배사', render: (row) => <span className="text-xs">{row.carrierName ?? '-'}</span> },
+              { key: 'shippingMethodName', header: '배송 방법', render: (row) => <span className="text-xs">{row.shippingMethodName ?? '-'}</span> },
+              { key: 'costAmount', header: '비용', render: (row) => <span className="text-xs font-semibold">{formatPrice(row.costAmount)}</span> },
+              { key: 'marginAmount', header: '차액', render: (row) => <span className="text-xs">{formatPrice(row.marginAmount)}</span> },
+            ]}
+          />
+        </ReportSection>
+
+        <ReportSection title="정산 배치" description="기간별 정산 집계와 마감 상태입니다.">
+          <DataTable<ApiSettlementBatch>
+            keyField="id"
+            data={settlements}
+            emptyMessage="정산 배치가 없습니다."
+            columns={[
+              { key: 'batchNumber', header: '배치 번호', render: (row) => <span className="text-xs font-mono">{row.batchNumber}</span> },
+              { key: 'period', header: '기간', render: (row) => <span className="text-xs">{row.periodStart} ~ {row.periodEnd}</span> },
+              { key: 'status', header: '상태', render: (row) => <span className="text-xs">{SETTLEMENT_STATUS_LABEL[row.status] ?? row.status}</span> },
+              { key: 'netAmount', header: '순정산', render: (row) => <span className="text-xs font-semibold">{formatPrice(row.netAmount)}</span> },
+              { key: 'closedAt', header: '마감일', render: (row) => <span className="text-xs">{row.closedAt ? formatDateTime(row.closedAt) : '-'}</span> },
+            ]}
+          />
+        </ReportSection>
       </div>
     </AdminLayout>
   );
+}
+
+function ReportSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return (
+    <section>
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-[#1a1f2e]">{title}</h2>
+        <p className="mt-1 text-xs text-[#8a9bb5]">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function StatusMessage({ message, tone }: { message: string; tone: 'error' | 'info' }) {
+  const className = tone === 'error'
+    ? 'border-red-100 bg-red-50 text-red-600'
+    : 'border-blue-100 bg-blue-50 text-blue-600';
+  return <div className={`mb-4 border px-4 py-3 text-sm ${className}`}>{message}</div>;
 }
