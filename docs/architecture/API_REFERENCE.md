@@ -419,3 +419,14 @@
 | `GET` | `/api/admin/accounting/shipping-cost-events` | 택배비 회계 거래 목록 조회 | `ACCOUNTING_READ` |
 
 `ShippingCostEntryResponse`는 배송 ID, 주문 번호, 택배사, 배송 방법, 비용 금액, 고객 청구 금액, 차액, 정산 상태, 발생 일시를 반환한다.
+
+## v0.7.5 정산 배치/마감 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/accounting/settlements` | 정산 배치 목록 조회 | `ACCOUNTING_READ` |
+| `GET` | `/api/admin/accounting/settlements/{settlementId}` | 정산 배치 상세와 항목 조회 | `ACCOUNTING_READ` |
+| `POST` | `/api/admin/accounting/settlements` | 기간 기준 정산 배치 생성 | `SETTLEMENT_MANAGE` |
+| `PATCH` | `/api/admin/accounting/settlements/{settlementId}/close` | 정산 배치 마감 | `ACCOUNTING_CLOSE` |
+
+`SettlementBatchCreateRequest`는 `periodStart`, `periodEnd`를 받는다. `SettlementBatchResponse`는 배치 번호, 기간, 상태, 매출/환불/배송비/택배비 합계, 순정산금액, 마감자, 마감일시, 정산 항목을 반환한다.

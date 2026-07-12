@@ -115,6 +115,38 @@ export interface ApiShippingCostEntry {
   updatedAt: string;
 }
 
+export type ApiSettlementBatchStatus = 'DRAFT' | 'CONFIRMED' | 'CLOSED' | 'CANCELLED';
+
+export interface ApiSettlementBatchItem {
+  id: number;
+  referenceType: ApiAccountingReferenceType;
+  referenceId: number;
+  itemType: 'SALES' | 'REFUND' | 'SHIPPING_REVENUE' | 'SHIPPING_COST' | 'RETURN_FEE' | 'ADJUSTMENT';
+  amount: number;
+  memo: string | null;
+  status: 'INCLUDED' | 'EXCLUDED' | 'ADJUSTED';
+  createdAt: string;
+}
+
+export interface ApiSettlementBatch {
+  id: number;
+  batchNumber: string;
+  periodStart: string;
+  periodEnd: string;
+  status: ApiSettlementBatchStatus;
+  totalSales: number;
+  totalRefunds: number;
+  totalShippingFee: number;
+  totalShippingCost: number;
+  netAmount: number;
+  closedAt: string | null;
+  closedById: number | null;
+  closedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: ApiSettlementBatchItem[];
+}
+
 export const accountingService = {
   getSummary: () => apiClient<ApiAccountingSummary>('/admin/accounting/summary'),
 
@@ -225,4 +257,26 @@ export const accountingService = {
     qs.set('size', String(size));
     return apiClient<PageResponse<ApiAccountingTransaction>>(`/admin/accounting/shipping-cost-events?${qs.toString()}`);
   },
+
+  getSettlementBatches: (params: { status?: ApiSettlementBatchStatus | 'ALL'; page?: number; size?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.status && params.status !== 'ALL') qs.set('status', params.status);
+    qs.set('page', String(params.page ?? 0));
+    qs.set('size', String(params.size ?? 20));
+    return apiClient<PageResponse<ApiSettlementBatch>>(`/admin/accounting/settlements?${qs.toString()}`);
+  },
+
+  getSettlementBatch: (settlementId: number) =>
+    apiClient<ApiSettlementBatch>(`/admin/accounting/settlements/${settlementId}`),
+
+  createSettlementBatch: (periodStart: string, periodEnd: string) =>
+    apiClient<ApiSettlementBatch>('/admin/accounting/settlements', {
+      method: 'POST',
+      body: JSON.stringify({ periodStart, periodEnd }),
+    }),
+
+  closeSettlementBatch: (settlementId: number) =>
+    apiClient<ApiSettlementBatch>(`/admin/accounting/settlements/${settlementId}/close`, {
+      method: 'PATCH',
+    }),
 };

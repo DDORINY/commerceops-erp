@@ -6,13 +6,17 @@ import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingSummaryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingTransactionResponse;
 import com.commerceops.erp.domain.accounting.dto.OrderRevenueRecognitionResponse;
+import com.commerceops.erp.domain.accounting.dto.SettlementBatchCreateRequest;
+import com.commerceops.erp.domain.accounting.dto.SettlementBatchResponse;
 import com.commerceops.erp.domain.accounting.dto.ShippingCostEntryResponse;
 import com.commerceops.erp.domain.accounting.enums.AccountingEntryType;
 import com.commerceops.erp.domain.accounting.enums.AccountingLedgerStatus;
 import com.commerceops.erp.domain.accounting.enums.AccountingReferenceType;
 import com.commerceops.erp.domain.accounting.enums.AccountingTransactionDirection;
 import com.commerceops.erp.domain.accounting.enums.AccountingTransactionType;
+import com.commerceops.erp.domain.accounting.enums.SettlementBatchStatus;
 import com.commerceops.erp.domain.accounting.service.AccountingService;
+import com.commerceops.erp.domain.accounting.service.SettlementBatchService;
 import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.global.response.ApiResponse;
@@ -31,6 +35,7 @@ import java.time.LocalDateTime;
 public class AdminAccountingController {
 
     private final AccountingService accountingService;
+    private final SettlementBatchService settlementBatchService;
     private final PermissionChecker permissionChecker;
 
     @GetMapping("/summary")
@@ -219,5 +224,43 @@ public class AdminAccountingController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
         return ApiResponse.ok(accountingService.getShippingCostEvents(page, size));
+    }
+
+    @GetMapping("/settlements")
+    public ApiResponse<PageResponse<SettlementBatchResponse>> getSettlementBatches(
+            @RequestParam(required = false) SettlementBatchStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(settlementBatchService.getBatches(status, page, size));
+    }
+
+    @GetMapping("/settlements/{settlementId}")
+    public ApiResponse<SettlementBatchResponse> getSettlementBatch(
+            @PathVariable Long settlementId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(settlementBatchService.getBatch(settlementId));
+    }
+
+    @PostMapping("/settlements")
+    public ApiResponse<SettlementBatchResponse> createSettlementBatch(
+            @RequestBody SettlementBatchCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.SETTLEMENT_MANAGE);
+        return ApiResponse.ok(settlementBatchService.createBatch(request, userDetails.getUser()));
+    }
+
+    @PatchMapping("/settlements/{settlementId}/close")
+    public ApiResponse<SettlementBatchResponse> closeSettlementBatch(
+            @PathVariable Long settlementId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_CLOSE);
+        return ApiResponse.ok(settlementBatchService.closeBatch(settlementId, userDetails.getUser()));
     }
 }

@@ -218,3 +218,14 @@ v0.2.5부터 Flyway 기반 초기 DDL을 함께 관리한다.
 | `memo` | 처리 메모 |
 
 `SHIPPING_COST_MANAGE` 권한 seed도 함께 추가했다.
+
+## v0.7.5 정산 배치/마감 DB
+
+`settlement_batches`, `settlement_batch_items` 테이블을 추가했다.
+
+| 테이블 | 설명 |
+| --- | --- |
+| `settlement_batches` | 기간별 정산 배치 header. 배치 번호, 기간, 상태, 매출/환불/배송비/택배비 합계, 마감자와 마감일시를 저장한다. |
+| `settlement_batch_items` | 정산 배치에 포함된 회계 거래 항목. 참조 유형/ID, 항목 유형, 금액, 상태를 저장한다. |
+
+`SETTLEMENT_MANAGE` 권한 seed도 함께 추가했다.

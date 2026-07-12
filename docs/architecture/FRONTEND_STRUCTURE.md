@@ -275,3 +275,8 @@
 - `accountingService`에 택배비 비용 항목 조회와 수동 회계 반영 API 호출 메서드를 추가했다.
 - `getShippingCosts`, `getShippingCostEvents`로 비용 항목과 회계 거래를 분리 조회할 수 있다.
 - 관리자 회계 리포트 화면 고도화는 v0.7.6에서 확장한다.
+
+## v0.7.5 정산 프론트 서비스
+
+- `accountingService`에 정산 배치 목록/상세/생성/마감 API 호출 메서드를 추가했다.
+- 정산 전용 관리자 화면과 리포트 UI는 v0.7.6에서 확장한다.
