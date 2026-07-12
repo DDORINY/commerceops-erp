@@ -1,0 +1,10 @@
+{
+  "dataset_path": "ai/datasets/processed/validation_dataset.json",
+  "dataset_format": "json",
+  "checkpoint_path": "ai/models/checkpoints/commerceops_baseline.pt",
+  "metadata_path": "ai/models/checkpoints/commerceops_baseline.metadata.json",
+  "target_column": "target",
+  "feature_columns": [],
+  "report_dir": "ai/reports/generated",
+  "report_name": "baseline_evaluation"
+}
