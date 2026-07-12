@@ -92,6 +92,16 @@ htmlcov/
 .pixi/
 __pypackages__/
 
+# AI datasets, model artifacts, and local training outputs
+ai/datasets/exports/
+ai/datasets/processed/
+ai/models/checkpoints/
+ai/reports/generated/
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
 # IDEs and OS files
 .idea/
 .vscode/

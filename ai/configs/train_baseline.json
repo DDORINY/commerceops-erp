@@ -1,0 +1,11 @@
+{
+  "dataset_path": "ai/datasets/exports/sample_dataset.json",
+  "dataset_format": "json",
+  "target_column": "target",
+  "feature_columns": [],
+  "task_type": "regression",
+  "output_dir": "ai/models/checkpoints",
+  "model_name": "commerceops_baseline",
+  "max_rows": 5000,
+  "random_seed": 42
+}
