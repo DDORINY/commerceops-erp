@@ -98,3 +98,9 @@ SUPER_ADMIN은 전체 권한을 보유한다. 기존 role 기반 1차 관리자 
 - `SHIPPING_COST_MANAGE`: 택배비 비용 회계 반영 작업을 수행할 수 있는 권한이다.
 - 택배비 비용 항목과 회계 거래 조회는 `ACCOUNTING_READ` 권한을 사용한다.
 - `SUPER_ADMIN`과 `ADMIN` 기본 권한 그룹에 `SHIPPING_COST_MANAGE`를 부여한다.
+
+## v0.7.5 정산 권한 보강
+
+- `SETTLEMENT_MANAGE`: 정산 배치 생성과 항목 관리 권한이다.
+- `ACCOUNTING_CLOSE`: 정산 배치 마감 권한이다.
+- 정산 배치 조회는 `ACCOUNTING_READ` 권한을 사용한다.

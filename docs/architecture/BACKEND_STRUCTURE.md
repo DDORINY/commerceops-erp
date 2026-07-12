@@ -180,3 +180,11 @@ com.commerceops.erp
 - `ShipmentService`는 운송장 입력, 운송장 자동 생성, 배송 상태 변경 시 택배비 회계 반영을 시도한다.
 - `AdminAccountingController`는 배송비 수동 반영, 배송비 항목 조회, 배송비 거래 목록 API를 제공한다.
 - `SHIPPING_COST_MANAGE` 권한은 택배비 비용 회계 반영 실행 권한으로 사용한다.
+
+## v0.7.5 정산 배치/마감 처리
+
+- `SettlementBatchService`는 기간별 회계 거래를 조회해 정산 배치와 항목을 생성한다.
+- `SettlementBatch`는 `DRAFT`, `CONFIRMED`, `CLOSED`, `CANCELLED` 상태를 가진다.
+- `closeBatch`는 중복 마감을 막고 `closedAt`, `closedBy`를 기록한다.
+- `AdminAccountingController`는 정산 목록/상세/생성/마감 API를 제공한다.
+- `SETTLEMENT_MANAGE`는 정산 생성, `ACCOUNTING_CLOSE`는 정산 마감 권한으로 사용한다.

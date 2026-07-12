@@ -34,6 +34,7 @@ public final class PermissionCodes {
     public static final String ACCOUNTING_READ = "ACCOUNTING_READ";
     public static final String ACCOUNTING_MANAGE = "ACCOUNTING_MANAGE";
     public static final String ACCOUNTING_CLOSE = "ACCOUNTING_CLOSE";
+    public static final String SETTLEMENT_MANAGE = "SETTLEMENT_MANAGE";
     public static final String COUPON_MANAGE = "COUPON_MANAGE";
     public static final String REVIEW_MODERATE = "REVIEW_MODERATE";
     public static final String INQUIRY_REPLY = "INQUIRY_REPLY";
