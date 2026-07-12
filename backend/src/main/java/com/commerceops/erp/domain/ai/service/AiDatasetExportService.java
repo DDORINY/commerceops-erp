@@ -44,6 +44,8 @@ public class AiDatasetExportService {
                         List.of("orderId", "orderNumber", "totalPrice", "discountAmount", "orderStatus", "paymentStatus", "createdAt")),
                 catalog(AiDatasetKey.REVIEWS, "리뷰 데이터셋", "평점, 본문, 숨김 상태 기반 리뷰 분석 후보",
                         List.of("reviewId", "productId", "rating", "content", "status", "createdAt")),
+                catalog(AiDatasetKey.PRODUCT_REVIEWS, "상품/리뷰 결합 데이터셋", "상품 속성과 리뷰 평점/본문을 결합한 추천/리뷰 분석 후보",
+                        List.of("reviewId", "productId", "productCode", "productName", "categoryId", "brand", "price", "tags", "rating", "content", "reviewStatus", "createdAt")),
                 catalog(AiDatasetKey.ACCOUNTING_TRANSACTIONS, "회계 거래 데이터셋", "매출, 환불, 배송비, 정산 기반 손익/이상 탐지 후보",
                         List.of("transactionId", "transactionNumber", "type", "direction", "amount", "referenceType", "referenceId", "occurredAt"))
         );
@@ -55,6 +57,7 @@ public class AiDatasetExportService {
             case PRODUCTS -> exportProducts(safeLimit);
             case ORDERS -> exportOrders(safeLimit);
             case REVIEWS -> exportReviews(safeLimit);
+            case PRODUCT_REVIEWS -> exportProductReviews(safeLimit);
             case ACCOUNTING_TRANSACTIONS -> exportAccountingTransactions(safeLimit);
         };
     }
@@ -81,6 +84,14 @@ public class AiDatasetExportService {
                 .map(this::reviewRow)
                 .toList();
         return response(AiDatasetKey.REVIEWS, rows);
+    }
+
+    private AiDatasetExportResponse exportProductReviews(int limit) {
+        var pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<Map<String, Object>> rows = reviewRepository.findAll(pageable).stream()
+                .map(this::productReviewRow)
+                .toList();
+        return response(AiDatasetKey.PRODUCT_REVIEWS, rows);
     }
 
     private AiDatasetExportResponse exportAccountingTransactions(int limit) {
@@ -125,6 +136,24 @@ public class AiDatasetExportService {
                 Map.entry("rating", review.getRating()),
                 Map.entry("content", nullable(privacyMaskingService.maskText(review.getContent()))),
                 Map.entry("status", review.getEffectiveStatus().name()),
+                Map.entry("createdAt", review.getCreatedAt())
+        );
+    }
+
+    private Map<String, Object> productReviewRow(Review review) {
+        Product product = review.getProduct();
+        return Map.ofEntries(
+                Map.entry("reviewId", review.getId()),
+                Map.entry("productId", product.getId()),
+                Map.entry("productCode", nullable(product.getProductCode())),
+                Map.entry("productName", product.getName()),
+                Map.entry("categoryId", product.getCategory().getId()),
+                Map.entry("brand", nullable(product.getBrand())),
+                Map.entry("price", nullable(product.getPrice())),
+                Map.entry("tags", nullable(product.getTags())),
+                Map.entry("rating", review.getRating()),
+                Map.entry("content", nullable(privacyMaskingService.maskText(review.getContent()))),
+                Map.entry("reviewStatus", review.getEffectiveStatus().name()),
                 Map.entry("createdAt", review.getCreatedAt())
         );
     }

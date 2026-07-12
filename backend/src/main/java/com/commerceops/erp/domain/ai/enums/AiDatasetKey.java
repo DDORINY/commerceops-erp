@@ -4,5 +4,6 @@ public enum AiDatasetKey {
     PRODUCTS,
     ORDERS,
     REVIEWS,
+    PRODUCT_REVIEWS,
     ACCOUNTING_TRANSACTIONS
 }
