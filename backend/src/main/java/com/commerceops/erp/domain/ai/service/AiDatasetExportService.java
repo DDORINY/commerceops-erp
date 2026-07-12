@@ -42,6 +42,8 @@ public class AiDatasetExportService {
                         List.of("productId", "productCode", "name", "categoryId", "brand", "price", "stockQuantity", "salesStatus", "displayStatus", "tags")),
                 catalog(AiDatasetKey.ORDERS, "주문 데이터셋", "주문 상태, 결제 상태, 금액, 할인 기반 수요 예측 후보",
                         List.of("orderId", "orderNumber", "totalPrice", "discountAmount", "orderStatus", "paymentStatus", "createdAt")),
+                catalog(AiDatasetKey.ORDER_DEMAND, "주문/수요 예측 데이터셋", "주문 일자, 금액, 상태, 할인 피처 기반 수요 예측 후보",
+                        List.of("orderId", "orderNumber", "orderedDate", "orderedHour", "dayOfWeek", "totalPrice", "discountAmount", "netAmount", "orderStatus", "paymentStatus")),
                 catalog(AiDatasetKey.REVIEWS, "리뷰 데이터셋", "평점, 본문, 숨김 상태 기반 리뷰 분석 후보",
                         List.of("reviewId", "productId", "rating", "content", "status", "createdAt")),
                 catalog(AiDatasetKey.PRODUCT_REVIEWS, "상품/리뷰 결합 데이터셋", "상품 속성과 리뷰 평점/본문을 결합한 추천/리뷰 분석 후보",
@@ -56,6 +58,7 @@ public class AiDatasetExportService {
         return switch (key) {
             case PRODUCTS -> exportProducts(safeLimit);
             case ORDERS -> exportOrders(safeLimit);
+            case ORDER_DEMAND -> exportOrderDemand(safeLimit);
             case REVIEWS -> exportReviews(safeLimit);
             case PRODUCT_REVIEWS -> exportProductReviews(safeLimit);
             case ACCOUNTING_TRANSACTIONS -> exportAccountingTransactions(safeLimit);
@@ -76,6 +79,14 @@ public class AiDatasetExportService {
                 .map(this::orderRow)
                 .toList();
         return response(AiDatasetKey.ORDERS, rows);
+    }
+
+    private AiDatasetExportResponse exportOrderDemand(int limit) {
+        var pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<Map<String, Object>> rows = orderRepository.findAll(pageable).stream()
+                .map(this::orderDemandRow)
+                .toList();
+        return response(AiDatasetKey.ORDER_DEMAND, rows);
     }
 
     private AiDatasetExportResponse exportReviews(int limit) {
@@ -126,6 +137,24 @@ public class AiDatasetExportService {
                 Map.entry("orderStatus", order.getStatus().name()),
                 Map.entry("paymentStatus", order.getPaymentStatus().name()),
                 Map.entry("createdAt", order.getCreatedAt())
+        );
+    }
+
+    private Map<String, Object> orderDemandRow(Order order) {
+        LocalDateTime orderedAt = order.getCreatedAt();
+        Integer discountAmount = order.getDiscountAmount() == null ? 0 : order.getDiscountAmount();
+        Integer totalPrice = order.getTotalPrice() == null ? 0 : order.getTotalPrice();
+        return Map.ofEntries(
+                Map.entry("orderId", order.getId()),
+                Map.entry("orderNumber", order.getOrderNumber()),
+                Map.entry("orderedDate", orderedAt != null ? orderedAt.toLocalDate().toString() : ""),
+                Map.entry("orderedHour", orderedAt != null ? orderedAt.getHour() : ""),
+                Map.entry("dayOfWeek", orderedAt != null ? orderedAt.getDayOfWeek().name() : ""),
+                Map.entry("totalPrice", totalPrice),
+                Map.entry("discountAmount", discountAmount),
+                Map.entry("netAmount", totalPrice - discountAmount),
+                Map.entry("orderStatus", order.getStatus().name()),
+                Map.entry("paymentStatus", order.getPaymentStatus().name())
         );
     }
 
