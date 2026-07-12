@@ -464,3 +464,9 @@
 | `GET` | `/api/admin/ai/datasets/{key}/export?limit=100` | 지정한 데이터셋의 샘플 rows를 JSON 형태로 조회한다. |
 
 지원하는 dataset key는 `PRODUCTS`, `ORDERS`, `REVIEWS`, `ACCOUNTING_TRANSACTIONS`다. 개인정보 마스킹과 파일 저장은 v0.8.2 이후 단계에서 확장한다.
+
+## v0.8.2 AI 데이터셋 마스킹 기준
+
+`GET /api/admin/ai/datasets/{key}/export` 응답에는 `privacyMasked` 필드가 포함된다. v0.8.2 기준 export 응답은 기본적으로 마스킹된 데이터만 반환한다.
+
+마스킹 대상은 이메일, 휴대폰 번호, 주민등록번호 형태, 토큰/비밀번호 형태, 주소 패턴 힌트다. 리뷰 본문 같은 자유 텍스트 필드는 export 시 마스킹 유틸을 거친다.

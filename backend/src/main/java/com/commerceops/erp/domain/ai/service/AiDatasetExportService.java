@@ -34,6 +34,7 @@ public class AiDatasetExportService {
     private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
     private final AccountingTransactionRepository accountingTransactionRepository;
+    private final AiDatasetPrivacyMaskingService privacyMaskingService;
 
     public List<AiDatasetCatalogResponse> getCatalog() {
         return List.of(
@@ -122,7 +123,7 @@ public class AiDatasetExportService {
                 Map.entry("reviewId", review.getId()),
                 Map.entry("productId", review.getProduct().getId()),
                 Map.entry("rating", review.getRating()),
-                Map.entry("content", nullable(review.getContent())),
+                Map.entry("content", nullable(privacyMaskingService.maskText(review.getContent()))),
                 Map.entry("status", review.getEffectiveStatus().name()),
                 Map.entry("createdAt", review.getCreatedAt())
         );
@@ -150,7 +151,7 @@ public class AiDatasetExportService {
                 .filter(item -> item.key() == key)
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        return new AiDatasetExportResponse(key, catalog.label(), LocalDateTime.now(), rows.size(), catalog.fields(), rows);
+        return new AiDatasetExportResponse(key, catalog.label(), LocalDateTime.now(), true, rows.size(), catalog.fields(), rows);
     }
 
     private Object nullable(Object value) {

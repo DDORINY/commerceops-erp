@@ -198,3 +198,12 @@ com.commerceops.erp
   - 데이터셋 카탈로그와 export 응답 DTO를 정의한다.
 - `domain/ai/enums/AiDatasetKey.java`
   - 지원 데이터셋 key를 관리한다.
+
+## v0.8.2 AI 데이터셋 개인정보 마스킹
+
+- `domain/ai/service/AiDatasetPrivacyMaskingService.java`
+  - 이메일, 전화번호, 주민등록번호 형태, 토큰/비밀번호 형태, 주소 패턴 힌트를 마스킹한다.
+- `AiDatasetExportResponse`
+  - export 응답에 `privacyMasked` 플래그를 포함한다.
+- `AiDatasetExportService`
+  - 리뷰 본문 등 자유 텍스트 export 전에 마스킹 서비스를 적용한다.

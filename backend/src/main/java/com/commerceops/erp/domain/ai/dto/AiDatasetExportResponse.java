@@ -10,6 +10,7 @@ public record AiDatasetExportResponse(
         AiDatasetKey key,
         String label,
         LocalDateTime exportedAt,
+        boolean privacyMasked,
         int rowCount,
         List<String> fields,
         List<Map<String, Object>> rows
