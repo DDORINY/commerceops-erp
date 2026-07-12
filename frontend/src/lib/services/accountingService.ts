@@ -147,8 +147,33 @@ export interface ApiSettlementBatch {
   items: ApiSettlementBatchItem[];
 }
 
+export interface ApiAccountingConsistencyIssue {
+  issueType: string;
+  sourceType: ApiAccountingReferenceType | 'ORDER' | 'PAYMENT' | 'RETURN' | 'SHIPMENT';
+  sourceId: number;
+  sourceNumber: string;
+  expectedTransactionType: ApiAccountingTransactionType;
+  expectedAmount: number | null;
+  status: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface ApiAccountingConsistencyReport {
+  missingRevenueCount: number;
+  missingRefundCount: number;
+  missingReturnRefundCount: number;
+  missingReturnFeeCount: number;
+  missingShippingCostCount: number;
+  totalIssueCount: number;
+  issues: ApiAccountingConsistencyIssue[];
+}
+
 export const accountingService = {
   getSummary: () => apiClient<ApiAccountingSummary>('/admin/accounting/summary'),
+
+  getConsistencyReport: (limit = 20) =>
+    apiClient<ApiAccountingConsistencyReport>(`/admin/accounting/consistency-report?limit=${limit}`),
 
   getEntries: (type?: ApiAccountingEntryType | 'ALL', page = 0, size = 20) => {
     const qs = new URLSearchParams();

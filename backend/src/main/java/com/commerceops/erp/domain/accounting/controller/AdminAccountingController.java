@@ -1,5 +1,6 @@
 package com.commerceops.erp.domain.accounting.controller;
 
+import com.commerceops.erp.domain.accounting.dto.AccountingConsistencyReportResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingEntryResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingLedgerResponse;
 import com.commerceops.erp.domain.accounting.dto.AccountingRecognitionResponse;
@@ -43,6 +44,15 @@ public class AdminAccountingController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
         return ApiResponse.ok(accountingService.getSummary());
+    }
+
+    @GetMapping("/consistency-report")
+    public ApiResponse<AccountingConsistencyReportResponse> getConsistencyReport(
+            @RequestParam(defaultValue = "20") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.ACCOUNTING_READ);
+        return ApiResponse.ok(accountingService.getConsistencyReport(limit));
     }
 
     @GetMapping("/entries")

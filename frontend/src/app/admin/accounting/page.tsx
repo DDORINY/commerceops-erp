@@ -8,6 +8,8 @@ import Pagination from '@/components/common/Pagination';
 import StatCard from '@/components/admin/StatCard';
 import {
   accountingService,
+  type ApiAccountingConsistencyIssue,
+  type ApiAccountingConsistencyReport,
   type ApiAccountingEntry,
   type ApiAccountingEntryType,
   type ApiAccountingLedger,
@@ -53,7 +55,7 @@ const TRANSACTION_DIRECTION_LABEL: Record<ApiAccountingTransaction['direction'],
   EXPENSE: '비용',
 };
 
-const REFERENCE_TYPE_LABEL: Record<ApiAccountingTransaction['referenceType'], string> = {
+const REFERENCE_TYPE_LABEL: Record<ApiAccountingTransaction['referenceType'] | ApiAccountingConsistencyIssue['sourceType'], string> = {
   ORDER: '주문',
   PAYMENT: '결제',
   REFUND: '환불',
@@ -71,6 +73,14 @@ const SETTLEMENT_STATUS_LABEL: Record<ApiSettlementBatch['status'], string> = {
   CANCELLED: '취소',
 };
 
+const CONSISTENCY_ISSUE_LABEL: Record<string, string> = {
+  MISSING_REVENUE: '매출 누락',
+  MISSING_PAYMENT_REFUND: '결제 환불 누락',
+  MISSING_RETURN_REFUND: '반품 환불 누락',
+  MISSING_RETURN_FEE: '반품 배송비 누락',
+  MISSING_SHIPPING_COST: '택배비 비용 누락',
+};
+
 export default function AdminAccountingPage() {
   const [summary, setSummary] = useState<ApiAccountingSummary | null>(null);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
@@ -85,6 +95,7 @@ export default function AdminAccountingPage() {
   const [transactions, setTransactions] = useState<ApiAccountingTransaction[]>([]);
   const [shippingCosts, setShippingCosts] = useState<ApiShippingCostEntry[]>([]);
   const [settlements, setSettlements] = useState<ApiSettlementBatch[]>([]);
+  const [consistencyReport, setConsistencyReport] = useState<ApiAccountingConsistencyReport | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -128,12 +139,14 @@ export default function AdminAccountingPage() {
       accountingService.getTransactions({ size: PREVIEW_SIZE }),
       accountingService.getShippingCosts(0, PREVIEW_SIZE),
       accountingService.getSettlementBatches({ size: PREVIEW_SIZE }),
+      accountingService.getConsistencyReport(PREVIEW_SIZE),
     ])
-      .then(([ledgerRes, transactionRes, shippingCostRes, settlementRes]) => {
+      .then(([ledgerRes, transactionRes, shippingCostRes, settlementRes, consistencyRes]) => {
         setLedgers(ledgerRes.content);
         setTransactions(transactionRes.content);
         setShippingCosts(shippingCostRes.content);
         setSettlements(settlementRes.content);
+        setConsistencyReport(consistencyRes);
         setPreviewError(null);
       })
       .catch((err) => {
@@ -141,6 +154,7 @@ export default function AdminAccountingPage() {
         setTransactions([]);
         setShippingCosts([]);
         setSettlements([]);
+        setConsistencyReport(null);
         setPreviewError(err instanceof Error ? err.message : '회계 리포트 데이터를 불러오지 못했습니다.');
       });
   }, []);
@@ -249,6 +263,29 @@ export default function AdminAccountingPage() {
       {previewError && <StatusMessage tone="error" message={previewError} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <ReportSection title="회계 정합성 점검" description="원천 데이터에는 있지만 회계 거래가 아직 없는 후보를 확인합니다.">
+          <div className="mb-3 grid grid-cols-2 md:grid-cols-5 gap-2">
+            <MiniMetric label="매출" value={consistencyReport?.missingRevenueCount ?? 0} />
+            <MiniMetric label="결제 환불" value={consistencyReport?.missingRefundCount ?? 0} />
+            <MiniMetric label="반품 환불" value={consistencyReport?.missingReturnRefundCount ?? 0} />
+            <MiniMetric label="반품 배송비" value={consistencyReport?.missingReturnFeeCount ?? 0} />
+            <MiniMetric label="택배비" value={consistencyReport?.missingShippingCostCount ?? 0} />
+          </div>
+          <DataTable<ApiAccountingConsistencyIssue>
+            keyField="sourceId"
+            data={consistencyReport?.issues ?? []}
+            emptyMessage="회계 정합성 이슈가 없습니다."
+            columns={[
+              { key: 'issueType', header: '이슈', render: (row) => <span className="text-xs font-semibold text-red-500">{CONSISTENCY_ISSUE_LABEL[row.issueType] ?? row.issueType}</span> },
+              { key: 'source', header: '원천', render: (row) => <span className="text-xs">{REFERENCE_TYPE_LABEL[row.sourceType] ?? row.sourceType} #{row.sourceId}</span> },
+              { key: 'sourceNumber', header: '번호', render: (row) => <span className="text-xs font-mono">{row.sourceNumber}</span> },
+              { key: 'expectedTransactionType', header: '예상 거래', render: (row) => <span className="text-xs">{TRANSACTION_TYPE_LABEL[row.expectedTransactionType] ?? row.expectedTransactionType}</span> },
+              { key: 'expectedAmount', header: '금액', render: (row) => <span className="text-xs font-semibold">{row.expectedAmount == null ? '-' : formatPrice(row.expectedAmount)}</span> },
+              { key: 'message', header: '내용', render: (row) => <span className="text-xs">{row.message}</span> },
+            ]}
+          />
+        </ReportSection>
+
         <ReportSection title="회계 원장" description="기간별 원장과 마감 상태를 확인합니다.">
           <DataTable<ApiAccountingLedger>
             keyField="ledgerId"
@@ -325,6 +362,15 @@ function ReportSection({ title, description, children }: { title: string; descri
       </div>
       {children}
     </section>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="border border-[#e8eaf0] bg-white px-3 py-2">
+      <div className="text-[11px] text-[#8a9bb5]">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-[#1a1f2e]">{value.toLocaleString()}건</div>
+    </div>
   );
 }
 
