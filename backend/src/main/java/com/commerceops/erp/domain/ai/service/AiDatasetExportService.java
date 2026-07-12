@@ -11,6 +11,12 @@ import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.review.entity.Review;
 import com.commerceops.erp.domain.review.repository.ReviewRepository;
+import com.commerceops.erp.domain.shipment.entity.Shipment;
+import com.commerceops.erp.domain.shipment.repository.ShipmentRepository;
+import com.commerceops.erp.domain.sku.entity.Sku;
+import com.commerceops.erp.domain.sku.repository.SkuRepository;
+import com.commerceops.erp.domain.warehouse.entity.WarehouseStock;
+import com.commerceops.erp.domain.warehouse.repository.WarehouseStockRepository;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +41,9 @@ public class AiDatasetExportService {
     private final ReviewRepository reviewRepository;
     private final AccountingTransactionRepository accountingTransactionRepository;
     private final AiDatasetPrivacyMaskingService privacyMaskingService;
+    private final SkuRepository skuRepository;
+    private final WarehouseStockRepository warehouseStockRepository;
+    private final ShipmentRepository shipmentRepository;
 
     public List<AiDatasetCatalogResponse> getCatalog() {
         return List.of(
@@ -48,6 +57,10 @@ public class AiDatasetExportService {
                         List.of("reviewId", "productId", "rating", "content", "status", "createdAt")),
                 catalog(AiDatasetKey.PRODUCT_REVIEWS, "상품/리뷰 결합 데이터셋", "상품 속성과 리뷰 평점/본문을 결합한 추천/리뷰 분석 후보",
                         List.of("reviewId", "productId", "productCode", "productName", "categoryId", "brand", "price", "tags", "rating", "content", "reviewStatus", "createdAt")),
+                catalog(AiDatasetKey.INVENTORY_SHIPPING, "재고 데이터셋", "SKU, 안전재고, 창고 재고 기반 재고 부족 예측 후보",
+                        List.of("skuId", "skuCode", "barcode", "productId", "productName", "safetyStockQuantity", "warehouseId", "warehouseName", "quantity", "reservedQuantity", "availableQuantity", "active")),
+                catalog(AiDatasetKey.SHIPPING_LEADTIME, "배송 리드타임 데이터셋", "배송 상태와 송장/출고/배송완료 시점 기반 배송 지연 예측 후보",
+                        List.of("shipmentId", "orderId", "orderNumber", "carrier", "status", "trackingIssuedAt", "shippedAt", "deliveredAt", "leadTimeHours")),
                 catalog(AiDatasetKey.ACCOUNTING_TRANSACTIONS, "회계 거래 데이터셋", "매출, 환불, 배송비, 정산 기반 손익/이상 탐지 후보",
                         List.of("transactionId", "transactionNumber", "type", "direction", "amount", "referenceType", "referenceId", "occurredAt"))
         );
@@ -61,6 +74,8 @@ public class AiDatasetExportService {
             case ORDER_DEMAND -> exportOrderDemand(safeLimit);
             case REVIEWS -> exportReviews(safeLimit);
             case PRODUCT_REVIEWS -> exportProductReviews(safeLimit);
+            case INVENTORY_SHIPPING -> exportInventoryShipping(safeLimit);
+            case SHIPPING_LEADTIME -> exportShippingLeadtime(safeLimit);
             case ACCOUNTING_TRANSACTIONS -> exportAccountingTransactions(safeLimit);
         };
     }
@@ -103,6 +118,27 @@ public class AiDatasetExportService {
                 .map(this::productReviewRow)
                 .toList();
         return response(AiDatasetKey.PRODUCT_REVIEWS, rows);
+    }
+
+    private AiDatasetExportResponse exportInventoryShipping(int limit) {
+        var pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        List<Map<String, Object>> rows = warehouseStockRepository.findAll(pageable).stream()
+                .map(this::warehouseStockRow)
+                .toList();
+        if (rows.isEmpty()) {
+            rows = skuRepository.findAll(pageable).stream()
+                    .map(this::skuInventoryRow)
+                    .toList();
+        }
+        return response(AiDatasetKey.INVENTORY_SHIPPING, rows);
+    }
+
+    private AiDatasetExportResponse exportShippingLeadtime(int limit) {
+        var pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        List<Map<String, Object>> rows = shipmentRepository.findAll(pageable).stream()
+                .map(this::shippingLeadtimeRow)
+                .toList();
+        return response(AiDatasetKey.SHIPPING_LEADTIME, rows);
     }
 
     private AiDatasetExportResponse exportAccountingTransactions(int limit) {
@@ -184,6 +220,60 @@ public class AiDatasetExportService {
                 Map.entry("content", nullable(privacyMaskingService.maskText(review.getContent()))),
                 Map.entry("reviewStatus", review.getEffectiveStatus().name()),
                 Map.entry("createdAt", review.getCreatedAt())
+        );
+    }
+
+    private Map<String, Object> warehouseStockRow(WarehouseStock stock) {
+        Product product = stock.getProduct();
+        return Map.ofEntries(
+                Map.entry("skuId", ""),
+                Map.entry("skuCode", ""),
+                Map.entry("barcode", ""),
+                Map.entry("productId", product.getId()),
+                Map.entry("productName", product.getName()),
+                Map.entry("safetyStockQuantity", nullable(product.getSafetyStockQuantity())),
+                Map.entry("warehouseId", stock.getWarehouse().getId()),
+                Map.entry("warehouseName", stock.getWarehouse().getName()),
+                Map.entry("quantity", stock.getQuantity()),
+                Map.entry("reservedQuantity", stock.getReservedQuantity()),
+                Map.entry("availableQuantity", stock.getAvailableQuantity()),
+                Map.entry("active", true)
+        );
+    }
+
+    private Map<String, Object> skuInventoryRow(Sku sku) {
+        Product product = sku.getProduct();
+        return Map.ofEntries(
+                Map.entry("skuId", sku.getId()),
+                Map.entry("skuCode", sku.getSkuCode()),
+                Map.entry("barcode", nullable(sku.getBarcode())),
+                Map.entry("productId", product.getId()),
+                Map.entry("productName", product.getName()),
+                Map.entry("safetyStockQuantity", nullable(sku.getSafetyStockQuantity())),
+                Map.entry("warehouseId", ""),
+                Map.entry("warehouseName", ""),
+                Map.entry("quantity", nullable(product.getStockQuantity())),
+                Map.entry("reservedQuantity", 0),
+                Map.entry("availableQuantity", nullable(product.getStockQuantity())),
+                Map.entry("active", sku.getActive())
+        );
+    }
+
+    private Map<String, Object> shippingLeadtimeRow(Shipment shipment) {
+        Long leadTimeHours = null;
+        if (shipment.getShippedAt() != null && shipment.getDeliveredAt() != null) {
+            leadTimeHours = java.time.Duration.between(shipment.getShippedAt(), shipment.getDeliveredAt()).toHours();
+        }
+        return Map.ofEntries(
+                Map.entry("shipmentId", shipment.getId()),
+                Map.entry("orderId", shipment.getOrder().getId()),
+                Map.entry("orderNumber", shipment.getOrder().getOrderNumber()),
+                Map.entry("carrier", nullable(shipment.getCarrier())),
+                Map.entry("status", shipment.getStatus().name()),
+                Map.entry("trackingIssuedAt", nullable(shipment.getTrackingNumberIssuedAt())),
+                Map.entry("shippedAt", nullable(shipment.getShippedAt())),
+                Map.entry("deliveredAt", nullable(shipment.getDeliveredAt())),
+                Map.entry("leadTimeHours", nullable(leadTimeHours))
         );
     }
 
