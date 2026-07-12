@@ -104,3 +104,16 @@ SUPER_ADMIN은 전체 권한을 보유한다. 기존 role 기반 1차 관리자 
 - `SETTLEMENT_MANAGE`: 정산 배치 생성과 항목 관리 권한이다.
 - `ACCOUNTING_CLOSE`: 정산 배치 마감 권한이다.
 - 정산 배치 조회는 `ACCOUNTING_READ` 권한을 사용한다.
+## v0.7.7 회계/정산 권한 정책
+
+회계/정산 API는 관리자 role 접근을 1차 기준으로 유지하고, 기능 실행은 permission code로 세분화한다.
+
+- `ACCOUNTING_READ`: 회계 요약, 원장, 거래, 정산 배치 조회
+- `ACCOUNTING_MANAGE`: 주문 매출 인식 등 회계 거래 생성
+- `PAYMENT_REFUND`: 결제/반품 환불 회계 반영
+- `RETURN_FEE_MANAGE`: 반품 배송비 회계 반영
+- `SHIPPING_COST_MANAGE`: 택배비 매입 회계 반영
+- `SETTLEMENT_MANAGE`: 정산 배치 생성
+- `ACCOUNTING_CLOSE`: 정산 배치 마감
+
+권한 부족 시 `PermissionChecker`가 `PERMISSION_DENIED` 감사 로그를 남기고, 사용자에게는 “해당 작업을 수행할 권한이 없습니다. 관리자에게 권한을 요청하세요.” 메시지를 반환한다.

@@ -430,3 +430,19 @@
 | `PATCH` | `/api/admin/accounting/settlements/{settlementId}/close` | 정산 배치 마감 | `ACCOUNTING_CLOSE` |
 
 `SettlementBatchCreateRequest`는 `periodStart`, `periodEnd`를 받는다. `SettlementBatchResponse`는 배치 번호, 기간, 상태, 매출/환불/배송비/택배비 합계, 순정산금액, 마감자, 마감일시, 정산 항목을 반환한다.
+## v0.7.7 회계 권한/감사 로그 API 기준
+
+관리자 회계 API는 `/api/admin/accounting/**` 경로를 사용하며, 기존 관리자 role 접근 위에 permission code 기반 세부 실행 권한을 병행한다.
+
+| API 범위 | 주요 경로 | 필요 권한 |
+| --- | --- | --- |
+| 회계 요약/원장/거래 조회 | `GET /api/admin/accounting/summary`, `GET /api/admin/accounting/ledgers`, `GET /api/admin/accounting/transactions` | `ACCOUNTING_READ` |
+| 주문 매출 인식 | `POST /api/admin/accounting/orders/{orderId}/recognize-revenue` | `ACCOUNTING_MANAGE` |
+| 결제/반품 환불 회계 반영 | `POST /api/admin/accounting/payments/{paymentId}/recognize-refund`, `POST /api/admin/accounting/returns/{returnId}/recognize-refund` | `PAYMENT_REFUND` |
+| 반품 배송비 회계 반영 | `POST /api/admin/accounting/returns/{returnId}/recognize-return-fee` | `RETURN_FEE_MANAGE` |
+| 택배비 매입 회계 반영 | `POST /api/admin/accounting/shipments/{shipmentId}/recognize-shipping-cost` | `SHIPPING_COST_MANAGE` |
+| 정산 배치 조회 | `GET /api/admin/accounting/settlements` | `ACCOUNTING_READ` |
+| 정산 배치 생성 | `POST /api/admin/accounting/settlements` | `SETTLEMENT_MANAGE` |
+| 정산 배치 마감 | `PATCH /api/admin/accounting/settlements/{settlementId}/close` | `ACCOUNTING_CLOSE` |
+
+주요 회계 실행 작업은 감사 로그에 기록한다. 권한이 없는 사용자가 실행을 시도하면 `PERMISSION_DENIED` 감사 로그가 기록되고 403 응답을 반환한다.
