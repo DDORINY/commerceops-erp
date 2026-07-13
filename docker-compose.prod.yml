@@ -113,15 +113,32 @@ services:
 
     ports:
       - "80:80"
+      - "443:443"
 
     volumes:
-      - ./deploy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/nginx/http.conf:/etc/nginx/config-source/http.conf:ro
+      - ./deploy/nginx/https.conf:/etc/nginx/config-source/https.conf:ro
+      - ./deploy/nginx/40-select-config.sh:/docker-entrypoint.d/40-select-config.sh:ro
+      - certbot-www:/var/www/certbot:ro
+      - letsencrypt:/etc/letsencrypt:ro
 
     depends_on:
       - frontend
       - backend
 
     mem_limit: 96m
+
+    networks:
+      - commerceops-network
+
+  certbot:
+    image: certbot/certbot:latest
+    profiles:
+      - tls
+
+    volumes:
+      - certbot-www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
 
     networks:
       - commerceops-network
@@ -133,6 +150,12 @@ volumes:
 
   uploads-data:
     name: commerceops-uploads-data
+
+  certbot-www:
+    name: commerceops-certbot-www
+
+  letsencrypt:
+    name: commerceops-letsencrypt
 
 
 networks:

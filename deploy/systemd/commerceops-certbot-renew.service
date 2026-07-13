@@ -1,0 +1,11 @@
+[Unit]
+Description=Renew CommerceOps Let's Encrypt certificate
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/commerceops-erp
+ExecStart=/home/ubuntu/commerceops-erp/deploy/scripts/renew-certificates.sh
