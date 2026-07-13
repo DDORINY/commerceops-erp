@@ -9,6 +9,9 @@ import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
 import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
+import com.commerceops.erp.domain.review.entity.Review;
+import com.commerceops.erp.domain.review.enums.ReviewStatus;
+import com.commerceops.erp.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,7 +28,9 @@ import java.util.Map;
 public class AiOperationsService {
 
     private final AiDatasetExportService aiDatasetExportService;
+    private final AiDatasetPrivacyMaskingService privacyMaskingService;
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
 
     public AiOperationsOverviewResponse getOverview() {
         LocalDateTime generatedAt = LocalDateTime.now();
@@ -123,6 +128,16 @@ public class AiOperationsService {
                 .toList();
     }
 
+    public List<AiInsightResponse> getReviewAnalyses(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 30));
+        var pageable = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return reviewRepository.findAll(pageable)
+                .stream()
+                .filter(review -> review.getEffectiveStatus() != ReviewStatus.DELETED)
+                .map(this::reviewAnalysisInsight)
+                .toList();
+    }
+
     private AiInsightResponse productRecommendationInsight(Product product) {
         LocalDateTime generatedAt = LocalDateTime.now();
         int stock = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
@@ -194,6 +209,37 @@ public class AiOperationsService {
                         "estimatedDaysOfStock", daysOfStock
                 ),
                 "commerceops_demo_demand_baseline",
+                generatedAt
+        );
+    }
+
+    private AiInsightResponse reviewAnalysisInsight(Review review) {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        int rating = review.getRating() == null ? 0 : review.getRating();
+        String content = review.getContent() == null ? "" : review.getContent();
+        double sentimentScore = Math.max(0.05, Math.min(0.95, rating / 5.0));
+        AiRiskLevel riskLevel = rating <= 2 ? AiRiskLevel.HIGH : rating == 3 ? AiRiskLevel.MEDIUM : AiRiskLevel.LOW;
+        String reason = String.format(
+                "평점 %d점과 본문 길이 %d자를 기준으로 리뷰 감성 후보를 계산했습니다.",
+                rating,
+                content.length()
+        );
+        return insight(
+                "review-analysis-" + review.getId(),
+                "REVIEW",
+                review.getId(),
+                review.getProduct().getName() + " 리뷰 분석",
+                Math.round(sentimentScore * 100.0) / 100.0,
+                riskLevel,
+                reason,
+                Map.of(
+                        "productName", review.getProduct().getName(),
+                        "rating", rating,
+                        "status", review.getEffectiveStatus().name(),
+                        "maskedContent", privacyMaskingService.maskText(content),
+                        "contentLength", content.length()
+                ),
+                "commerceops_demo_review_sentiment_baseline",
                 generatedAt
         );
     }

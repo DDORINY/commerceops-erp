@@ -1702,3 +1702,21 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend build
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.3` 태그 생성
+
+### v0.9.4 체크리스트
+
+목적: 리뷰 평점과 마스킹된 본문을 기반으로 관리자용 AI 리뷰 분석 후보를 표시한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.4-ai-review-analysis` 브랜치 생성
+- [x] 리뷰 분석 후보 계산 service 추가
+- [x] `GET /api/admin/ai/reviews/analysis` API 추가
+- [x] `AI_REVIEW_ANALYSIS_READ` 권한 적용
+- [x] `/admin/ai/review-analysis` 화면 추가
+- [x] 관리자 사이드바 AI 리뷰 분석 메뉴 추가
+- [x] 관련 문서 갱신
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.4` 태그 생성

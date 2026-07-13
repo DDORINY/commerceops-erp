@@ -330,3 +330,13 @@
   - `getDemandForecasts(limit)` 호출 함수를 추가했다.
 - `frontend/src/lib/adminMenu.ts`
   - `AI 운영` 그룹에 `AI 수요 예측` 메뉴를 추가했다.
+
+## v0.9.4 AI 리뷰 분석 화면
+
+- `frontend/src/app/admin/ai/review-analysis/page.tsx`
+  - 관리자 AI 리뷰 분석 화면이다.
+  - 상품명, 감성 후보, 감성 점수, 평점, 마스킹 본문, 분석 근거를 표시한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `getReviewAnalyses(limit)` 호출 함수를 추가했다.
+- `frontend/src/lib/adminMenu.ts`
+  - `AI 운영` 그룹에 `AI 리뷰 분석` 메뉴를 추가했다.

@@ -246,3 +246,13 @@ com.commerceops.erp
   - `AI_FORECAST_READ` 권한을 확인한다.
 - `db/migration/V38__seed_ai_demand_forecast_menu.sql`
   - 관리자 메뉴 권한에 `ai-demand-forecast` 항목을 추가한다.
+
+## v0.9.4 AI 리뷰 분석
+
+- `domain.ai.service.AiOperationsService#getReviewAnalyses`
+  - 리뷰 평점과 마스킹된 본문을 기준으로 감성 분석 후보를 계산한다.
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/reviews/analysis`
+  - `AI_REVIEW_ANALYSIS_READ` 권한을 확인한다.
+- `db/migration/V39__seed_ai_review_analysis_menu.sql`
+  - 관리자 메뉴 권한에 `ai-review-analysis` 항목을 추가한다.
