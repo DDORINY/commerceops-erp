@@ -3,6 +3,7 @@ package com.commerceops.erp.domain.ai.controller;
 import com.commerceops.erp.domain.ai.dto.AiOperationsHealthResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsOverviewResponse;
 import com.commerceops.erp.domain.ai.dto.AiInsightResponse;
+import com.commerceops.erp.domain.ai.dto.AiReportResponse;
 import com.commerceops.erp.domain.ai.service.AiOperationsService;
 import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.service.PermissionChecker;
@@ -93,5 +94,13 @@ public class AdminAiOperationsController {
     ) {
         permissionChecker.require(userDetails, PermissionCodes.AI_RISK_ALERT_READ);
         return ApiResponse.ok(aiOperationsService.getSettlementRiskAlerts(limit));
+    }
+
+    @GetMapping("/reports")
+    public ApiResponse<List<AiReportResponse>> getReports(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.AI_REPORT_READ);
+        return ApiResponse.ok(aiOperationsService.getReports());
     }
 }

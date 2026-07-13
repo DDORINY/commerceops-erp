@@ -31,6 +31,17 @@ export interface AiOperationsHealth {
   checkedAt: string;
 }
 
+export interface AiReport {
+  id: string;
+  title: string;
+  summary: string;
+  relatedModule: string;
+  modelName: string;
+  evidenceSources: string[];
+  interpretationGuide: string[];
+  generatedAt: string;
+}
+
 export const aiOperationsService = {
   getOverview: () => apiClient<AiOperationsOverview>('/admin/ai/overview'),
   getHealth: () => apiClient<AiOperationsHealth>('/admin/ai/health'),
@@ -46,4 +57,5 @@ export const aiOperationsService = {
     apiClient<AiInsight[]>(`/admin/ai/risks/inventory?limit=${limit}`),
   getSettlementRiskAlerts: (limit = 10) =>
     apiClient<AiInsight[]>(`/admin/ai/risks/settlement?limit=${limit}`),
+  getReports: () => apiClient<AiReport[]>('/admin/ai/reports'),
 };

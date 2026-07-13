@@ -279,3 +279,15 @@ com.commerceops.erp
   - 두 API 모두 `AI_RISK_ALERT_READ` 권한을 확인한다.
 - `db/migration/V41__seed_ai_risk_alert_menu.sql`
   - 관리자 메뉴 권한에 `ai-risk-alerts` 항목을 추가한다.
+
+## v0.9.7 AI 리포트/근거 설명
+
+- `domain.ai.dto.AiReportResponse`
+  - AI 운영 모듈별 리포트 카드 응답을 정의한다.
+- `domain.ai.service.AiOperationsService#getReports`
+  - 모듈별 근거 데이터, 해석 기준, 모델명을 담은 리포트 목록을 반환한다.
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/reports`
+  - `AI_REPORT_READ` 권한을 확인한다.
+- `db/migration/V42__seed_ai_reports_menu.sql`
+  - 관리자 메뉴 권한에 `ai-reports` 항목을 추가한다.

@@ -4,6 +4,7 @@ import com.commerceops.erp.domain.ai.dto.AiDatasetCatalogResponse;
 import com.commerceops.erp.domain.ai.dto.AiInsightResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsHealthResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsOverviewResponse;
+import com.commerceops.erp.domain.ai.dto.AiReportResponse;
 import com.commerceops.erp.domain.ai.enums.AiRiskLevel;
 import com.commerceops.erp.domain.accounting.entity.SettlementBatch;
 import com.commerceops.erp.domain.accounting.enums.SettlementBatchStatus;
@@ -179,6 +180,52 @@ public class AiOperationsService {
                 .filter(batch -> batch.getStatus() != SettlementBatchStatus.CLOSED && batch.getStatus() != SettlementBatchStatus.CANCELLED)
                 .map(this::settlementRiskInsight)
                 .toList();
+    }
+
+    public List<AiReportResponse> getReports() {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        return List.of(
+                report(
+                        "ai-report-product-recommendation",
+                        "상품 추천 후보 리포트",
+                        "상품 노출 상태, 판매 상태, 재고, 태그/검색 키워드, 이미지 여부를 기반으로 추천 후보 점수를 설명합니다.",
+                        "AI 상품 추천",
+                        "rule_based_product_recommendation_v0.9.2",
+                        List.of("products", "tags", "searchKeywords", "stockQuantity"),
+                        List.of("점수가 높아도 자동 전시하지 않습니다.", "재고가 부족하면 추천 전 재고 보충 여부를 확인합니다.", "태그/키워드 품질이 낮으면 점수 해석에 한계가 있습니다."),
+                        generatedAt
+                ),
+                report(
+                        "ai-report-demand-forecast",
+                        "수요 예측 리포트",
+                        "현재 재고와 안전재고, 데모 수요지수를 기준으로 재고 소진 위험을 설명합니다.",
+                        "AI 수요 예측",
+                        "commerceops_demo_demand_baseline",
+                        List.of("products", "stockQuantity", "safetyStockQuantity", "tags", "searchKeywords"),
+                        List.of("자동 발주 기준이 아닙니다.", "실제 운영에서는 주문 시계열과 시즌성을 추가해야 합니다.", "품절 임박 후보는 관리자 확인 후 보충 계획을 세웁니다."),
+                        generatedAt
+                ),
+                report(
+                        "ai-report-review-analysis",
+                        "리뷰 분석 리포트",
+                        "리뷰 평점과 마스킹된 본문을 기준으로 감성 후보와 운영 확인 포인트를 설명합니다.",
+                        "AI 리뷰 분석",
+                        "commerceops_demo_review_sentiment_baseline",
+                        List.of("reviews", "rating", "maskedContent", "reviewStatus"),
+                        List.of("자동 숨김이나 제재에 사용하지 않습니다.", "본문은 개인정보 마스킹 후 확인합니다.", "낮은 평점 리뷰는 상품 품질/배송/CS 원인을 함께 확인합니다."),
+                        generatedAt
+                ),
+                report(
+                        "ai-report-order-risk",
+                        "이상 주문/리스크 리포트",
+                        "주문 금액, 할인율, 주문/결제 상태, 재고 부족, 정산 상태를 기반으로 확인이 필요한 운영 리스크를 설명합니다.",
+                        "AI 이상 주문/리스크 알림",
+                        "rule_based_operations_risk_v0.9",
+                        List.of("orders", "paymentStatus", "products", "settlementBatches"),
+                        List.of("자동 주문 차단이나 정산 마감에 사용하지 않습니다.", "고액/고할인 주문은 결제와 배송 상태를 함께 확인합니다.", "정산 리스크는 회계 화면에서 원천 데이터를 확인합니다."),
+                        generatedAt
+                )
+        );
     }
 
     private AiInsightResponse productRecommendationInsight(Product product) {
@@ -414,5 +461,18 @@ public class AiOperationsService {
             LocalDateTime generatedAt
     ) {
         return new AiInsightResponse(id, targetType, targetId, title, score, riskLevel, reason, features, modelName, generatedAt);
+    }
+
+    private AiReportResponse report(
+            String id,
+            String title,
+            String summary,
+            String relatedModule,
+            String modelName,
+            List<String> evidenceSources,
+            List<String> interpretationGuide,
+            LocalDateTime generatedAt
+    ) {
+        return new AiReportResponse(id, title, summary, relatedModule, modelName, evidenceSources, interpretationGuide, generatedAt);
     }
 }
