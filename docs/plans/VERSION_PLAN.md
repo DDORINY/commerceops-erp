@@ -1812,3 +1812,32 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend build
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.9` 태그 생성
+
+## v1.0 최종 포트폴리오 릴리스
+
+v1.0의 목적은 v0.1 ~ v0.9에서 구현한 CommerceOps ERP를 포트폴리오 제출 가능한 최종 릴리스 상태로 정리하는 것이다. 신규 대형 기능 구현보다 문서, 데모 데이터, smoke test, 최종 태그를 우선한다. 상세 계획은 [V1.0_FINAL_PORTFOLIO_RELEASE_PLAN.md](./V1.0_FINAL_PORTFOLIO_RELEASE_PLAN.md)를 기준으로 한다.
+
+| 버전 | 브랜치 | 목적 | 완료 기준 |
+| --- | --- | --- | --- |
+| `v1.0.0` | `v1.0.0-final-portfolio-release-plan` | 최종 포트폴리오 릴리스 계획 수립 | v1.0 작업 순서와 제외 범위 문서화 |
+| `v1.0.1` | `v1.0.1-final-docs-polish` | README와 핵심 문서 최종 정리 | 문서 인덱스, 실행 가이드, 구조 문서 정합성 확보 |
+| `v1.0.2` | `v1.0.2-demo-seed-data` | 시연용 데이터와 계정 기준 정리 | 데모 계정, 샘플 데이터, AI 데모 재현 방법 문서화 |
+| `v1.0.3` | `v1.0.3-release-smoke-test` | 주요 화면 smoke test | 검증 결과와 known issue 정리 |
+| `v1.0.4` | `v1.0.4-final-tag-release` | 최종 포트폴리오 릴리스 마감 | 최종 태그와 제출 체크리스트 완료 |
+
+### v1.0.0 체크리스트
+
+목적: CommerceOps ERP를 포트폴리오 제출 가능한 최종 릴리스로 정리하기 위해 v1.0 작업 순서, 제외 범위, 검증 기준을 확정한다.
+
+- [x] main 최신 상태 확인
+- [x] `v1.0.0-final-portfolio-release-plan` 브랜치 생성
+- [x] v0.9.9 완료 상태 확인
+- [x] v1.0 최종 포트폴리오 릴리스 계획 문서 생성
+- [x] v1.0.0 ~ v1.0.4 작업 순서 정의
+- [x] README/문서 polish 범위 정의
+- [x] 데모 데이터/계정 정리 범위 정의
+- [x] smoke test 범위 정의
+- [x] v1.0 제외 범위 정의
+- [x] 관련 문서 갱신
+- [x] `git diff --check`
+- [ ] main 병합 및 `v1.0.0` 태그 생성
