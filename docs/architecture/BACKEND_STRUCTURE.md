@@ -207,3 +207,21 @@ com.commerceops.erp
   - export 응답에 `privacyMasked` 플래그를 포함한다.
 - `AiDatasetExportService`
   - 리뷰 본문 등 자유 텍스트 export 전에 마스킹 서비스를 적용한다.
+
+## v0.9.1 AI 운영 공통 기반
+
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/overview`
+  - `GET /api/admin/ai/health`
+  - 두 API 모두 `AI_REPORT_READ` 권한을 확인한다.
+- `domain.ai.service.AiOperationsService`
+  - AI 데이터셋 카탈로그와 포트폴리오 데모 기준을 이용해 overview/health 응답을 생성한다.
+  - 실제 추론 서버 호출 없이 v0.9.2 이후 화면에서 재사용할 공통 응답 구조를 제공한다.
+- `domain.ai.dto`
+  - `AiInsightResponse`
+  - `AiOperationsOverviewResponse`
+  - `AiOperationsHealthResponse`
+- `domain.ai.enums.AiRiskLevel`
+  - `LOW`, `MEDIUM`, `HIGH` risk level을 정의한다.
+- `domain.permission.PermissionCodes`
+  - v0.9 AI 운영 permission code를 추가했다.

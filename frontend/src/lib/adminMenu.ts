@@ -22,7 +22,14 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     label: '대시보드',
     items: [
       { menuKey: 'dashboard', label: '대시보드', href: '/admin', roles: ALL_ADMIN_ROLES },
-      { menuKey: 'notifications', label: '알림', href: '/admin/settings?section=notifications', roles: ADMIN_ROLES, note: '설정 진입점' },
+      { menuKey: 'notifications', label: '알림', href: '/admin/settings?section=notifications', roles: ADMIN_ROLES, note: '설정 진입' },
+    ],
+  },
+  {
+    label: 'AI 운영',
+    items: [
+      { menuKey: 'ai-overview', label: 'AI 운영 개요', href: '/admin/ai', roles: ALL_ADMIN_ROLES },
+      { menuKey: 'ai-datasets', label: 'AI 데이터셋', href: '/admin/settings?section=ai-datasets', roles: ADMIN_ROLES },
     ],
   },
   {
@@ -93,8 +100,8 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     label: '인사/권한 관리',
     items: [
       { menuKey: 'staff', label: '직원 관리', href: '/admin/settings/staff', roles: SUPER_ONLY },
-      { menuKey: 'departments', label: '부서 관리', href: '/admin/settings?section=departments', roles: SUPER_ONLY, note: 'v0.4 예정' },
-      { menuKey: 'positions', label: '직급 관리', href: '/admin/settings?section=positions', roles: SUPER_ONLY, note: 'v0.4 예정' },
+      { menuKey: 'departments', label: '부서 관리', href: '/admin/settings?section=departments', roles: SUPER_ONLY, note: '후속 구현' },
+      { menuKey: 'positions', label: '직급 관리', href: '/admin/settings?section=positions', roles: SUPER_ONLY, note: '후속 구현' },
       { menuKey: 'permission-groups', label: '권한 그룹 관리', href: '/admin/settings/permission-groups', roles: SUPER_ONLY },
       { menuKey: 'roles', label: '역할/권한 설정', href: '/admin/settings/roles', roles: SUPER_ONLY },
       { menuKey: 'menu-permissions', label: '메뉴/기능 권한', href: '/admin/settings/menu-permissions', roles: SUPER_ONLY },

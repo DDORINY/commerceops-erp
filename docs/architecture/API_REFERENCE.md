@@ -1,5 +1,7 @@
 # API 명세
 
+> v0.9.1 기준 AI 운영 공통 기반 API가 추가되었다. 기존 API 명세는 아래 도메인별 섹션을 따른다.
+
 기준 버전: `v0.6.7`
 기준 코드: `backend/src/main/java/com/commerceops/erp`
 
@@ -478,3 +480,26 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 `GET /api/admin/ai/datasets/{key}/export` 응답에는 `privacyMasked` 필드가 포함된다. v0.8.2 기준 export 응답은 기본적으로 마스킹된 데이터만 반환한다.
 
 마스킹 대상은 이메일, 휴대폰 번호, 주민등록번호 형태, 토큰/비밀번호 형태, 주소 패턴 힌트다. 리뷰 본문 같은 자유 텍스트 필드는 export 시 마스킹 유틸을 거친다.
+
+## v0.9.1 AI 운영 공통 기반 API
+
+관리자 AI 운영 API는 v0.8에서 만든 데이터셋 export와 포트폴리오 데모 baseline 모델 구조를 관리자 화면에 연결하기 위한 공통 기반이다.
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/overview` | AI 운영 overview, 활성 예정 모듈, 공통 insight 하이라이트를 조회한다. | `AI_REPORT_READ` |
+| `GET` | `/api/admin/ai/health` | AI 데이터셋 카탈로그와 운영 기반 준비 상태를 조회한다. | `AI_REPORT_READ` |
+
+`AiInsightResponse`는 `id`, `targetType`, `targetId`, `title`, `score`, `riskLevel`, `reason`, `features`, `modelName`, `generatedAt` 필드를 가진다.
+
+`riskLevel`은 `LOW`, `MEDIUM`, `HIGH`를 사용한다. v0.9.1 기준 AI 결과는 자동 처리 지시가 아니라 관리자 판단을 돕는 참고 지표로만 제공한다.
+
+추가 permission code:
+
+- `AI_RECOMMENDATION_READ`
+- `AI_FORECAST_READ`
+- `AI_REVIEW_ANALYSIS_READ`
+- `AI_ANOMALY_READ`
+- `AI_RISK_ALERT_READ`
+- `AI_REPORT_READ`
+- `AI_OPERATIONS_MANAGE`
