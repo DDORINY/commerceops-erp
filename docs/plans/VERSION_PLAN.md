@@ -1891,4 +1891,4 @@ v1.0의 목적은 v0.1 ~ v0.9에서 구현한 CommerceOps ERP를 포트폴리오
 - [x] v1.0.0 ~ v1.0.3 체크리스트 확인
 - [x] README/문서 인덱스/데모 데이터/smoke test 문서 확인
 - [x] `git diff --check`
-- [ ] main 병합 및 `v1.0.4` 태그 생성
+- [x] main 병합 및 `v1.0.4` 태그 생성
