@@ -67,4 +67,13 @@ public class AdminAiOperationsController {
         permissionChecker.require(userDetails, PermissionCodes.AI_REVIEW_ANALYSIS_READ);
         return ApiResponse.ok(aiOperationsService.getReviewAnalyses(limit));
     }
+
+    @GetMapping("/anomalies/orders")
+    public ApiResponse<List<AiInsightResponse>> getOrderAnomalies(
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.AI_ANOMALY_READ);
+        return ApiResponse.ok(aiOperationsService.getOrderAnomalies(limit));
+    }
 }

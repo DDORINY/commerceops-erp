@@ -1720,3 +1720,21 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend build
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.4` 태그 생성
+
+### v0.9.5 체크리스트
+
+목적: 주문 금액, 할인율, 주문/결제 상태 불일치 후보를 기반으로 관리자용 AI 이상 주문 후보를 표시한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.5-ai-order-anomaly` 브랜치 생성
+- [x] 이상 주문 후보 계산 service 추가
+- [x] `GET /api/admin/ai/anomalies/orders` API 추가
+- [x] `AI_ANOMALY_READ` 권한 적용
+- [x] `/admin/ai/order-anomalies` 화면 추가
+- [x] 관리자 사이드바 AI 이상 주문 탐지 메뉴 추가
+- [x] 관련 문서 갱신
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.5` 태그 생성

@@ -5,6 +5,10 @@ import com.commerceops.erp.domain.ai.dto.AiInsightResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsHealthResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsOverviewResponse;
 import com.commerceops.erp.domain.ai.enums.AiRiskLevel;
+import com.commerceops.erp.domain.order.entity.Order;
+import com.commerceops.erp.domain.order.enums.OrderStatus;
+import com.commerceops.erp.domain.order.repository.OrderRepository;
+import com.commerceops.erp.domain.payment.enums.PaymentStatus;
 import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
 import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
@@ -29,6 +33,7 @@ public class AiOperationsService {
 
     private final AiDatasetExportService aiDatasetExportService;
     private final AiDatasetPrivacyMaskingService privacyMaskingService;
+    private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
 
@@ -138,6 +143,21 @@ public class AiOperationsService {
                 .toList();
     }
 
+    public List<AiInsightResponse> getOrderAnomalies(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 30));
+        var pageable = PageRequest.of(0, Math.max(safeLimit * 3, 10), Sort.by(Sort.Direction.DESC, "createdAt"));
+        return orderRepository.findAll(pageable)
+                .stream()
+                .map(this::orderAnomalyInsight)
+                .sorted((left, right) -> {
+                    int riskCompare = Integer.compare(riskWeight(right.riskLevel()), riskWeight(left.riskLevel()));
+                    if (riskCompare != 0) return riskCompare;
+                    return Double.compare(right.score(), left.score());
+                })
+                .limit(safeLimit)
+                .toList();
+    }
+
     private AiInsightResponse productRecommendationInsight(Product product) {
         LocalDateTime generatedAt = LocalDateTime.now();
         int stock = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
@@ -240,6 +260,51 @@ public class AiOperationsService {
                         "contentLength", content.length()
                 ),
                 "commerceops_demo_review_sentiment_baseline",
+                generatedAt
+        );
+    }
+
+    private AiInsightResponse orderAnomalyInsight(Order order) {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        int totalPrice = order.getTotalPrice() == null ? 0 : order.getTotalPrice();
+        int discountAmount = order.getDiscountAmount() == null ? 0 : order.getDiscountAmount();
+        double discountRate = totalPrice <= 0 ? 0 : (double) discountAmount / totalPrice;
+        boolean highAmount = totalPrice >= 1_000_000;
+        boolean highDiscount = discountRate >= 0.5;
+        boolean statusMismatch = order.getStatus() == OrderStatus.CANCELLED && order.getPaymentStatus() == PaymentStatus.PAID;
+        double score = Math.min(0.99,
+                0.2
+                        + (highAmount ? 0.25 : 0)
+                        + (highDiscount ? 0.3 : discountRate * 0.3)
+                        + (statusMismatch ? 0.35 : 0)
+        );
+        AiRiskLevel riskLevel = statusMismatch || (highAmount && highDiscount)
+                ? AiRiskLevel.HIGH
+                : highAmount || highDiscount ? AiRiskLevel.MEDIUM : AiRiskLevel.LOW;
+        String reason = String.format(
+                "주문금액 %,d원, 할인율 %.0f%%, 주문상태 %s, 결제상태 %s 기준으로 이상 후보 점수를 계산했습니다.",
+                totalPrice,
+                discountRate * 100,
+                order.getStatus().name(),
+                order.getPaymentStatus().name()
+        );
+        return insight(
+                "order-anomaly-" + order.getId(),
+                "ORDER",
+                order.getId(),
+                order.getOrderNumber() + " 이상 주문 후보",
+                Math.round(score * 100.0) / 100.0,
+                riskLevel,
+                reason,
+                Map.of(
+                        "orderNumber", order.getOrderNumber(),
+                        "totalPrice", totalPrice,
+                        "discountAmount", discountAmount,
+                        "discountRate", Math.round(discountRate * 10000.0) / 100.0,
+                        "orderStatus", order.getStatus().name(),
+                        "paymentStatus", order.getPaymentStatus().name()
+                ),
+                "rule_based_order_anomaly_v0.9.5",
                 generatedAt
         );
     }

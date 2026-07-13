@@ -40,4 +40,6 @@ export const aiOperationsService = {
     apiClient<AiInsight[]>(`/admin/ai/forecasts/demand?limit=${limit}`),
   getReviewAnalyses: (limit = 10) =>
     apiClient<AiInsight[]>(`/admin/ai/reviews/analysis?limit=${limit}`),
+  getOrderAnomalies: (limit = 10) =>
+    apiClient<AiInsight[]>(`/admin/ai/anomalies/orders?limit=${limit}`),
 };

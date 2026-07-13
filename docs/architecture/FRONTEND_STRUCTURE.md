@@ -340,3 +340,13 @@
   - `getReviewAnalyses(limit)` 호출 함수를 추가했다.
 - `frontend/src/lib/adminMenu.ts`
   - `AI 운영` 그룹에 `AI 리뷰 분석` 메뉴를 추가했다.
+
+## v0.9.5 AI 이상 주문 탐지 화면
+
+- `frontend/src/app/admin/ai/order-anomalies/page.tsx`
+  - 관리자 AI 이상 주문 탐지 화면이다.
+  - 주문번호, 탐지 상태, 위험 점수, 주문금액, 할인율, 주문/결제 상태, 탐지 근거를 표시한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `getOrderAnomalies(limit)` 호출 함수를 추가했다.
+- `frontend/src/lib/adminMenu.ts`
+  - `AI 운영` 그룹에 `AI 이상 주문 탐지` 메뉴를 추가했다.
