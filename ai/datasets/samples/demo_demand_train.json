@@ -1,0 +1,13 @@
+{
+  "description": "포트폴리오 데모용 합성 주문/수요 예측 학습 데이터입니다. 실제 고객 데이터가 아닙니다.",
+  "rows": [
+    { "priceLevel": 3.9, "discountRate": 0.05, "stockLevel": 12.0, "reviewRating": 4.6, "recentReviewCount": 18, "isWeekend": 0, "seasonIndex": 1, "targetDemandQuantity": 11 },
+    { "priceLevel": 5.9, "discountRate": 0.1, "stockLevel": 8.0, "reviewRating": 4.8, "recentReviewCount": 32, "isWeekend": 1, "seasonIndex": 1, "targetDemandQuantity": 18 },
+    { "priceLevel": 12.9, "discountRate": 0.0, "stockLevel": 3.5, "reviewRating": 4.2, "recentReviewCount": 9, "isWeekend": 0, "seasonIndex": 2, "targetDemandQuantity": 5 },
+    { "priceLevel": 2.4, "discountRate": 0.15, "stockLevel": 21.0, "reviewRating": 4.4, "recentReviewCount": 21, "isWeekend": 1, "seasonIndex": 2, "targetDemandQuantity": 24 },
+    { "priceLevel": 7.6, "discountRate": 0.2, "stockLevel": 6.4, "reviewRating": 4.9, "recentReviewCount": 44, "isWeekend": 1, "seasonIndex": 3, "targetDemandQuantity": 27 },
+    { "priceLevel": 1.8, "discountRate": 0.0, "stockLevel": 30.0, "reviewRating": 4.1, "recentReviewCount": 6, "isWeekend": 0, "seasonIndex": 3, "targetDemandQuantity": 9 },
+    { "priceLevel": 9.9, "discountRate": 0.08, "stockLevel": 4.2, "reviewRating": 4.7, "recentReviewCount": 15, "isWeekend": 0, "seasonIndex": 4, "targetDemandQuantity": 8 },
+    { "priceLevel": 4.5, "discountRate": 0.12, "stockLevel": 15.0, "reviewRating": 4.5, "recentReviewCount": 28, "isWeekend": 1, "seasonIndex": 4, "targetDemandQuantity": 22 }
+  ]
+}

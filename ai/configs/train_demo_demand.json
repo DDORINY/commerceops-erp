@@ -1,0 +1,12 @@
+{
+  "dataset_path": "ai/datasets/samples/demo_demand_train.json",
+  "dataset_format": "json",
+  "target_column": "targetDemandQuantity",
+  "feature_columns": ["priceLevel", "discountRate", "stockLevel", "reviewRating", "recentReviewCount", "isWeekend", "seasonIndex"],
+  "task_type": "regression",
+  "output_dir": "ai/models/checkpoints",
+  "model_name": "commerceops_demo_demand",
+  "artifact_stem": "commerceops_demo_demand_baseline",
+  "max_rows": 100,
+  "random_seed": 42
+}

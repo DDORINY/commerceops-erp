@@ -20,6 +20,19 @@
 5. PyTorch가 설치된 환경이면 `.pt` 체크포인트를 생성한다.
 6. PyTorch가 없는 환경이면 모델 대신 학습 메타데이터 JSON만 생성해 파이프라인 입력 검증을 수행한다.
 
+## 포트폴리오 데모
+
+실제 운영 데이터가 없는 포트폴리오 환경에서는 `ai/datasets/samples/`의 합성 데이터를 사용한다.
+
+```powershell
+python ai/scripts/train_baseline.py --config ai/configs/train_demo_demand.json
+python ai/scripts/evaluate_baseline.py --config ai/configs/evaluate_demo_demand.json
+python ai/scripts/train_baseline.py --config ai/configs/train_demo_review.json
+python ai/scripts/evaluate_baseline.py --config ai/configs/evaluate_demo_review.json
+```
+
+자세한 실행 방법은 `docs/ai/PORTFOLIO_AI_DEMO_GUIDE.md`를 참고한다.
+
 ## 후속 범위
 
 - 데이터셋별 전처리 스크립트 분리

@@ -1,0 +1,13 @@
+{
+  "description": "포트폴리오 데모용 합성 리뷰 분석 학습 데이터입니다. 실제 리뷰 원문이나 개인정보가 아닙니다.",
+  "rows": [
+    { "rating": 5, "contentLengthLevel": 8.2, "hasPositiveKeyword": 1, "hasNegativeKeyword": 0, "hasShippingKeyword": 0, "hasDefectKeyword": 0, "daysSincePurchase": 7, "targetSentimentScore": 0.92 },
+    { "rating": 4, "contentLengthLevel": 6.4, "hasPositiveKeyword": 1, "hasNegativeKeyword": 0, "hasShippingKeyword": 1, "hasDefectKeyword": 0, "daysSincePurchase": 4, "targetSentimentScore": 0.74 },
+    { "rating": 2, "contentLengthLevel": 12.0, "hasPositiveKeyword": 0, "hasNegativeKeyword": 1, "hasShippingKeyword": 1, "hasDefectKeyword": 0, "daysSincePurchase": 10, "targetSentimentScore": 0.28 },
+    { "rating": 1, "contentLengthLevel": 14.0, "hasPositiveKeyword": 0, "hasNegativeKeyword": 1, "hasShippingKeyword": 0, "hasDefectKeyword": 1, "daysSincePurchase": 12, "targetSentimentScore": 0.12 },
+    { "rating": 5, "contentLengthLevel": 9.6, "hasPositiveKeyword": 1, "hasNegativeKeyword": 0, "hasShippingKeyword": 1, "hasDefectKeyword": 0, "daysSincePurchase": 3, "targetSentimentScore": 0.89 },
+    { "rating": 3, "contentLengthLevel": 7.5, "hasPositiveKeyword": 0, "hasNegativeKeyword": 0, "hasShippingKeyword": 0, "hasDefectKeyword": 0, "daysSincePurchase": 8, "targetSentimentScore": 0.51 },
+    { "rating": 2, "contentLengthLevel": 10.8, "hasPositiveKeyword": 0, "hasNegativeKeyword": 1, "hasShippingKeyword": 0, "hasDefectKeyword": 1, "daysSincePurchase": 15, "targetSentimentScore": 0.21 },
+    { "rating": 4, "contentLengthLevel": 7.0, "hasPositiveKeyword": 1, "hasNegativeKeyword": 0, "hasShippingKeyword": 0, "hasDefectKeyword": 0, "daysSincePurchase": 5, "targetSentimentScore": 0.78 }
+  ]
+}

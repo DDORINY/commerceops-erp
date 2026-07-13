@@ -63,7 +63,11 @@ def infer_feature_columns(rows: list[dict[str, Any]], target_column: str) -> lis
     ]
 
 
-def build_matrix(rows: list[dict[str, Any]], feature_columns: list[str], target_column: str) -> tuple[list[list[float]], list[float]]:
+def build_matrix(
+    rows: list[dict[str, Any]],
+    feature_columns: list[str],
+    target_column: str,
+) -> tuple[list[list[float]], list[float]]:
     return (
         [[numeric(row.get(column)) for column in feature_columns] for row in rows],
         [numeric(row.get(target_column)) for row in rows],

@@ -1,0 +1,8 @@
+{
+  "description": "포트폴리오 데모용 합성 주문/수요 예측 평가 데이터입니다. 실제 고객 데이터가 아닙니다.",
+  "rows": [
+    { "priceLevel": 5.2, "discountRate": 0.1, "stockLevel": 9.6, "reviewRating": 4.7, "recentReviewCount": 24, "isWeekend": 1, "seasonIndex": 2, "targetDemandQuantity": 17 },
+    { "priceLevel": 10.9, "discountRate": 0.03, "stockLevel": 2.8, "reviewRating": 4.3, "recentReviewCount": 11, "isWeekend": 0, "seasonIndex": 3, "targetDemandQuantity": 6 },
+    { "priceLevel": 2.7, "discountRate": 0.18, "stockLevel": 18.0, "reviewRating": 4.4, "recentReviewCount": 20, "isWeekend": 1, "seasonIndex": 4, "targetDemandQuantity": 23 }
+  ]
+}

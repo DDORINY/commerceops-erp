@@ -1,0 +1,12 @@
+{
+  "dataset_path": "ai/datasets/samples/demo_review_train.json",
+  "dataset_format": "json",
+  "target_column": "targetSentimentScore",
+  "feature_columns": ["rating", "contentLengthLevel", "hasPositiveKeyword", "hasNegativeKeyword", "hasShippingKeyword", "hasDefectKeyword", "daysSincePurchase"],
+  "task_type": "regression",
+  "output_dir": "ai/models/checkpoints",
+  "model_name": "commerceops_demo_review_sentiment",
+  "artifact_stem": "commerceops_demo_review_sentiment_baseline",
+  "max_rows": 100,
+  "random_seed": 42
+}

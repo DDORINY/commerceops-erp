@@ -1,7 +1,7 @@
 """CommerceOps ERP AI baseline training script.
 
-PyTorch가 설치된 환경에서는 간단한 선형 모델 체크포인트를 `.pt`로 저장한다.
-PyTorch가 없는 환경에서는 입력 데이터 검증과 메타데이터 저장만 수행한다.
+포트폴리오 데모용 합성 데이터나 관리자 export 데이터로 간단한 baseline 모델을 학습한다.
+PyTorch가 설치된 환경에서는 `.pt` 체크포인트를 저장하고, PyTorch가 없으면 메타데이터만 저장한다.
 """
 
 from __future__ import annotations
@@ -27,15 +27,12 @@ def load_rows(dataset_path: Path, dataset_format: str) -> list[dict[str, Any]]:
     if dataset_format == "json":
         with dataset_path.open("r", encoding="utf-8-sig") as file:
             payload = json.load(file)
-        if isinstance(payload, dict):
-            rows = payload.get("rows", [])
-        else:
-            rows = payload
+        rows = payload.get("rows", []) if isinstance(payload, dict) else payload
         return [row for row in rows if isinstance(row, dict)]
 
     if dataset_format == "jsonl":
         rows: list[dict[str, Any]] = []
-        with dataset_path.open("r", encoding="utf-8") as file:
+        with dataset_path.open("r", encoding="utf-8-sig") as file:
             for line in file:
                 line = line.strip()
                 if line:
@@ -71,28 +68,45 @@ def numeric(value: Any) -> float:
         return 0.0
 
 
-def build_matrix(rows: list[dict[str, Any]], feature_columns: list[str], target_column: str) -> tuple[list[list[float]], list[float]]:
+def build_matrix(
+    rows: list[dict[str, Any]],
+    feature_columns: list[str],
+    target_column: str,
+) -> tuple[list[list[float]], list[float]]:
     x_rows = [[numeric(row.get(column)) for column in feature_columns] for row in rows]
     y_rows = [numeric(row.get(target_column)) for row in rows]
     return x_rows, y_rows
 
 
-def save_metadata(output_dir: Path, model_name: str, metadata: dict[str, Any]) -> Path:
+def artifact_paths(output_dir: Path, model_name: str, artifact_stem: str | None) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    output_path = output_dir / f"{model_name}_{timestamp}.metadata.json"
-    with output_path.open("w", encoding="utf-8") as file:
+    if artifact_stem:
+        stem = artifact_stem
+    else:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        stem = f"{model_name}_{timestamp}"
+    return output_dir / f"{stem}.pt", output_dir / f"{stem}.metadata.json"
+
+
+def save_metadata(metadata_path: Path, metadata: dict[str, Any]) -> Path:
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    with metadata_path.open("w", encoding="utf-8") as file:
         json.dump(metadata, file, ensure_ascii=False, indent=2)
-    return output_path
+    return metadata_path
 
 
-def save_torch_checkpoint(output_dir: Path, model_name: str, x_rows: list[list[float]], y_rows: list[float], metadata: dict[str, Any]) -> Path | None:
+def save_torch_checkpoint(
+    checkpoint_path: Path,
+    x_rows: list[list[float]],
+    y_rows: list[float],
+    metadata: dict[str, Any],
+) -> Path | None:
     try:
         import torch
     except ImportError:
         return None
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     feature_count = len(x_rows[0]) if x_rows else 1
     model = torch.nn.Linear(feature_count, 1)
 
@@ -102,17 +116,15 @@ def save_torch_checkpoint(output_dir: Path, model_name: str, x_rows: list[list[f
         y_tensor = torch.tensor(y_rows, dtype=torch.float32).view(-1, 1)
         optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
         loss_fn = torch.nn.MSELoss()
-        for _ in range(20):
+        for _ in range(30):
             optimizer.zero_grad()
             loss = loss_fn(model(x_tensor), y_tensor)
             loss.backward()
             optimizer.step()
         metadata["trainingLoss"] = float(loss.detach().item())
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    output_path = output_dir / f"{model_name}_{timestamp}.pt"
-    torch.save({"model_state_dict": model.state_dict(), "metadata": metadata}, output_path)
-    return output_path
+    torch.save({"model_state_dict": model.state_dict(), "metadata": metadata}, checkpoint_path)
+    return checkpoint_path
 
 
 def main() -> None:
@@ -132,6 +144,8 @@ def main() -> None:
 
     output_dir = Path(config.get("output_dir", "ai/models/checkpoints"))
     model_name = str(config.get("model_name", "commerceops_baseline"))
+    checkpoint_path, metadata_path = artifact_paths(output_dir, model_name, config.get("artifact_stem"))
+
     metadata: dict[str, Any] = {
         "modelName": model_name,
         "taskType": config.get("task_type", "regression"),
@@ -142,16 +156,16 @@ def main() -> None:
         "targetColumn": target_column,
         "randomSeed": int(config.get("random_seed", 42)),
         "createdAt": datetime.now(timezone.utc).isoformat(),
-        "privacyNote": "학습 입력 파일은 export 단계에서 개인정보 마스킹을 마친 데이터여야 합니다.",
+        "privacyNote": "학습 입력 파일은 개인정보가 없는 합성 데이터이거나 export 단계에서 마스킹된 데이터여야 합니다.",
     }
 
-    checkpoint_path = save_torch_checkpoint(output_dir, model_name, x_rows, y_rows, metadata)
-    metadata_path = save_metadata(output_dir, model_name, metadata)
+    saved_checkpoint = save_torch_checkpoint(checkpoint_path, x_rows, y_rows, metadata)
+    save_metadata(metadata_path, metadata)
 
     print(f"학습 rows: {len(rows)}")
     print(f"feature columns: {', '.join(feature_columns) if feature_columns else '(없음)'}")
-    if checkpoint_path:
-        print(f"체크포인트 저장: {checkpoint_path}")
+    if saved_checkpoint:
+        print(f"체크포인트 저장: {saved_checkpoint}")
     else:
         print("PyTorch가 없어 .pt 체크포인트 생성은 건너뛰고 메타데이터만 저장했습니다.")
     print(f"메타데이터 저장: {metadata_path}")
