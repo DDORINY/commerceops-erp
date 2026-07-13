@@ -1666,3 +1666,21 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend build
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.1` 태그 생성
+
+### v0.9.2 체크리스트
+
+목적: 상품 마스터와 운영 상태 데이터를 기반으로 관리자용 AI 상품 추천 후보 API/UI를 제공한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.2-ai-product-recommendations` 브랜치 생성
+- [x] 상품 추천 후보 계산 service 추가
+- [x] `GET /api/admin/ai/recommendations/products` API 추가
+- [x] `AI_RECOMMENDATION_READ` 권한 적용
+- [x] `/admin/ai/recommendations` 화면 추가
+- [x] 관리자 사이드바 AI 상품 추천 메뉴 추가
+- [x] 관련 문서 갱신
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.2` 태그 생성

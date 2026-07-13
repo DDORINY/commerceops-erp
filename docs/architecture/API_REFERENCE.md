@@ -503,3 +503,13 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 - `AI_RISK_ALERT_READ`
 - `AI_REPORT_READ`
 - `AI_OPERATIONS_MANAGE`
+
+## v0.9.2 AI 상품 추천 후보 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/recommendations/products?limit=10` | 상품 추천 후보 목록을 조회한다. | `AI_RECOMMENDATION_READ` |
+
+응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.2 기준 추천 점수는 상품 전시/판매 상태, 재고, 태그, 검색 키워드, 이미지 URL, 판매가를 근거로 계산한다.
+
+추천 결과는 관리자 검토용 참고 지표이며, 상품 전시나 개인화 추천에 자동 반영하지 않는다.
