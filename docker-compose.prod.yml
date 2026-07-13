@@ -5,6 +5,10 @@ services:
     image: mysql:8.0
     container_name: commerceops-mysql
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
     environment:
       MYSQL_DATABASE: commerceops
@@ -42,6 +46,13 @@ services:
     image: commerceops-backend:test
     container_name: commerceops-backend
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
 
     environment:
       SPRING_PROFILES_ACTIVE: prod
@@ -97,6 +108,14 @@ services:
     expose:
       - "3000"
 
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+
     depends_on:
       - backend
 
@@ -107,9 +126,11 @@ services:
 
 
   nginx:
-    image: nginx:stable-alpine
+    image: nginx:1.27-alpine
     container_name: commerceops-nginx
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
 
     ports:
       - "80:80"
@@ -132,7 +153,7 @@ services:
       - commerceops-network
 
   certbot:
-    image: certbot/certbot:latest
+    image: certbot/certbot:v2.11.0
     profiles:
       - tls
 

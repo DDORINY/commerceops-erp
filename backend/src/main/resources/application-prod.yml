@@ -23,3 +23,9 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_ACCESS_EXPIRATION_MS:3600000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION_MS:1209600000}
+
+app:
+  initializer:
+    enabled: false
+    admin-email:
+    admin-password:

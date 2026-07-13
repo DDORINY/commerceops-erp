@@ -39,7 +39,7 @@ export default function AdminTopbar({ title }: { title: string }) {
           </div>
           <div className="hidden md:block">
             <p className="text-xs font-medium text-[#1a1f2e]">{user?.name ?? '관리자'}</p>
-            <p className="text-[10px] text-[#8a9bb5]">{user?.email ?? 'admin@commerceops.com'}</p>
+            <p className="text-[10px] text-[#8a9bb5]">{user?.email ?? '관리자'}</p>
           </div>
         </div>
         <button

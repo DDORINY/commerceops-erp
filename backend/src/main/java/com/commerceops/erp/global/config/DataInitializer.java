@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile({"local", "dev", "test"})
+@ConditionalOnProperty(name = "app.initializer.enabled", havingValue = "true")
 public class DataInitializer implements ApplicationRunner {
 
     private final UserRepository userRepository;
@@ -34,6 +39,12 @@ public class DataInitializer implements ApplicationRunner {
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final WarehouseStockRepository warehouseStockRepository;
+
+    @Value("${app.initializer.admin-email:}")
+    private String initialAdminEmail;
+
+    @Value("${app.initializer.admin-password:}")
+    private String initialAdminPassword;
 
     @Override
     @Transactional
@@ -69,11 +80,14 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void createAdminIfNotExists() {
-        String adminEmail = "admin@commerceops.com";
-        if (!userRepository.existsByEmail(adminEmail)) {
-            User admin = User.createAdmin(adminEmail, passwordEncoder.encode("admin1234!"), "관리자");
+        if (initialAdminEmail == null || initialAdminEmail.isBlank() || initialAdminPassword == null || initialAdminPassword.isBlank()) {
+            log.warn("Initial admin creation skipped because credentials are not configured.");
+            return;
+        }
+        if (!userRepository.existsByEmail(initialAdminEmail)) {
+            User admin = User.createAdmin(initialAdminEmail, passwordEncoder.encode(initialAdminPassword), "관리자");
             userRepository.save(admin);
-            log.info("Admin account created: {}", adminEmail);
+            log.info("Initial admin account created from environment configuration.");
         }
     }
 
