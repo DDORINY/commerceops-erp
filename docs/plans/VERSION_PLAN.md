@@ -1793,3 +1793,22 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] 코드 변경 없음 확인
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.8` 태그 생성
+
+### v0.9.9 체크리스트
+
+목적: v0.1 ~ v0.9 전체 포트폴리오 구현 흐름과 v0.9 AI 운영 기능을 최종 검증하고 릴리스 상태를 마감한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.9-final-release-verification` 브랜치 생성
+- [x] v0.9.0 ~ v0.9.8 로컬 태그 확인
+- [x] v0.9.0 ~ v0.9.8 체크리스트 확인
+- [x] AI 운영 기능 API/UI 범위 확인
+- [x] 포트폴리오 데모 문서 확인
+- [x] CURRENT_STATE 갱신
+- [x] V0.9_AI_OPERATIONS_PLAN 갱신
+- [x] 체크리스트 생성
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.9` 태그 생성
