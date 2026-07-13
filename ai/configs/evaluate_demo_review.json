@@ -1,0 +1,10 @@
+{
+  "dataset_path": "ai/datasets/samples/demo_review_eval.json",
+  "dataset_format": "json",
+  "checkpoint_path": "ai/models/checkpoints/commerceops_demo_review_sentiment_baseline.pt",
+  "metadata_path": "ai/models/checkpoints/commerceops_demo_review_sentiment_baseline.metadata.json",
+  "target_column": "targetSentimentScore",
+  "feature_columns": ["rating", "contentLengthLevel", "hasPositiveKeyword", "hasNegativeKeyword", "hasShippingKeyword", "hasDefectKeyword", "daysSincePurchase"],
+  "report_dir": "ai/reports/generated",
+  "report_name": "commerceops_demo_review"
+}

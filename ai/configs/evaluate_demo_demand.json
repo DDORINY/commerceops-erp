@@ -1,0 +1,10 @@
+{
+  "dataset_path": "ai/datasets/samples/demo_demand_eval.json",
+  "dataset_format": "json",
+  "checkpoint_path": "ai/models/checkpoints/commerceops_demo_demand_baseline.pt",
+  "metadata_path": "ai/models/checkpoints/commerceops_demo_demand_baseline.metadata.json",
+  "target_column": "targetDemandQuantity",
+  "feature_columns": ["priceLevel", "discountRate", "stockLevel", "reviewRating", "recentReviewCount", "isWeekend", "seasonIndex"],
+  "report_dir": "ai/reports/generated",
+  "report_name": "commerceops_demo_demand"
+}
