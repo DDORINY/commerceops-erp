@@ -554,3 +554,13 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 응답은 `AiInsightResponse[]` 형식을 사용한다. 재고 리스크는 현재 재고와 안전재고를 기준으로, 정산 리스크는 정산 상태와 순정산금액을 기준으로 계산한다.
 
 리스크 알림은 자동 입고나 정산 마감에 반영하지 않고 관리자 확인용 참고 지표로만 제공한다.
+
+## v0.9.7 AI 리포트 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/reports` | AI 운영 모듈별 리포트와 해석 기준을 조회한다. | `AI_REPORT_READ` |
+
+`AiReportResponse`는 `id`, `title`, `summary`, `relatedModule`, `modelName`, `evidenceSources`, `interpretationGuide`, `generatedAt` 필드를 가진다.
+
+리포트는 자동 판단 문서가 아니라 관리자와 포트폴리오 검토자가 AI 점수의 출처와 한계를 이해하기 위한 설명 카드다.

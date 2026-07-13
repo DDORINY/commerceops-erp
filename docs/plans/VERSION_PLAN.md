@@ -1758,3 +1758,22 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend build
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.6` 태그 생성
+
+### v0.9.7 체크리스트
+
+목적: v0.9 AI 운영 화면의 점수와 근거를 운영자가 해석할 수 있도록 AI 리포트 카드와 근거 설명 API/UI를 추가한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.7-ai-report-explainability` 브랜치 생성
+- [x] `AiReportResponse` DTO 추가
+- [x] AI 리포트 service 추가
+- [x] `GET /api/admin/ai/reports` API 추가
+- [x] `AI_REPORT_READ` 권한 적용
+- [x] `/admin/ai/reports` 화면 추가
+- [x] 관리자 사이드바 AI 리포트 메뉴 추가
+- [x] 관련 문서 갱신
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.7` 태그 생성

@@ -360,3 +360,13 @@
   - `getInventoryRiskAlerts(limit)`, `getSettlementRiskAlerts(limit)` 호출 함수를 추가했다.
 - `frontend/src/lib/adminMenu.ts`
   - `AI 운영` 그룹에 `AI 리스크 알림` 메뉴를 추가했다.
+
+## v0.9.7 AI 리포트 화면
+
+- `frontend/src/app/admin/ai/reports/page.tsx`
+  - 관리자 AI 리포트와 근거 설명 화면이다.
+  - 관련 모듈, 모델명, 근거 데이터, 해석 기준을 카드로 표시한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `AiReport` 타입과 `getReports()` 호출 함수를 추가했다.
+- `frontend/src/lib/adminMenu.ts`
+  - `AI 운영` 그룹에 `AI 리포트` 메뉴를 추가했다.
