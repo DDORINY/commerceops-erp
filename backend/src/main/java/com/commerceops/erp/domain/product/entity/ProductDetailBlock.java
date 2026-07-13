@@ -55,4 +55,8 @@ public class ProductDetailBlock {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public void replaceContent(String sanitizedContent) {
+        this.content = sanitizedContent;
+    }
 }

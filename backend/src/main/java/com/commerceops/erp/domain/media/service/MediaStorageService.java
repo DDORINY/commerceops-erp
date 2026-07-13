@@ -13,6 +13,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -81,6 +83,18 @@ public class MediaStorageService {
         String extension = getExtension(file.getOriginalFilename());
         if (properties.allowedExtensions().stream().noneMatch(extension::equalsIgnoreCase)) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "Unsupported image extension.");
+        }
+        validateImageSignature(file);
+    }
+
+    private void validateImageSignature(MultipartFile file) {
+        try {
+            BufferedImage decoded = ImageIO.read(file.getInputStream());
+            if (decoded == null || decoded.getWidth() <= 0 || decoded.getHeight() <= 0) {
+                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "File is not a decodable image.");
+            }
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "File could not be decoded as an image.");
         }
     }
 

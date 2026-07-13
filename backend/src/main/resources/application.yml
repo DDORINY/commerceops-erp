@@ -17,6 +17,14 @@ spring:
       max-file-size: 5MB
       max-request-size: 6MB
 
+app:
+  initializer:
+    enabled: ${APP_INITIALIZER_ENABLED:false}
+    admin-email: ${INITIAL_ADMIN_EMAIL:}
+    admin-password: ${INITIAL_ADMIN_PASSWORD:}
+  product-html-migration:
+    mode: ${PRODUCT_HTML_MIGRATION_MODE:}
+
 server:
   servlet:
     encoding:

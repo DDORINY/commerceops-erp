@@ -118,17 +118,19 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/auth/me" -Method Get -Headers 
 ### 관리자 로그인
 
 ```powershell
-$body = [System.Text.Encoding]::UTF8.GetBytes('{"email":"admin@commerceops.com","password":"admin1234!"}')
+$body = [System.Text.Encoding]::UTF8.GetBytes('{"email":"INITIAL_ADMIN_EMAIL","password":"INITIAL_ADMIN_PASSWORD"}')
 Invoke-RestMethod -Uri "http://localhost:8080/api/auth/login" -Method Post -ContentType "application/json; charset=utf-8" -Body $body | ConvertTo-Json -Depth 5
 ```
 
 ---
 
-## 초기 계정 (DataInitializer 자동 생성)
+## 개발용 초기 계정 (명시적으로 활성화한 경우에만)
+
+운영 프로필에서는 초기 관리자 자동 생성이 비활성화됩니다. 로컬/dev/test에서 `APP_INITIALIZER_ENABLED=true`, `INITIAL_ADMIN_EMAIL`, `INITIAL_ADMIN_PASSWORD`를 환경변수로 지정한 경우에만 생성됩니다.
 
 | 이메일 | 비밀번호 | 역할 |
 |---|---|---|
-| admin@commerceops.com | admin1234! | ADMIN |
+| INITIAL_ADMIN_EMAIL | INITIAL_ADMIN_PASSWORD | ADMIN |
 
 ---
 

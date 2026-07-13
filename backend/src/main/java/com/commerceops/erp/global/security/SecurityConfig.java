@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,6 +20,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
+
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -39,6 +42,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/admin/users/*/role", "/api/admin/users/*/permission-groups", "/api/admin/permission-groups/**", "/api/admin/menu-permissions/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/admin/hr/**", "/api/admin/staff", "/api/admin/staff/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/admin/accounting/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/admin/accounting/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/admin/accounting/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/accounting/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/banners/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()

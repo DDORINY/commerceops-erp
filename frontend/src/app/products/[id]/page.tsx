@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from 'react';
 import Image from 'next/image';
+import DOMPurify from 'isomorphic-dompurify';
 import Link from 'next/link';
 import ShopHeader from '@/components/shop/ShopHeader';
 import ShopFooter from '@/components/shop/ShopFooter';
@@ -46,7 +47,8 @@ function ProductDetailBlockView({ block }: { block: ProductDetailBlock }) {
     return <section>{block.title && <h3 className="text-base font-bold text-[#222] mb-3">{block.title}</h3>}<div className="border border-[#e5e5e5] divide-y divide-[#e5e5e5]">{rows.map((row, index) => <div key={`${row.label}-${index}`} className="grid grid-cols-[140px_1fr] text-sm"><div className="bg-[#fafafa] px-4 py-3 text-[#777]">{row.label}</div><div className="px-4 py-3 text-[#444]">{row.value}</div></div>)}</div></section>;
   }
   if (block.blockType === 'HTML') {
-    return <section>{block.title && <h3 className="text-base font-bold text-[#222] mb-2">{block.title}</h3>}{/* Admin-authored internal CMS HTML. Keep this endpoint admin-only and document the XSS risk. */}<div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: block.content || '' }} /></section>;
+    const sanitizedHtml = DOMPurify.sanitize(block.content || '', { ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a', 'img'], ALLOWED_ATTR: ['href', 'src', 'alt', 'width', 'height'], ALLOW_DATA_ATTR: false, FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'style', 'svg', 'math'], FORBID_ATTR: ['style'] });
+    return <section>{block.title && <h3 className="text-base font-bold text-[#222] mb-2">{block.title}</h3>}<div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} /></section>;
   }
   return null;
 }

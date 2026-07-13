@@ -10,6 +10,7 @@ import com.commerceops.erp.domain.product.repository.ProductDetailBlockRepositor
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.global.exception.BusinessException;
 import com.commerceops.erp.global.exception.ErrorCode;
+import com.commerceops.erp.global.security.HtmlSanitizerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class ProductDetailBlockService {
 
     private final ProductRepository productRepository;
     private final ProductDetailBlockRepository productDetailBlockRepository;
+    private final HtmlSanitizerService htmlSanitizerService;
 
     public List<ProductDetailBlockResponse> getAdminBlocks(Long productId) {
         ensureProductExists(productId, true);
@@ -60,7 +62,7 @@ public class ProductDetailBlockService {
                         .product(product)
                         .blockType(request.blockType())
                         .title(normalizeText(request.title()))
-                        .content(normalizeText(request.content()))
+                        .content(normalizeContent(request.blockType(), request.content()))
                         .imageUrl(normalizeText(request.imageUrl()))
                         .specJson(normalizeText(request.specJson()))
                         .sortOrder(fallbackOrder.getAndIncrement())
@@ -100,6 +102,11 @@ public class ProductDetailBlockService {
         if (request.blockType() == ProductDetailBlockType.SPEC_TABLE && isBlank(request.specJson())) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
         }
+    }
+
+    private String normalizeContent(ProductDetailBlockType blockType, String content) {
+        String normalized = normalizeText(content);
+        return blockType == ProductDetailBlockType.HTML ? htmlSanitizerService.sanitize(normalized) : normalized;
     }
 
     private void validateLength(String value, int maxLength) {
