@@ -31,6 +31,9 @@
 - [v0.5 재고/생산/바코드 계획](./plans/V0.5_INVENTORY_BARCODE_PLAN.md)
 - [v0.6 유통/송장/배송 계획](./plans/V0.6_DISTRIBUTION_SHIPPING_PLAN.md)
 - [v0.7 회계관리 고도화 계획](./plans/V0.7_ACCOUNTING_SETTLEMENT_PLAN.md)
+- [v0.8 AI 데이터셋 계획](./plans/V0.8_AI_DATASET_PLAN.md)
+- [v0.9 AI 운영 기능 계획](./plans/V0.9_AI_OPERATIONS_PLAN.md)
+- [v1.0 최종 포트폴리오 릴리스 계획](./plans/V1.0_FINAL_PORTFOLIO_RELEASE_PLAN.md)
 - [운영 분석 기반](./plans/OPS_ANALYTICS_FOUNDATION.md)
 - [서비스 확장 후보](./plans/SERVICE_EXPANSION.md)
 
@@ -39,6 +42,8 @@
 - [AI 개발/학습/배포 전략](./ai/AI_DEVELOPMENT_DEPLOYMENT_PLAN.md)
 - [AI 모델 전략](./ai/AI_MODEL_STRATEGY.md)
 - [AI 데이터셋 전략](./ai/AI_DATASET_STRATEGY.md)
+- [포트폴리오 AI 데모 실행 가이드](./ai/PORTFOLIO_AI_DEMO_GUIDE.md)
+- [AI 운영 화면 데모 시나리오](./ai/AI_OPERATIONS_DEMO_SCRIPT.md)
 
 ## Operations
 
@@ -58,6 +63,9 @@
 - [v0.5](./checklists/v0.5/)
 - [v0.6](./checklists/v0.6/)
 - [v0.7](./checklists/v0.7/)
+- [v0.8](./checklists/v0.8/)
+- [v0.9](./checklists/v0.9/)
+- [v1.0](./checklists/v1.0/)
 - [hotfix](./checklists/hotfix/)
 
 ## References
