@@ -76,4 +76,22 @@ public class AdminAiOperationsController {
         permissionChecker.require(userDetails, PermissionCodes.AI_ANOMALY_READ);
         return ApiResponse.ok(aiOperationsService.getOrderAnomalies(limit));
     }
+
+    @GetMapping("/risks/inventory")
+    public ApiResponse<List<AiInsightResponse>> getInventoryRiskAlerts(
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.AI_RISK_ALERT_READ);
+        return ApiResponse.ok(aiOperationsService.getInventoryRiskAlerts(limit));
+    }
+
+    @GetMapping("/risks/settlement")
+    public ApiResponse<List<AiInsightResponse>> getSettlementRiskAlerts(
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.AI_RISK_ALERT_READ);
+        return ApiResponse.ok(aiOperationsService.getSettlementRiskAlerts(limit));
+    }
 }

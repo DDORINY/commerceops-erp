@@ -5,6 +5,9 @@ import com.commerceops.erp.domain.ai.dto.AiInsightResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsHealthResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsOverviewResponse;
 import com.commerceops.erp.domain.ai.enums.AiRiskLevel;
+import com.commerceops.erp.domain.accounting.entity.SettlementBatch;
+import com.commerceops.erp.domain.accounting.enums.SettlementBatchStatus;
+import com.commerceops.erp.domain.accounting.repository.SettlementBatchRepository;
 import com.commerceops.erp.domain.order.entity.Order;
 import com.commerceops.erp.domain.order.enums.OrderStatus;
 import com.commerceops.erp.domain.order.repository.OrderRepository;
@@ -12,6 +15,7 @@ import com.commerceops.erp.domain.payment.enums.PaymentStatus;
 import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
 import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
+import com.commerceops.erp.domain.product.enums.ProductStatus;
 import com.commerceops.erp.domain.product.repository.ProductRepository;
 import com.commerceops.erp.domain.review.entity.Review;
 import com.commerceops.erp.domain.review.enums.ReviewStatus;
@@ -36,6 +40,7 @@ public class AiOperationsService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final SettlementBatchRepository settlementBatchRepository;
 
     public AiOperationsOverviewResponse getOverview() {
         LocalDateTime generatedAt = LocalDateTime.now();
@@ -155,6 +160,24 @@ public class AiOperationsService {
                     return Double.compare(right.score(), left.score());
                 })
                 .limit(safeLimit)
+                .toList();
+    }
+
+    public List<AiInsightResponse> getInventoryRiskAlerts(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 30));
+        return productRepository.findLowStockProducts(10, ProductStatus.DELETED, PageRequest.of(0, safeLimit))
+                .stream()
+                .map(this::inventoryRiskInsight)
+                .toList();
+    }
+
+    public List<AiInsightResponse> getSettlementRiskAlerts(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 30));
+        var pageable = PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        return settlementBatchRepository.findAllForAdmin(null, pageable)
+                .stream()
+                .filter(batch -> batch.getStatus() != SettlementBatchStatus.CLOSED && batch.getStatus() != SettlementBatchStatus.CANCELLED)
+                .map(this::settlementRiskInsight)
                 .toList();
     }
 
@@ -305,6 +328,58 @@ public class AiOperationsService {
                         "paymentStatus", order.getPaymentStatus().name()
                 ),
                 "rule_based_order_anomaly_v0.9.5",
+                generatedAt
+        );
+    }
+
+    private AiInsightResponse inventoryRiskInsight(Product product) {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        int stock = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
+        int safetyStock = product.getSafetyStockQuantity() == null ? 0 : product.getSafetyStockQuantity();
+        AiRiskLevel riskLevel = stock <= 0 ? AiRiskLevel.HIGH : stock <= safetyStock ? AiRiskLevel.MEDIUM : AiRiskLevel.LOW;
+        double score = Math.min(0.99, stock <= 0 ? 0.95 : 0.45 + Math.max(0, safetyStock - stock) * 0.05);
+        return insight(
+                "inventory-risk-" + product.getId(),
+                "PRODUCT",
+                product.getId(),
+                product.getName() + " 재고 리스크",
+                Math.round(score * 100.0) / 100.0,
+                riskLevel,
+                String.format("현재 재고 %d개, 안전재고 %d개 기준으로 재고 부족 리스크를 계산했습니다.", stock, safetyStock),
+                Map.of(
+                        "productName", product.getName(),
+                        "stockQuantity", stock,
+                        "safetyStockQuantity", safetyStock,
+                        "salesStatus", product.getSalesStatus().name()
+                ),
+                "rule_based_inventory_risk_v0.9.6",
+                generatedAt
+        );
+    }
+
+    private AiInsightResponse settlementRiskInsight(SettlementBatch batch) {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        long netAmount = batch.getTotalSales() + batch.getTotalShippingFee()
+                - batch.getTotalRefunds() - batch.getTotalShippingCost();
+        boolean negativeNet = netAmount < 0;
+        AiRiskLevel riskLevel = negativeNet ? AiRiskLevel.HIGH : batch.getStatus() == SettlementBatchStatus.DRAFT ? AiRiskLevel.MEDIUM : AiRiskLevel.LOW;
+        double score = Math.min(0.99, 0.35 + (negativeNet ? 0.45 : 0) + (batch.getStatus() == SettlementBatchStatus.DRAFT ? 0.15 : 0));
+        return insight(
+                "settlement-risk-" + batch.getId(),
+                "SETTLEMENT_BATCH",
+                batch.getId(),
+                batch.getBatchNumber() + " 정산 리스크",
+                Math.round(score * 100.0) / 100.0,
+                riskLevel,
+                String.format("순정산금액 %,d원, 상태 %s 기준으로 정산 확인 필요 여부를 계산했습니다.", netAmount, batch.getStatus().name()),
+                Map.of(
+                        "batchNumber", batch.getBatchNumber(),
+                        "status", batch.getStatus().name(),
+                        "netAmount", netAmount,
+                        "periodStart", batch.getPeriodStart().toString(),
+                        "periodEnd", batch.getPeriodEnd().toString()
+                ),
+                "rule_based_settlement_risk_v0.9.6",
                 generatedAt
         );
     }

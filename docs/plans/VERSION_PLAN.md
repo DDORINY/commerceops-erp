@@ -1738,3 +1738,23 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend build
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.5` 태그 생성
+
+### v0.9.6 체크리스트
+
+목적: 재고 부족과 정산 확인 필요 후보를 관리자용 AI 리스크 알림 화면에 표시한다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.6-ai-risk-alerts` 브랜치 생성
+- [x] 재고 리스크 후보 계산 service 추가
+- [x] 정산 리스크 후보 계산 service 추가
+- [x] `GET /api/admin/ai/risks/inventory` API 추가
+- [x] `GET /api/admin/ai/risks/settlement` API 추가
+- [x] `AI_RISK_ALERT_READ` 권한 적용
+- [x] `/admin/ai/risk-alerts` 화면 추가
+- [x] 관리자 사이드바 AI 리스크 알림 메뉴 추가
+- [x] 관련 문서 갱신
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.6` 태그 생성

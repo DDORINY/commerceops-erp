@@ -543,3 +543,14 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.5 기준 탐지 점수는 주문 금액, 할인율, 주문/결제 상태 불일치 후보를 기반으로 계산한다.
 
 탐지 결과는 자동 주문 차단에 반영하지 않고 관리자 검토용 참고 지표로만 제공한다.
+
+## v0.9.6 AI 리스크 알림 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/risks/inventory?limit=10` | 재고 부족 리스크 후보를 조회한다. | `AI_RISK_ALERT_READ` |
+| `GET` | `/api/admin/ai/risks/settlement?limit=10` | 정산 확인 필요 리스크 후보를 조회한다. | `AI_RISK_ALERT_READ` |
+
+응답은 `AiInsightResponse[]` 형식을 사용한다. 재고 리스크는 현재 재고와 안전재고를 기준으로, 정산 리스크는 정산 상태와 순정산금액을 기준으로 계산한다.
+
+리스크 알림은 자동 입고나 정산 마감에 반영하지 않고 관리자 확인용 참고 지표로만 제공한다.

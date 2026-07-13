@@ -266,3 +266,16 @@ com.commerceops.erp
   - `AI_ANOMALY_READ` 권한을 확인한다.
 - `db/migration/V40__seed_ai_order_anomaly_menu.sql`
   - 관리자 메뉴 권한에 `ai-order-anomaly` 항목을 추가한다.
+
+## v0.9.6 AI 리스크 알림
+
+- `domain.ai.service.AiOperationsService#getInventoryRiskAlerts`
+  - 현재 재고와 안전재고를 기준으로 재고 부족 리스크 후보를 계산한다.
+- `domain.ai.service.AiOperationsService#getSettlementRiskAlerts`
+  - 정산 상태와 순정산금액을 기준으로 정산 확인 필요 리스크 후보를 계산한다.
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/risks/inventory`
+  - `GET /api/admin/ai/risks/settlement`
+  - 두 API 모두 `AI_RISK_ALERT_READ` 권한을 확인한다.
+- `db/migration/V41__seed_ai_risk_alert_menu.sql`
+  - 관리자 메뉴 권한에 `ai-risk-alerts` 항목을 추가한다.
