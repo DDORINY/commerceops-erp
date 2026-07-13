@@ -51,6 +51,7 @@
 - [배포/환경 분리](./operations/DEPLOYMENT_ENV.md)
 - [AWS 1대 서버 배포 계획](./operations/AWS_SINGLE_SERVER_DEPLOYMENT_PLAN.md)
 - [릴리스 프로세스](./operations/RELEASE_PROCESS.md)
+- [v1.0 릴리스 Smoke Test 결과](./operations/RELEASE_SMOKE_TEST.md)
 - [버전 작업 규칙](./operations/VERSION_WORKFLOW.md)
 - [문서 운영 기준](./operations/DOCUMENTATION_GUIDE.md)
 - [포트폴리오 데모 데이터/계정 가이드](./operations/DEMO_DATA_GUIDE.md)

@@ -55,6 +55,7 @@ docs/
 - [배포/환경 분리](./operations/DEPLOYMENT_ENV.md)
 - [AWS 1대 서버 배포 계획](./operations/AWS_SINGLE_SERVER_DEPLOYMENT_PLAN.md)
 - [릴리스 프로세스](./operations/RELEASE_PROCESS.md)
+- [v1.0 릴리스 Smoke Test 결과](./operations/RELEASE_SMOKE_TEST.md)
 - [포트폴리오 데모 데이터/계정 가이드](./operations/DEMO_DATA_GUIDE.md)
 - [AI 개발/학습/배포 전략](./ai/AI_DEVELOPMENT_DEPLOYMENT_PLAN.md)
 - [포트폴리오 AI 데모 실행 가이드](./ai/PORTFOLIO_AI_DEMO_GUIDE.md)
