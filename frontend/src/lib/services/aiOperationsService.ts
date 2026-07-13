@@ -42,4 +42,8 @@ export const aiOperationsService = {
     apiClient<AiInsight[]>(`/admin/ai/reviews/analysis?limit=${limit}`),
   getOrderAnomalies: (limit = 10) =>
     apiClient<AiInsight[]>(`/admin/ai/anomalies/orders?limit=${limit}`),
+  getInventoryRiskAlerts: (limit = 10) =>
+    apiClient<AiInsight[]>(`/admin/ai/risks/inventory?limit=${limit}`),
+  getSettlementRiskAlerts: (limit = 10) =>
+    apiClient<AiInsight[]>(`/admin/ai/risks/settlement?limit=${limit}`),
 };

@@ -350,3 +350,13 @@
   - `getOrderAnomalies(limit)` 호출 함수를 추가했다.
 - `frontend/src/lib/adminMenu.ts`
   - `AI 운영` 그룹에 `AI 이상 주문 탐지` 메뉴를 추가했다.
+
+## v0.9.6 AI 리스크 알림 화면
+
+- `frontend/src/app/admin/ai/risk-alerts/page.tsx`
+  - 관리자 AI 리스크 알림 화면이다.
+  - 재고 리스크와 정산 리스크를 각각 테이블로 표시한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `getInventoryRiskAlerts(limit)`, `getSettlementRiskAlerts(limit)` 호출 함수를 추가했다.
+- `frontend/src/lib/adminMenu.ts`
+  - `AI 운영` 그룹에 `AI 리스크 알림` 메뉴를 추가했다.
