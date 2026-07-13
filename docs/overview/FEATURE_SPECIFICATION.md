@@ -1,6 +1,6 @@
 # 기능명세서
 
-기준 버전: `v0.6.9`
+기준 버전: `v1.0.1`
 
 | 기능 | 목적 | 주요 사용자 | 주요 화면 | 주요 API/문서 | 권한 | 상태 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -17,5 +17,5 @@
 | Production Receipt | 생산 주문과 생산 입고 | 생산/재고 담당자 | `/admin/production` | production API | PRODUCTION_MANAGE | 구현 |
 | Warehouse/Stock Count/Safety Stock | 창고, 실사, 안전재고 | 창고 담당자 | `/admin/warehouses`, `/admin/stock-counts`, `/admin/inventory-alerts` | warehouse/stock count API | WAREHOUSE_MANAGE, STOCK_COUNT_MANAGE | 구현 |
 | Distribution/Outbound/Shipment | 출고, 송장, 배송, 반품 배송 | 배송 담당자 | `/admin/outbound-orders`, `/admin/shipments`, `/admin/returns` | outbound/shipment/return shipping API | OUTBOUND_MANAGE, SHIPMENT_MANAGE | 구현 |
-| Accounting | 회계/정산/마감 고도화 | 회계 담당자 | `/admin/accounting`, `/admin/sales` | [v0.7 계획](../plans/V0.7_ACCOUNTING_SETTLEMENT_PLAN.md) | ACCOUNTING_READ, ACCOUNTING_CLOSE | 후보 |
-| AI | 수요 예측, 이상 탐지, 리뷰 분석 | 운영 관리자 | AI dashboard 후보 | [AI 전략](../ai/AI_DEVELOPMENT_DEPLOYMENT_PLAN.md) | 후보 | 후보 |
+| Accounting | 회계/정산/마감 고도화 | 회계 담당자 | `/admin/accounting`, `/admin/sales` | accounting/settlement/report API | ACCOUNTING_READ, ACCOUNTING_CLOSE | 구현 |
+| AI | 추천, 수요 예측, 리뷰 분석, 이상 탐지, 리스크 알림 | 운영 관리자 | `/admin/ai`, `/admin/ai/recommendations`, `/admin/ai/demand-forecast`, `/admin/ai/reports` | [AI 운영 계획](../plans/V0.9_AI_OPERATIONS_PLAN.md) | AI_RECOMMENDATION_READ, AI_FORECAST_READ, AI_REPORT_READ | 구현 |
