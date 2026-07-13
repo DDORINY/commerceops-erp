@@ -225,3 +225,14 @@ com.commerceops.erp
   - `LOW`, `MEDIUM`, `HIGH` risk level을 정의한다.
 - `domain.permission.PermissionCodes`
   - v0.9 AI 운영 permission code를 추가했다.
+
+## v0.9.2 AI 상품 추천 후보
+
+- `domain.ai.service.AiOperationsService#getProductRecommendations`
+  - 공개 노출 가능하고 판매 중인 상품을 대상으로 추천 후보 점수를 계산한다.
+  - 재고, 안전재고, 태그 수, 검색 키워드 수, 이미지 URL, 판매가를 계산 근거로 사용한다.
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/recommendations/products`
+  - `AI_RECOMMENDATION_READ` 권한을 확인한다.
+- `db/migration/V37__seed_ai_recommendation_menu.sql`
+  - 관리자 메뉴 권한에 `ai-recommendations` 항목을 추가한다.

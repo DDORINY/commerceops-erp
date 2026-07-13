@@ -5,7 +5,13 @@ import com.commerceops.erp.domain.ai.dto.AiInsightResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsHealthResponse;
 import com.commerceops.erp.domain.ai.dto.AiOperationsOverviewResponse;
 import com.commerceops.erp.domain.ai.enums.AiRiskLevel;
+import com.commerceops.erp.domain.product.entity.Product;
+import com.commerceops.erp.domain.product.enums.ProductDisplayStatus;
+import com.commerceops.erp.domain.product.enums.ProductSalesStatus;
+import com.commerceops.erp.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +25,7 @@ import java.util.Map;
 public class AiOperationsService {
 
     private final AiDatasetExportService aiDatasetExportService;
+    private final ProductRepository productRepository;
 
     public AiOperationsOverviewResponse getOverview() {
         LocalDateTime generatedAt = LocalDateTime.now();
@@ -81,6 +88,70 @@ public class AiOperationsService {
                 List.of("데이터셋 카탈로그", "개인정보 마스킹 export", "baseline 학습 스크립트", "관리자 AI 메뉴 권한"),
                 LocalDateTime.now()
         );
+    }
+
+    public List<AiInsightResponse> getProductRecommendations(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 30));
+        var pageable = PageRequest.of(0, Math.max(safeLimit * 3, 10), Sort.by(Sort.Direction.DESC, "updatedAt"));
+        return productRepository.findAll(pageable)
+                .stream()
+                .filter(product -> product.getDeletedAt() == null)
+                .filter(product -> product.getDisplayStatus() == ProductDisplayStatus.VISIBLE)
+                .filter(product -> product.getSalesStatus() == ProductSalesStatus.ON_SALE)
+                .map(this::productRecommendationInsight)
+                .sorted((left, right) -> Double.compare(right.score(), left.score()))
+                .limit(safeLimit)
+                .toList();
+    }
+
+    private AiInsightResponse productRecommendationInsight(Product product) {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        int stock = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
+        int safetyStock = product.getSafetyStockQuantity() == null ? 0 : product.getSafetyStockQuantity();
+        int price = product.getPrice() == null ? 0 : product.getPrice();
+        int tagCount = countTokens(product.getTags());
+        int keywordCount = countTokens(product.getSearchKeywords());
+        double score = Math.min(0.95, 0.35
+                + Math.min(stock, 50) * 0.006
+                + Math.min(tagCount + keywordCount, 10) * 0.035
+                + (price > 0 ? 0.08 : 0)
+                + (product.getImageUrl() != null && !product.getImageUrl().isBlank() ? 0.07 : 0));
+        AiRiskLevel riskLevel = stock <= 0 ? AiRiskLevel.HIGH : stock <= safetyStock ? AiRiskLevel.MEDIUM : AiRiskLevel.LOW;
+        String title = product.getName() + " 추천 후보";
+        String reason = String.format(
+                "노출/판매 상태가 정상이고 재고 %d개, 태그 %d개, 검색 키워드 %d개를 기준으로 추천 후보 점수를 계산했습니다.",
+                stock,
+                tagCount,
+                keywordCount
+        );
+        return insight(
+                "product-recommendation-" + product.getId(),
+                "PRODUCT",
+                product.getId(),
+                title,
+                Math.round(score * 100.0) / 100.0,
+                riskLevel,
+                reason,
+                Map.of(
+                        "productName", product.getName(),
+                        "brand", product.getBrand() == null ? "" : product.getBrand(),
+                        "price", price,
+                        "stockQuantity", stock,
+                        "tagCount", tagCount,
+                        "keywordCount", keywordCount
+                ),
+                "rule_based_product_recommendation_v0.9.2",
+                generatedAt
+        );
+    }
+
+    private int countTokens(String value) {
+        if (value == null || value.isBlank()) {
+            return 0;
+        }
+        return (int) java.util.Arrays.stream(value.split("[,\\s]+"))
+                .filter(token -> !token.isBlank())
+                .count();
     }
 
     private AiInsightResponse insight(

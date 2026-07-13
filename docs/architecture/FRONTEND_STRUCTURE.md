@@ -309,3 +309,14 @@
   - 관리자 사이드바에 `AI 운영` 그룹을 추가했다.
   - `AI 운영 개요`는 `/admin/ai`, `AI 데이터셋`은 `/admin/settings?section=ai-datasets`로 연결한다.
   - 기존 깨진 관리자 메뉴 라벨을 정상 한국어 라벨로 정리했다.
+
+## v0.9.2 AI 상품 추천 화면
+
+- `frontend/src/app/admin/ai/recommendations/page.tsx`
+  - 관리자 AI 상품 추천 후보 화면이다.
+  - 추천 점수, 재고 확인 상태, 판매가, 재고, 추천 근거, 생성 시각을 표시한다.
+  - 추천 결과는 자동 전시가 아니라 관리자 검토용 참고 지표로 안내한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `getProductRecommendations(limit)` 호출 함수를 추가했다.
+- `frontend/src/lib/adminMenu.ts`
+  - `AI 운영` 그룹에 `AI 상품 추천` 메뉴를 추가했다.
