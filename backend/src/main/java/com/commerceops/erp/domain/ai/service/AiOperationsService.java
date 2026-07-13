@@ -104,6 +104,25 @@ public class AiOperationsService {
                 .toList();
     }
 
+    public List<AiInsightResponse> getDemandForecasts(int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 30));
+        var pageable = PageRequest.of(0, Math.max(safeLimit * 3, 10), Sort.by(Sort.Direction.ASC, "stockQuantity"));
+        return productRepository.findAll(pageable)
+                .stream()
+                .filter(product -> product.getDeletedAt() == null)
+                .filter(product -> product.getDisplayStatus() == ProductDisplayStatus.VISIBLE)
+                .filter(product -> product.getSalesStatus() == ProductSalesStatus.ON_SALE
+                        || product.getSalesStatus() == ProductSalesStatus.SOLD_OUT)
+                .map(this::demandForecastInsight)
+                .sorted((left, right) -> {
+                    int riskCompare = Integer.compare(riskWeight(right.riskLevel()), riskWeight(left.riskLevel()));
+                    if (riskCompare != 0) return riskCompare;
+                    return Double.compare(right.score(), left.score());
+                })
+                .limit(safeLimit)
+                .toList();
+    }
+
     private AiInsightResponse productRecommendationInsight(Product product) {
         LocalDateTime generatedAt = LocalDateTime.now();
         int stock = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
@@ -143,6 +162,48 @@ public class AiOperationsService {
                 "rule_based_product_recommendation_v0.9.2",
                 generatedAt
         );
+    }
+
+    private AiInsightResponse demandForecastInsight(Product product) {
+        LocalDateTime generatedAt = LocalDateTime.now();
+        int stock = product.getStockQuantity() == null ? 0 : product.getStockQuantity();
+        int safetyStock = product.getSafetyStockQuantity() == null ? 0 : product.getSafetyStockQuantity();
+        int demandIndex = Math.max(1, safetyStock * 2 + countTokens(product.getSearchKeywords()) + countTokens(product.getTags()));
+        int daysOfStock = demandIndex <= 0 ? 0 : Math.max(0, stock / demandIndex);
+        double score = Math.min(0.98, 0.45 + Math.max(0, safetyStock * 2 - stock) * 0.03 + Math.min(demandIndex, 20) * 0.015);
+        AiRiskLevel riskLevel = stock <= 0 ? AiRiskLevel.HIGH : stock <= safetyStock ? AiRiskLevel.MEDIUM : AiRiskLevel.LOW;
+        String reason = String.format(
+                "재고 %d개, 안전재고 %d개, 데모 수요지수 %d를 기준으로 재고 소진 위험을 추정했습니다.",
+                stock,
+                safetyStock,
+                demandIndex
+        );
+        return insight(
+                "demand-forecast-" + product.getId(),
+                "PRODUCT",
+                product.getId(),
+                product.getName() + " 수요 예측",
+                Math.round(score * 100.0) / 100.0,
+                riskLevel,
+                reason,
+                Map.of(
+                        "productName", product.getName(),
+                        "stockQuantity", stock,
+                        "safetyStockQuantity", safetyStock,
+                        "demandIndex", demandIndex,
+                        "estimatedDaysOfStock", daysOfStock
+                ),
+                "commerceops_demo_demand_baseline",
+                generatedAt
+        );
+    }
+
+    private int riskWeight(AiRiskLevel riskLevel) {
+        return switch (riskLevel) {
+            case HIGH -> 3;
+            case MEDIUM -> 2;
+            case LOW -> 1;
+        };
     }
 
     private int countTokens(String value) {

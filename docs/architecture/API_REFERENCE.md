@@ -513,3 +513,13 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.2 기준 추천 점수는 상품 전시/판매 상태, 재고, 태그, 검색 키워드, 이미지 URL, 판매가를 근거로 계산한다.
 
 추천 결과는 관리자 검토용 참고 지표이며, 상품 전시나 개인화 추천에 자동 반영하지 않는다.
+
+## v0.9.3 AI 수요 예측 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/forecasts/demand?limit=10` | 상품별 수요 예측 후보와 재고 소진 위험을 조회한다. | `AI_FORECAST_READ` |
+
+응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.3 기준 예측 점수는 현재 재고, 안전재고, 태그 수, 검색 키워드 수를 기반으로 계산한다.
+
+예측 결과는 자동 발주나 생산 지시에 반영하지 않고 관리자 보충 판단용 참고 지표로만 제공한다.

@@ -320,3 +320,13 @@
   - `getProductRecommendations(limit)` 호출 함수를 추가했다.
 - `frontend/src/lib/adminMenu.ts`
   - `AI 운영` 그룹에 `AI 상품 추천` 메뉴를 추가했다.
+
+## v0.9.3 AI 수요 예측 화면
+
+- `frontend/src/app/admin/ai/demand-forecast/page.tsx`
+  - 관리자 AI 수요 예측 화면이다.
+  - 상품별 재고 소진 위험, 현재 재고, 안전재고, 데모 수요지수, 예상 재고일을 표시한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `getDemandForecasts(limit)` 호출 함수를 추가했다.
+- `frontend/src/lib/adminMenu.ts`
+  - `AI 운영` 그룹에 `AI 수요 예측` 메뉴를 추가했다.

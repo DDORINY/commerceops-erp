@@ -236,3 +236,13 @@ com.commerceops.erp
   - `AI_RECOMMENDATION_READ` 권한을 확인한다.
 - `db/migration/V37__seed_ai_recommendation_menu.sql`
   - 관리자 메뉴 권한에 `ai-recommendations` 항목을 추가한다.
+
+## v0.9.3 AI 수요 예측
+
+- `domain.ai.service.AiOperationsService#getDemandForecasts`
+  - 상품 재고, 안전재고, 태그/검색 키워드 수를 기준으로 수요 예측 후보를 계산한다.
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/forecasts/demand`
+  - `AI_FORECAST_READ` 권한을 확인한다.
+- `db/migration/V38__seed_ai_demand_forecast_menu.sql`
+  - 관리자 메뉴 권한에 `ai-demand-forecast` 항목을 추가한다.
