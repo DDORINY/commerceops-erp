@@ -1841,3 +1841,54 @@ v1.0의 목적은 v0.1 ~ v0.9에서 구현한 CommerceOps ERP를 포트폴리오
 - [x] 관련 문서 갱신
 - [x] `git diff --check`
 - [x] main 병합 및 `v1.0.0` 태그 생성
+
+### v1.0.1 체크리스트
+
+목적: README와 핵심 문서의 오래된 기준 버전, 예정 표현, 누락된 v0.8/v0.9/v1.0 문서 링크를 정리한다.
+
+- [x] main 최신 상태 확인
+- [x] `v1.0.1-final-docs-polish` 브랜치 생성
+- [x] 문서 인덱스와 overview 문서 최신화
+- [x] 기능명세서 회계/AI 상태 갱신
+- [x] AI 전략 문서 기준 버전 갱신
+- [x] `git diff --check`
+- [x] main 병합 및 `v1.0.1` 태그 생성
+
+### v1.0.2 체크리스트
+
+목적: 포트폴리오 시연에 필요한 데모 계정 역할, 샘플 데이터 범위, AI 데모 데이터와 모델 재생성 명령을 문서화한다.
+
+- [x] main 최신 상태 확인
+- [x] `v1.0.2-demo-seed-data` 브랜치 생성
+- [x] 데모 데이터/계정 가이드 추가
+- [x] Git 포함/제외 기준 정리
+- [x] 문서 인덱스 연결
+- [x] `git diff --check`
+- [x] main 병합 및 `v1.0.2` 태그 생성
+
+### v1.0.3 체크리스트
+
+목적: 최종 포트폴리오 릴리스 전 backend test, frontend lint/build, 문서 공백 검증을 수행하고 smoke test 결과를 문서화한다.
+
+- [x] main 최신 상태 확인
+- [x] `v1.0.3-release-smoke-test` 브랜치 생성
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build 재검증
+- [x] 임시 build output 삭제
+- [x] smoke test 결과 문서 생성
+- [x] `git diff --check`
+- [x] main 병합 및 `v1.0.3` 태그 생성
+
+### v1.0.4 체크리스트
+
+목적: v1.0.0 ~ v1.0.3 결과를 확인하고 최종 포트폴리오 릴리스 태그로 마감한다.
+
+- [x] main 최신 상태 확인
+- [x] `v1.0.4-final-tag-release` 브랜치 생성
+- [x] v1.0.0 ~ v1.0.3 로컬 태그 확인
+- [x] v1.0.0 ~ v1.0.3 원격 태그 확인
+- [x] v1.0.0 ~ v1.0.3 체크리스트 확인
+- [x] README/문서 인덱스/데모 데이터/smoke test 문서 확인
+- [x] `git diff --check`
+- [ ] main 병합 및 `v1.0.4` 태그 생성
