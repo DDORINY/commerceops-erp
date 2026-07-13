@@ -256,3 +256,13 @@ com.commerceops.erp
   - `AI_REVIEW_ANALYSIS_READ` 권한을 확인한다.
 - `db/migration/V39__seed_ai_review_analysis_menu.sql`
   - 관리자 메뉴 권한에 `ai-review-analysis` 항목을 추가한다.
+
+## v0.9.5 AI 이상 주문 탐지
+
+- `domain.ai.service.AiOperationsService#getOrderAnomalies`
+  - 주문 금액, 할인율, 주문/결제 상태 불일치를 기준으로 이상 주문 후보를 계산한다.
+- `domain.ai.controller.AdminAiOperationsController`
+  - `GET /api/admin/ai/anomalies/orders`
+  - `AI_ANOMALY_READ` 권한을 확인한다.
+- `db/migration/V40__seed_ai_order_anomaly_menu.sql`
+  - 관리자 메뉴 권한에 `ai-order-anomaly` 항목을 추가한다.

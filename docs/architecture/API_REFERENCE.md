@@ -533,3 +533,13 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.4 기준 분석 점수는 리뷰 평점과 마스킹된 본문 길이를 기반으로 계산한다.
 
 분석 결과는 자동 숨김이나 제재에 반영하지 않고 관리자 검토용 참고 지표로만 제공한다.
+
+## v0.9.5 AI 이상 주문 탐지 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/anomalies/orders?limit=10` | 이상 주문 후보를 조회한다. | `AI_ANOMALY_READ` |
+
+응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.5 기준 탐지 점수는 주문 금액, 할인율, 주문/결제 상태 불일치 후보를 기반으로 계산한다.
+
+탐지 결과는 자동 주문 차단에 반영하지 않고 관리자 검토용 참고 지표로만 제공한다.
