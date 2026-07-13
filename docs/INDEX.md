@@ -53,6 +53,7 @@
 - [릴리스 프로세스](./operations/RELEASE_PROCESS.md)
 - [버전 작업 규칙](./operations/VERSION_WORKFLOW.md)
 - [문서 운영 기준](./operations/DOCUMENTATION_GUIDE.md)
+- [포트폴리오 데모 데이터/계정 가이드](./operations/DEMO_DATA_GUIDE.md)
 
 ## Checklists
 
