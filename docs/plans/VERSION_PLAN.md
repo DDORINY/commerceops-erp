@@ -1644,3 +1644,25 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] 관련 문서 갱신
 - [x] `git diff --check`
 - [x] main 병합 및 `v0.9.0` 태그 생성
+
+### v0.9.1 체크리스트
+
+목적: v0.9.2 이후 AI 운영 화면에서 재사용할 공통 응답 구조, 관리자 AI 메뉴, overview/health API 기반을 만든다.
+
+- [x] main 최신 상태 확인
+- [x] `v0.9.1-ai-operations-foundation` 브랜치 생성
+- [x] AI 공통 insight DTO 추가
+- [x] AI 운영 overview/health DTO 추가
+- [x] AI 운영 service/controller 추가
+- [x] `GET /api/admin/ai/overview` 추가
+- [x] `GET /api/admin/ai/health` 추가
+- [x] v0.9 AI permission code 추가
+- [x] permission/menu seed migration 추가
+- [x] 관리자 `AI 운영` 사이드바 그룹 추가
+- [x] `/admin/ai` 화면 추가
+- [x] 관련 문서 갱신
+- [x] backend test
+- [x] frontend lint
+- [x] frontend build
+- [x] `git diff --check`
+- [ ] main 병합 및 `v0.9.1` 태그 생성

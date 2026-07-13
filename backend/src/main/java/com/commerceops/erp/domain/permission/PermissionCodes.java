@@ -43,4 +43,11 @@ public final class PermissionCodes {
     public static final String ROLE_MANAGE = "ROLE_MANAGE";
     public static final String AUDIT_LOG_READ = "AUDIT_LOG_READ";
     public static final String AI_DATASET_EXPORT = "AI_DATASET_EXPORT";
+    public static final String AI_RECOMMENDATION_READ = "AI_RECOMMENDATION_READ";
+    public static final String AI_FORECAST_READ = "AI_FORECAST_READ";
+    public static final String AI_REVIEW_ANALYSIS_READ = "AI_REVIEW_ANALYSIS_READ";
+    public static final String AI_ANOMALY_READ = "AI_ANOMALY_READ";
+    public static final String AI_RISK_ALERT_READ = "AI_RISK_ALERT_READ";
+    public static final String AI_REPORT_READ = "AI_REPORT_READ";
+    public static final String AI_OPERATIONS_MANAGE = "AI_OPERATIONS_MANAGE";
 }

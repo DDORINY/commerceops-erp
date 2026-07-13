@@ -296,3 +296,16 @@
 - `frontend/src/lib/services/accountingService.ts`
   - `ApiAccountingConsistencyReport`, `ApiAccountingConsistencyIssue` 타입을 추가했다.
   - `getConsistencyReport(limit)` 호출 함수를 추가했다.
+
+## v0.9.1 AI 운영 화면 구조
+
+- `frontend/src/app/admin/ai/page.tsx`
+  - 관리자 AI 운영 overview 화면이다.
+  - `GET /api/admin/ai/overview`, `GET /api/admin/ai/health` 응답을 표시한다.
+  - 포트폴리오 데모 기반 AI 하이라이트, 활성 예정 모듈, health 상태를 한국어로 안내한다.
+- `frontend/src/lib/services/aiOperationsService.ts`
+  - `AiInsight`, `AiOperationsOverview`, `AiOperationsHealth` 타입과 API 호출 함수를 정의한다.
+- `frontend/src/lib/adminMenu.ts`
+  - 관리자 사이드바에 `AI 운영` 그룹을 추가했다.
+  - `AI 운영 개요`는 `/admin/ai`, `AI 데이터셋`은 `/admin/settings?section=ai-datasets`로 연결한다.
+  - 기존 깨진 관리자 메뉴 라벨을 정상 한국어 라벨로 정리했다.
