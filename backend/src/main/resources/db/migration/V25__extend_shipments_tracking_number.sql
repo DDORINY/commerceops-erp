@@ -2,7 +2,7 @@ ALTER TABLE shipments
     ADD COLUMN tracking_number_source VARCHAR(20) NULL AFTER carrier,
     ADD COLUMN tracking_number_issued_at DATETIME(6) NULL AFTER tracking_number_source;
 
-CREATE INDEX idx_shipments_tracking_number ON shipments (tracking_number);
+-- idx_shipments_tracking_number is already created by V1__initial_schema.sql.
 CREATE INDEX idx_shipments_tracking_number_issued_at ON shipments (tracking_number_issued_at);
 
 INSERT INTO permissions (code, name, domain, action, description, active, created_at, updated_at)
