@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AdminLayout from '@/components/admin/AdminLayout';
+import AiImageInferenceCard from '@/components/admin/AiImageInferenceCard';
 import Button from '@/components/common/Button';
 import { formatDateTime } from '@/lib/format';
 import {
@@ -158,6 +159,7 @@ export default function AdminAiOverviewPage() {
             표시할 AI 운영 정보가 없습니다.
           </div>
         )}
+        <AiImageInferenceCard />
       </div>
     </AdminLayout>
   );
