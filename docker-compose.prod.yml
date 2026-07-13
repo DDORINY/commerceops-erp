@@ -90,6 +90,34 @@ services:
       - commerceops-network
 
 
+  ai:
+    image: commerceops-ai:test
+    container_name: commerceops-ai
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      AI_MODEL_DIR: /app/models
+      AI_MAX_IMAGE_BYTES: 5242880
+    volumes:
+      - ./ai/models/checkpoints:/app/models:ro
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    mem_limit: 1g
+    networks:
+      - commerceops-network
+
   frontend:
     image: commerceops-frontend:test
     container_name: commerceops-frontend
