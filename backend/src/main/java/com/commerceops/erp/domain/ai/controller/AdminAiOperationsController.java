@@ -49,4 +49,13 @@ public class AdminAiOperationsController {
         permissionChecker.require(userDetails, PermissionCodes.AI_RECOMMENDATION_READ);
         return ApiResponse.ok(aiOperationsService.getProductRecommendations(limit));
     }
+
+    @GetMapping("/forecasts/demand")
+    public ApiResponse<List<AiInsightResponse>> getDemandForecasts(
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        permissionChecker.require(userDetails, PermissionCodes.AI_FORECAST_READ);
+        return ApiResponse.ok(aiOperationsService.getDemandForecasts(limit));
+    }
 }
