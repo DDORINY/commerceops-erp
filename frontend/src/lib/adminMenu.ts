@@ -31,6 +31,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { menuKey: 'ai-overview', label: 'AI 운영 개요', href: '/admin/ai', roles: ALL_ADMIN_ROLES },
       { menuKey: 'ai-recommendations', label: 'AI 상품 추천', href: '/admin/ai/recommendations', roles: ALL_ADMIN_ROLES },
       { menuKey: 'ai-demand-forecast', label: 'AI 수요 예측', href: '/admin/ai/demand-forecast', roles: ALL_ADMIN_ROLES },
+      { menuKey: 'ai-review-analysis', label: 'AI 리뷰 분석', href: '/admin/ai/review-analysis', roles: ALL_ADMIN_ROLES },
       { menuKey: 'ai-datasets', label: 'AI 데이터셋', href: '/admin/settings?section=ai-datasets', roles: ADMIN_ROLES },
     ],
   },

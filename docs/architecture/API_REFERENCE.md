@@ -523,3 +523,13 @@ v0.8.6부터 `SETTLEMENT_BATCHES`, `ACCOUNTING_CONSISTENCY_ISSUES` key를 추가
 응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.3 기준 예측 점수는 현재 재고, 안전재고, 태그 수, 검색 키워드 수를 기반으로 계산한다.
 
 예측 결과는 자동 발주나 생산 지시에 반영하지 않고 관리자 보충 판단용 참고 지표로만 제공한다.
+
+## v0.9.4 AI 리뷰 분석 API
+
+| Method | Path | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/admin/ai/reviews/analysis?limit=10` | 리뷰 감성 분석 후보를 조회한다. | `AI_REVIEW_ANALYSIS_READ` |
+
+응답은 `AiInsightResponse[]` 형식을 사용한다. v0.9.4 기준 분석 점수는 리뷰 평점과 마스킹된 본문 길이를 기반으로 계산한다.
+
+분석 결과는 자동 숨김이나 제재에 반영하지 않고 관리자 검토용 참고 지표로만 제공한다.
