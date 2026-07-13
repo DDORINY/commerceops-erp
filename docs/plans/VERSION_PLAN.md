@@ -1683,4 +1683,4 @@ v0.9의 목적은 v0.8에서 만든 AI 데이터셋, 합성 샘플 데이터, ba
 - [x] frontend lint
 - [x] frontend build
 - [x] `git diff --check`
-- [ ] main 병합 및 `v0.9.2` 태그 생성
+- [x] main 병합 및 `v0.9.2` 태그 생성
