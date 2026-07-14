@@ -37,6 +37,16 @@ services:
     networks:
       - commerceops-network
 
+  uploads-init:
+    image: nginx:1.27-alpine
+    container_name: commerceops-uploads-init
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c", "chown -R 999:999 /app/uploads"]
+    volumes:
+      - uploads-data:/app/uploads
+    networks:
+      - commerceops-network
+
 
   backend:
     image: commerceops-backend:test
@@ -83,6 +93,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      uploads-init:
+        condition: service_completed_successfully
 
     mem_limit: 700m
 

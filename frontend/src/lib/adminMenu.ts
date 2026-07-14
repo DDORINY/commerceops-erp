@@ -22,7 +22,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     label: '대시보드',
     items: [
       { menuKey: 'dashboard', label: '대시보드', href: '/admin', roles: ALL_ADMIN_ROLES },
-      { menuKey: 'notifications', label: '알림', href: '/admin/settings?section=notifications', roles: ADMIN_ROLES, note: '설정 진입' },
+      { menuKey: 'notifications', label: '알림', href: '/admin/notifications', roles: ALL_ADMIN_ROLES },
     ],
   },
   {
@@ -116,6 +116,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
   {
     label: '시스템 설정',
     items: [
+      { menuKey: 'settings', label: '설정 저장 관리', href: '/admin/settings', roles: ADMIN_ROLES },
       { menuKey: 'settings-company', label: '사업자 설정', href: '/admin/settings?section=company', roles: ADMIN_ROLES },
       { menuKey: 'settings-terms', label: '약관 설정', href: '/admin/settings?section=terms', roles: ADMIN_ROLES },
       { menuKey: 'settings-privacy', label: '개인정보처리방침 설정', href: '/admin/settings?section=privacy', roles: ADMIN_ROLES },
