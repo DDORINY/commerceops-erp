@@ -48,6 +48,34 @@ public class Payment {
     @Column(length = 30)
     private String provider;
 
+    @Column(name = "provider_order_id", length = 64, unique = true)
+    private String providerOrderId;
+
+    @Column(name = "payment_key", length = 200, unique = true)
+    private String paymentKey;
+
+    @Column(name = "requested_amount")
+    private Integer requestedAmount;
+
+    @Column(name = "approved_amount")
+    private Integer approvedAmount;
+
+    @Column(name = "requested_at")
+    private LocalDateTime requestedAt;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "failure_code", length = 100)
+    private String failureCode;
+
+    @Column(name = "failure_message", length = 500)
+    private String failureMessage;
+
+    @Lob
+    @Column(name = "raw_response", columnDefinition = "LONGTEXT")
+    private String rawResponse;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -72,5 +100,41 @@ public class Payment {
 
     public void refund() {
         this.paymentStatus = PaymentStatus.REFUNDED;
+    }
+
+    public void markInProgress(String paymentKey) {
+        this.paymentStatus = PaymentStatus.IN_PROGRESS;
+        this.paymentKey = paymentKey;
+        this.failureCode = null;
+        this.failureMessage = null;
+    }
+
+    public void completeToss(PaymentMethod method, Integer amount, LocalDateTime approvedAt, String rawResponse) {
+        this.paymentMethod = method;
+        this.paymentStatus = PaymentStatus.DONE;
+        this.approvedAmount = amount;
+        this.paidAmount = amount;
+        this.approvedAt = approvedAt;
+        this.rawResponse = rawResponse;
+        this.transactionId = this.paymentKey;
+        this.provider = "TOSS";
+        this.failureCode = null;
+        this.failureMessage = null;
+    }
+
+    public void recordFailure(String code, String message, boolean retryable) {
+        this.failureCode = code;
+        this.failureMessage = message;
+        if (!retryable) this.paymentStatus = PaymentStatus.ABORTED;
+    }
+
+    public void restart(String providerOrderId, String idempotencyKey, LocalDateTime requestedAt) {
+        this.providerOrderId = providerOrderId;
+        this.idempotencyKey = idempotencyKey;
+        this.requestedAt = requestedAt;
+        this.paymentKey = null;
+        this.paymentStatus = PaymentStatus.READY;
+        this.failureCode = null;
+        this.failureMessage = null;
     }
 }

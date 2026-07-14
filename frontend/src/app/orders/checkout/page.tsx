@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import ShopHeader from '@/components/shop/ShopHeader';
 import ShopFooter from '@/components/shop/ShopFooter';
 import Button from '@/components/common/Button';
@@ -9,24 +8,13 @@ import Input from '@/components/common/Input';
 import { cartService, type ApiCartItem } from '@/lib/services/cartService';
 import { orderService } from '@/lib/services/orderService';
 import { paymentService } from '@/lib/services/paymentService';
+import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { couponService, type CouponValidateResult } from '@/lib/services/couponService';
 import { formatPrice } from '@/lib/format';
 
-const PAYMENT_METHODS = [
-  { value: 'MOCK_CARD', label: '신용/체크카드' },
-  { value: 'MOCK_SIMPLE_PAY', label: '간편결제' },
-  { value: 'MOCK_BANK', label: '무통장입금' },
-];
-
-function createIdempotencyKey() {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID();
-  }
-  return `PAY-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+const PAYMENT_METHODS = [{ value: 'TOSS_CARD', label: '토스페이먼츠 카드 결제' }];
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const [cartItems, setCartItems] = useState<ApiCartItem[]>([]);
   const [cartLoading, setCartLoading] = useState(true);
   const [cartError, setCartError] = useState('');
@@ -37,7 +25,7 @@ export default function CheckoutPage() {
     zipCode: '',
     address: '',
     addressDetail: '',
-    paymentMethod: 'MOCK_CARD',
+    paymentMethod: 'TOSS_CARD',
   });
   const [couponCode, setCouponCode] = useState('');
   const [couponResult, setCouponResult] = useState<CouponValidateResult | null>(null);
@@ -99,6 +87,11 @@ export default function CheckoutPage() {
 
     try {
       setSubmitting(true);
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+      if (!clientKey) throw new Error('토스페이먼츠 문서용 테스트 클라이언트 키가 설정되지 않았습니다.');
+      if (!clientKey.startsWith('test_gck_')) {
+        throw new Error('라이브 키는 사용할 수 없습니다. 문서용 test_gck 키를 설정해주세요.');
+      }
       const orderRes = await orderService.createOrder({
         receiverName: form.receiverName,
         receiverPhone: form.receiverPhone,
@@ -109,12 +102,19 @@ export default function CheckoutPage() {
         couponCode: couponResult ? couponResult.code : undefined,
       });
 
-      await paymentService.approvePayment(
-        orderRes.orderId,
-        form.paymentMethod,
-        createIdempotencyKey()
-      );
-      router.push('/orders');
+      const prepared = await paymentService.prepareToss(orderRes.orderId);
+      const tossPayments = await loadTossPayments(clientKey);
+      const widgets = tossPayments.widgets({ customerKey: prepared.customerKey });
+      await widgets.setAmount({ currency: 'KRW', value: prepared.amount });
+      const paymentWindow = await widgets.renderPaymentWindow();
+      paymentWindow.on('paymentRequest', async () => widgets.requestPayment({
+        orderId: prepared.paymentOrderId,
+        orderName: prepared.orderName,
+        customerName: prepared.customerName,
+        customerEmail: prepared.customerEmail,
+        successUrl: `${window.location.origin}/payments/success`,
+        failUrl: `${window.location.origin}/payments/fail`,
+      }));
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : '주문 처리에 실패했습니다.');
     } finally {
@@ -130,6 +130,10 @@ export default function CheckoutPage() {
         <h1 className="text-xl font-bold text-[#222] mb-8 pb-4 border-b border-[#e5e5e5]">
           주문/결제
         </h1>
+
+        <div className="mb-8 border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <strong>TEST MODE</strong> · 포트폴리오 시연용 가상 결제입니다. 실제 청구와 정산은 발생하지 않습니다.
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1 space-y-8">
@@ -295,7 +299,7 @@ export default function CheckoutPage() {
                 onClick={handleSubmit}
                 disabled={submitting || cartLoading || !!cartError || cartItems.length === 0}
               >
-                {submitting ? '처리 중...' : '결제하기'}
+                {submitting ? '처리 중...' : '테스트 결제하기'}
               </Button>
               {submitError && (
                 <p className="text-xs text-[#c43a3a] mt-3 text-center leading-relaxed">

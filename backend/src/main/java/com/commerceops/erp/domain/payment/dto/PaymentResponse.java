@@ -16,7 +16,7 @@ public record PaymentResponse(
         return new PaymentResponse(
                 payment.getId(),
                 order.getId(),
-                payment.getPaymentMethod().name(),
+                payment.getPaymentMethod() == null ? null : payment.getPaymentMethod().name(),
                 payment.getPaymentStatus().name(),
                 payment.getPaidAmount(),
                 payment.getTransactionId(),

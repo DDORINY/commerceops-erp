@@ -4,6 +4,7 @@
 !.env.example
 !.env.*.example
 .envrc
+application-secret.yml
 frontend/.env.local
 frontend/.env*.local
 backend/src/main/resources/application-local.yml

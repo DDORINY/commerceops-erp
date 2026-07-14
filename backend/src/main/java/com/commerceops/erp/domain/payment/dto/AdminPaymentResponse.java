@@ -23,7 +23,7 @@ public record AdminPaymentResponse(
         return new AdminPaymentResponse(
                 payment.getId(), order.getId(), order.getOrderNumber(),
                 order.getUser().getId(), order.getUser().getName(),
-                payment.getPaymentMethod().name(), payment.getPaymentStatus().name(),
+                payment.getPaymentMethod() == null ? null : payment.getPaymentMethod().name(), payment.getPaymentStatus().name(),
                 payment.getPaidAmount(), payment.getTransactionId(), payment.getProvider(),
                 payment.getCreatedAt(), payment.getUpdatedAt()
         );

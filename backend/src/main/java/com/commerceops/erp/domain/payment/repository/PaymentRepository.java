@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,16 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByOrder(Order order);
 
     Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
+    Optional<Payment> findByProviderOrderId(String providerOrderId);
+
+    Optional<Payment> findByPaymentKey(String paymentKey);
+
+    boolean existsByOrderAndPaymentStatusIn(Order order, List<PaymentStatus> statuses);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Payment p JOIN FETCH p.order o JOIN FETCH o.user WHERE p.providerOrderId = :providerOrderId")
+    Optional<Payment> findByProviderOrderIdForUpdate(@Param("providerOrderId") String providerOrderId);
 
     @Query(value = """
             SELECT p FROM Payment p
@@ -58,7 +70,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
            value = "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS date_label, " +
                    "COALESCE(SUM(paid_amount), 0) AS sales_amount, COUNT(*) AS order_count " +
                    "FROM payments " +
-                   "WHERE payment_status = 'PAID' AND created_at >= :startDate AND created_at < :endDate " +
+                   "WHERE payment_status IN ('PAID', 'DONE') AND created_at >= :startDate AND created_at < :endDate " +
                    "GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d') " +
                    "ORDER BY date_label ASC")
     List<Object[]> findDailySales(
@@ -70,7 +82,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
            value = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS date_label, " +
                    "COALESCE(SUM(paid_amount), 0) AS sales_amount, COUNT(*) AS order_count " +
                    "FROM payments " +
-                   "WHERE payment_status = 'PAID' AND created_at >= :startDate AND created_at < :endDate " +
+                   "WHERE payment_status IN ('PAID', 'DONE') AND created_at >= :startDate AND created_at < :endDate " +
                    "GROUP BY DATE_FORMAT(created_at, '%Y-%m') " +
                    "ORDER BY date_label ASC")
     List<Object[]> findMonthlySales(

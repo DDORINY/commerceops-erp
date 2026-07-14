@@ -28,6 +28,14 @@ public class ErrorResponse {
         this.errors = errors;
     }
 
+    private ErrorResponse(int statusCode, String errorCode, String message) {
+        this.statusCode = statusCode;
+        this.errorCode = errorCode;
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
+        this.errors = null;
+    }
+
     public static ErrorResponse of(ErrorCode errorCode) {
         return new ErrorResponse(errorCode, null);
     }
@@ -38,6 +46,10 @@ public class ErrorResponse {
 
     public static ErrorResponse of(ErrorCode errorCode, String message) {
         return new ErrorResponse(errorCode, message, null);
+    }
+
+    public static ErrorResponse of(int statusCode, String errorCode, String message) {
+        return new ErrorResponse(statusCode, errorCode, message);
     }
 
     @Getter

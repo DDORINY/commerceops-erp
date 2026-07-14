@@ -38,9 +38,10 @@ public class DashboardService {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        Long totalSales = paymentRepository.sumPaidAmountByStatus(PaymentStatus.PAID).orElse(0L);
-        Long todaySales = paymentRepository.sumPaidAmountByStatusAndDate(PaymentStatus.PAID, startOfDay, endOfDay)
-                .orElse(0L);
+        Long totalSales = paymentRepository.sumPaidAmountByStatus(PaymentStatus.PAID).orElse(0L)
+                + paymentRepository.sumPaidAmountByStatus(PaymentStatus.DONE).orElse(0L);
+        Long todaySales = paymentRepository.sumPaidAmountByStatusAndDate(PaymentStatus.PAID, startOfDay, endOfDay).orElse(0L)
+                + paymentRepository.sumPaidAmountByStatusAndDate(PaymentStatus.DONE, startOfDay, endOfDay).orElse(0L);
         Long totalOrders = orderRepository.count();
         Long todayOrders = orderRepository.countTodayOrders(startOfDay, endOfDay);
         Long totalCustomers = userRepository.count();
@@ -48,7 +49,8 @@ public class DashboardService {
         Long soldOutProductCount = productRepository.countByStatus(ProductStatus.SOLD_OUT);
         Long lowStockProductCount = productRepository.countByStockQuantityLessThanEqualAndStatusNot(
                 LOW_STOCK_THRESHOLD, ProductStatus.DELETED);
-        Long pendingOrderCount = orderRepository.countByStatus(OrderStatus.PENDING);
+        Long pendingOrderCount = orderRepository.countByStatus(OrderStatus.PENDING)
+                + orderRepository.countByStatus(OrderStatus.PENDING_PAYMENT);
         Map<String, Long> orderStatusCounts = Arrays.stream(OrderStatus.values())
                 .collect(Collectors.toMap(Enum::name, orderRepository::countByStatus));
 

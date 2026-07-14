@@ -74,7 +74,17 @@ public class Order {
 
     public void markAsPaid() {
         this.status = OrderStatus.PAID;
-        this.paymentStatus = PaymentStatus.PAID;
+        this.paymentStatus = PaymentStatus.DONE;
+    }
+
+    public void markPaymentFailed() {
+        this.status = OrderStatus.PAYMENT_FAILED;
+        this.paymentStatus = PaymentStatus.ABORTED;
+    }
+
+    public void retryPayment() {
+        this.status = OrderStatus.PENDING_PAYMENT;
+        this.paymentStatus = PaymentStatus.READY;
     }
 
     public void updateStatus(OrderStatus status) {
