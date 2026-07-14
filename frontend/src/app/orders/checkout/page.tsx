@@ -88,9 +88,9 @@ export default function CheckoutPage() {
     try {
       setSubmitting(true);
       const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-      if (!clientKey) throw new Error('토스페이먼츠 문서용 테스트 클라이언트 키가 설정되지 않았습니다.');
-      if (!clientKey.startsWith('test_gck_')) {
-        throw new Error('라이브 키는 사용할 수 없습니다. 문서용 test_gck 키를 설정해주세요.');
+      if (!clientKey) throw new Error('토스페이먼츠 클라이언트 키가 설정되지 않았습니다.');
+      if (!clientKey.startsWith('test_ck_') && !clientKey.startsWith('live_ck_')) {
+        throw new Error('토스페이먼츠 API 개별 연동 클라이언트 키(ck)를 설정해주세요.');
       }
       const orderRes = await orderService.createOrder({
         receiverName: form.receiverName,
@@ -104,17 +104,18 @@ export default function CheckoutPage() {
 
       const prepared = await paymentService.prepareToss(orderRes.orderId);
       const tossPayments = await loadTossPayments(clientKey);
-      const widgets = tossPayments.widgets({ customerKey: prepared.customerKey });
-      await widgets.setAmount({ currency: 'KRW', value: prepared.amount });
-      const paymentWindow = await widgets.renderPaymentWindow();
-      paymentWindow.on('paymentRequest', async () => widgets.requestPayment({
+      const payment = tossPayments.payment({ customerKey: prepared.customerKey });
+      await payment.requestPayment({
+        method: 'CARD',
+        amount: { currency: 'KRW', value: prepared.amount },
         orderId: prepared.paymentOrderId,
         orderName: prepared.orderName,
         customerName: prepared.customerName,
         customerEmail: prepared.customerEmail,
         successUrl: `${window.location.origin}/payments/success`,
         failUrl: `${window.location.origin}/payments/fail`,
-      }));
+        card: { useEscrow: false, flowMode: 'DEFAULT', useCardPoint: false, useAppCardOnly: false },
+      });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : '주문 처리에 실패했습니다.');
     } finally {
