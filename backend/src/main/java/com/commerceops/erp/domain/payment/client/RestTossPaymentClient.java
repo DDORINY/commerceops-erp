@@ -31,11 +31,11 @@ public class RestTossPaymentClient implements TossPaymentClient {
     @Override
     public TossConfirmResult confirm(String paymentKey, String orderId, Integer amount, String idempotencyKey) {
         if (secretKey == null || secretKey.isBlank()) {
-            throw new TossPaymentClientException("TOSS_SECRET_KEY_MISSING", "토스페이먼츠 문서용 테스트 시크릿 키가 설정되지 않았습니다.", 503, false);
+            throw new TossPaymentClientException("TOSS_SECRET_KEY_MISSING", "토스페이먼츠 시크릿 키가 설정되지 않았습니다.", 503, false);
         }
-        if (!secretKey.startsWith("test_gsk_")) {
-            throw new TossPaymentClientException("TOSS_TEST_SECRET_KEY_REQUIRED",
-                    "라이브 키는 사용할 수 없습니다. 문서용 test_gsk 키를 설정해주세요.", 503, false);
+        if (!secretKey.startsWith("test_sk_") && !secretKey.startsWith("live_sk_")) {
+            throw new TossPaymentClientException("TOSS_INDIVIDUAL_SECRET_KEY_REQUIRED",
+                    "토스페이먼츠 API 개별 연동 시크릿 키(sk)를 설정해주세요.", 503, false);
         }
         String authorization = "Basic " + Base64.getEncoder().encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
         try {
