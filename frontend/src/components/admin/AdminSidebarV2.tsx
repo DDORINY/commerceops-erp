@@ -38,7 +38,12 @@ function canShowByPermission(
   return permissionCodes.has(menuPermission.requiredPermissionCode);
 }
 
-export default function AdminSidebarV2() {
+interface AdminSidebarV2Props {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function AdminSidebarV2({ open = false, onClose }: AdminSidebarV2Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -127,10 +132,23 @@ export default function AdminSidebarV2() {
   };
 
   return (
-    <aside className="w-[260px] min-h-screen bg-[#1a1f2e] flex-shrink-0 flex flex-col">
+    <>
+    {open && (
+      <button
+        type="button"
+        aria-label="관리자 메뉴 닫기"
+        className="fixed inset-0 z-40 bg-black/45 lg:hidden"
+        onClick={onClose}
+      />
+    )}
+    <aside className={[
+      'fixed inset-y-0 left-0 z-50 w-[280px] max-w-[85vw] min-h-screen bg-[#1a1f2e] flex-shrink-0 flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-[260px] lg:translate-x-0',
+      open ? 'translate-x-0 shadow-2xl' : '-translate-x-full',
+    ].join(' ')}>
       <div className="h-[60px] flex items-center px-6 border-b border-white/10">
         <span className="text-white font-bold text-base tracking-widest uppercase">CommerceOps</span>
         <span className="ml-2 text-[10px] text-[#f3a6b8] font-semibold tracking-widest bg-[#f3a6b8]/20 px-1.5 py-0.5">ERP</span>
+        <button type="button" onClick={onClose} aria-label="메뉴 닫기" className="ml-auto p-2 text-xl text-white/70 hover:text-white lg:hidden">×</button>
       </div>
 
       <div className="px-6 py-3 border-b border-white/10">
@@ -198,5 +216,6 @@ export default function AdminSidebarV2() {
         </Link>
       </div>
     </aside>
+    </>
   );
 }

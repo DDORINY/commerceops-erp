@@ -41,9 +41,11 @@ public class NotificationService {
                 .map(NotificationResponse::from));
     }
 
-    public PageResponse<NotificationResponse> getAdminNotifications(int page, int size) {
-        return PageResponse.from(notificationRepository
-                .findAll(PageRequest.of(page, size, Sort.by("createdAt").descending()))
+    public PageResponse<NotificationResponse> getAdminNotifications(int page, int size, boolean unreadOnly) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return PageResponse.from((unreadOnly
+                ? notificationRepository.findByReadAtIsNull(pageable)
+                : notificationRepository.findAll(pageable))
                 .map(NotificationResponse::from));
     }
 

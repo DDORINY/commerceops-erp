@@ -42,6 +42,35 @@ export interface AiReport {
   generatedAt: string;
 }
 
+export type AiDatasetKey =
+  | 'PRODUCTS'
+  | 'ORDERS'
+  | 'ORDER_DEMAND'
+  | 'REVIEWS'
+  | 'PRODUCT_REVIEWS'
+  | 'INVENTORY_SHIPPING'
+  | 'SHIPPING_LEADTIME'
+  | 'ACCOUNTING_TRANSACTIONS'
+  | 'SETTLEMENT_BATCHES'
+  | 'ACCOUNTING_CONSISTENCY_ISSUES';
+
+export interface AiDatasetCatalogItem {
+  key: AiDatasetKey;
+  label: string;
+  description: string;
+  fields: string[];
+}
+
+export interface AiDatasetExport {
+  key: AiDatasetKey;
+  label: string;
+  exportedAt: string;
+  privacyMasked: boolean;
+  rowCount: number;
+  fields: string[];
+  rows: Array<Record<string, unknown>>;
+}
+
 export const aiOperationsService = {
   getOverview: () => apiClient<AiOperationsOverview>('/admin/ai/overview'),
   getHealth: () => apiClient<AiOperationsHealth>('/admin/ai/health'),
@@ -58,4 +87,7 @@ export const aiOperationsService = {
   getSettlementRiskAlerts: (limit = 10) =>
     apiClient<AiInsight[]>(`/admin/ai/risks/settlement?limit=${limit}`),
   getReports: () => apiClient<AiReport[]>('/admin/ai/reports'),
+  getDatasetCatalog: () => apiClient<AiDatasetCatalogItem[]>('/admin/ai/datasets'),
+  exportDataset: (key: AiDatasetKey, limit = 100) =>
+    apiClient<AiDatasetExport>(`/admin/ai/datasets/${key}/export?limit=${limit}`),
 };

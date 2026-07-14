@@ -22,7 +22,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     label: '대시보드',
     items: [
       { menuKey: 'dashboard', label: '대시보드', href: '/admin', roles: ALL_ADMIN_ROLES },
-      { menuKey: 'notifications', label: '알림', href: '/admin/settings?section=notifications', roles: ADMIN_ROLES, note: '설정 진입' },
+      { menuKey: 'notifications', label: '알림', href: '/admin/notifications', roles: ALL_ADMIN_ROLES },
     ],
   },
   {
@@ -35,14 +35,14 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { menuKey: 'ai-order-anomaly', label: 'AI 이상 주문 탐지', href: '/admin/ai/order-anomalies', roles: ALL_ADMIN_ROLES },
       { menuKey: 'ai-risk-alerts', label: 'AI 리스크 알림', href: '/admin/ai/risk-alerts', roles: ALL_ADMIN_ROLES },
       { menuKey: 'ai-reports', label: 'AI 리포트', href: '/admin/ai/reports', roles: ALL_ADMIN_ROLES },
-      { menuKey: 'ai-datasets', label: 'AI 데이터셋', href: '/admin/settings?section=ai-datasets', roles: ADMIN_ROLES },
+      { menuKey: 'ai-datasets', label: 'AI 데이터셋', href: '/admin/ai/datasets', roles: ADMIN_ROLES },
     ],
   },
   {
     label: '쇼핑몰 관리',
     items: [
       { menuKey: 'categories', label: '카테고리 관리', href: '/admin/categories', roles: ADMIN_ROLES },
-      { menuKey: 'top-navigation', label: '상단 네비 관리', href: '/admin/categories?focus=navigation', roles: ADMIN_ROLES },
+      { menuKey: 'top-navigation', label: '상단 네비 관리', href: '/admin/categories/navigation', roles: ADMIN_ROLES },
       { menuKey: 'banners', label: '배너 관리', href: '/admin/banners', roles: ADMIN_ROLES },
     ],
   },
@@ -89,25 +89,21 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     items: [
       { menuKey: 'sales', label: '매출 통계', href: '/admin/sales', roles: ALL_ADMIN_ROLES },
       { menuKey: 'accounting', label: '회계 관리', href: '/admin/accounting', roles: ADMIN_ROLES },
-      { menuKey: 'payments', label: '결제 내역', href: '/admin/accounting?focus=payments', roles: ADMIN_ROLES },
-      { menuKey: 'refund-history', label: '환불 내역', href: '/admin/accounting?focus=refunds', roles: ADMIN_ROLES },
-      { menuKey: 'settlements', label: '정산 관리', href: '/admin/accounting?focus=settlements', roles: ADMIN_ROLES },
+      { menuKey: 'payments', label: '결제 내역', href: '/admin/accounting/payments', roles: ADMIN_ROLES },
+      { menuKey: 'refund-history', label: '환불 내역', href: '/admin/accounting/refunds', roles: ADMIN_ROLES },
+      { menuKey: 'settlements', label: '정산 관리', href: '/admin/accounting/settlements', roles: ADMIN_ROLES },
     ],
   },
   {
     label: '마케팅 관리',
     items: [
       { menuKey: 'coupons', label: '쿠폰 관리', href: '/admin/coupons', roles: ADMIN_ROLES },
-      { menuKey: 'events', label: '이벤트 관리', href: '/admin/settings?section=events', roles: ADMIN_ROLES, note: '후속 구현' },
-      { menuKey: 'promotions', label: '프로모션 관리', href: '/admin/settings?section=promotions', roles: ADMIN_ROLES, note: '후속 구현' },
     ],
   },
   {
     label: '인사/권한 관리',
     items: [
       { menuKey: 'staff', label: '직원 관리', href: '/admin/settings/staff', roles: SUPER_ONLY },
-      { menuKey: 'departments', label: '부서 관리', href: '/admin/settings?section=departments', roles: SUPER_ONLY, note: '후속 구현' },
-      { menuKey: 'positions', label: '직급 관리', href: '/admin/settings?section=positions', roles: SUPER_ONLY, note: '후속 구현' },
       { menuKey: 'permission-groups', label: '권한 그룹 관리', href: '/admin/settings/permission-groups', roles: SUPER_ONLY },
       { menuKey: 'roles', label: '역할/권한 설정', href: '/admin/settings/roles', roles: SUPER_ONLY },
       { menuKey: 'menu-permissions', label: '메뉴/기능 권한', href: '/admin/settings/menu-permissions', roles: SUPER_ONLY },
@@ -116,12 +112,12 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
   {
     label: '시스템 설정',
     items: [
+      { menuKey: 'settings', label: '설정 저장 관리', href: '/admin/settings', roles: ADMIN_ROLES },
       { menuKey: 'settings-company', label: '사업자 설정', href: '/admin/settings?section=company', roles: ADMIN_ROLES },
       { menuKey: 'settings-terms', label: '약관 설정', href: '/admin/settings?section=terms', roles: ADMIN_ROLES },
       { menuKey: 'settings-privacy', label: '개인정보처리방침 설정', href: '/admin/settings?section=privacy', roles: ADMIN_ROLES },
       { menuKey: 'settings-policies', label: '배송/반품 정책 설정', href: '/admin/settings?section=policies', roles: ADMIN_ROLES },
       { menuKey: 'audit-logs', label: '관리자 작업 이력', href: '/admin/settings/audit-logs', roles: ADMIN_ROLES },
-      { menuKey: 'settings-environment', label: '환경 설정', href: '/admin/settings?section=environment', roles: SUPER_ONLY, note: '후속 구현' },
     ],
   },
 ];

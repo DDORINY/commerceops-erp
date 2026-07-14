@@ -15,6 +15,7 @@ import com.commerceops.erp.domain.notification.service.NotificationService;
 import com.commerceops.erp.domain.payment.entity.Payment;
 import com.commerceops.erp.domain.payment.enums.PaymentStatus;
 import com.commerceops.erp.domain.payment.repository.PaymentRepository;
+import com.commerceops.erp.domain.payment.dto.PaymentSummaryResponse;
 import com.commerceops.erp.domain.product.entity.Product;
 import com.commerceops.erp.domain.shipment.entity.Shipment;
 import com.commerceops.erp.domain.shipment.enums.ShipmentStatus;
@@ -35,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -88,7 +90,8 @@ public class OrderService {
             coupon.use();
         }
 
-        int finalPrice = totalPrice - discountAmount;
+        int shippingFee = totalPrice >= 50_000 ? 0 : 3_000;
+        int finalPrice = totalPrice - discountAmount + shippingFee;
 
         Order order = Order.builder()
                 .user(user)
@@ -96,7 +99,7 @@ public class OrderService {
                 .totalPrice(finalPrice)
                 .discountAmount(discountAmount)
                 .couponCode(appliedCouponCode)
-                .status(OrderStatus.PENDING)
+                .status(OrderStatus.PENDING_PAYMENT)
                 .paymentStatus(PaymentStatus.READY)
                 .receiverName(request.receiverName())
                 .receiverPhone(request.receiverPhone())
@@ -127,12 +130,22 @@ public class OrderService {
                 .paymentMethod(request.paymentMethod())
                 .paymentStatus(PaymentStatus.READY)
                 .paidAmount(0)
+                .provider("TOSS")
+                .providerOrderId(createProviderOrderId(savedOrder.getId()))
+                .requestedAmount(savedOrder.getTotalPrice())
+                .approvedAmount(0)
+                .idempotencyKey(UUID.randomUUID().toString())
+                .requestedAt(LocalDateTime.now())
                 .build();
         paymentRepository.save(payment);
 
         cartRepository.deleteAll(cartItems);
 
         return OrderCreateResponse.from(savedOrder);
+    }
+
+    private String createProviderOrderId(Long orderId) {
+        return "ORD-" + orderId + "-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
     }
 
     public List<OrderResponse> getOrders(User user) {
@@ -149,7 +162,8 @@ public class OrderService {
     }
 
     private AdminOrderResponse toAdminOrderResponse(Order order) {
-        return AdminOrderResponse.from(order, orderItemRepository.countByOrder(order));
+        return AdminOrderResponse.from(order, orderItemRepository.countByOrder(order),
+                paymentRepository.findByOrder(order).orElse(null));
     }
 
     @Transactional
@@ -232,6 +246,7 @@ public class OrderService {
                 order.getTotalPrice(),
                 order.getStatus().name(),
                 order.getPaymentStatus().name(),
+                paymentRepository.findByOrder(order).map(PaymentSummaryResponse::from).orElse(null),
                 items,
                 order.getCreatedAt()
         );
@@ -239,7 +254,7 @@ public class OrderService {
 
     private void validateStatusTransition(OrderStatus current, OrderStatus next) {
         boolean valid = switch (current) {
-            case PENDING -> next == OrderStatus.CANCELLED;
+            case PENDING_PAYMENT, PAYMENT_FAILED, PENDING -> next == OrderStatus.CANCELLED;
             case PAID -> next == OrderStatus.PREPARING || next == OrderStatus.CANCELLED;
             case PREPARING -> next == OrderStatus.SHIPPING || next == OrderStatus.CANCELLED;
             case SHIPPING -> next == OrderStatus.COMPLETED;

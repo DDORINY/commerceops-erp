@@ -2,11 +2,15 @@ package com.commerceops.erp.domain.payment.controller;
 
 import com.commerceops.erp.domain.audit.enums.AuditActionType;
 import com.commerceops.erp.domain.audit.service.AuditLogService;
-import com.commerceops.erp.domain.payment.dto.MockPaymentCompleteRequest;
 import com.commerceops.erp.domain.payment.dto.PaymentApproveRequest;
 import com.commerceops.erp.domain.payment.dto.PaymentCancelRequest;
 import com.commerceops.erp.domain.payment.dto.PaymentResponse;
 import com.commerceops.erp.domain.payment.service.PaymentService;
+import com.commerceops.erp.domain.payment.service.TossPaymentService;
+import com.commerceops.erp.domain.payment.dto.TossPaymentPrepareRequest;
+import com.commerceops.erp.domain.payment.dto.TossPaymentPrepareResponse;
+import com.commerceops.erp.domain.payment.dto.TossPaymentConfirmRequest;
+import com.commerceops.erp.domain.payment.dto.TossPaymentConfirmResponse;
 import com.commerceops.erp.domain.permission.PermissionCodes;
 import com.commerceops.erp.domain.permission.service.PermissionChecker;
 import com.commerceops.erp.global.response.ApiResponse;
@@ -29,6 +33,21 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PermissionChecker permissionChecker;
     private final AuditLogService auditLogService;
+    private final TossPaymentService tossPaymentService;
+
+    @PostMapping("/toss/prepare")
+    public ResponseEntity<ApiResponse<TossPaymentPrepareResponse>> prepareToss(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody TossPaymentPrepareRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(tossPaymentService.prepare(userDetails.getUser(), request)));
+    }
+
+    @PostMapping("/toss/confirm")
+    public ResponseEntity<ApiResponse<TossPaymentConfirmResponse>> confirmToss(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody TossPaymentConfirmRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("결제가 승인되었습니다.", tossPaymentService.confirm(userDetails.getUser(), request)));
+    }
 
     @PostMapping("/approve")
     public ResponseEntity<ApiResponse<PaymentResponse>> approvePayment(
@@ -60,11 +79,4 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.ok("결제가 취소 또는 환불되었습니다.", response));
     }
 
-    @PostMapping("/mock/complete")
-    public ResponseEntity<ApiResponse<PaymentResponse>> completePayment(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody MockPaymentCompleteRequest request) {
-        PaymentResponse response = paymentService.completePayment(userDetails.getUser(), request);
-        return ResponseEntity.ok(ApiResponse.ok("결제가 완료되었습니다.", response));
-    }
 }

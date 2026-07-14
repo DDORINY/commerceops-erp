@@ -76,7 +76,7 @@ export default function AdminAiOverviewPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Link href="/admin/settings?section=ai-datasets">
+              <Link href="/admin/ai/datasets">
                 <Button variant="outline" size="sm">AI 데이터셋</Button>
               </Link>
               <Button variant="outline" size="sm" onClick={() => setReloadKey((prev) => prev + 1)}>

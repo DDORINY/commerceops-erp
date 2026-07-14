@@ -155,6 +155,13 @@ export default function OrderDetailPage({
                 <span className="w-24 text-[#999]">결제상태</span>
                 <span>{order.paymentStatus}</span>
               </div>
+              {order.payment && <>
+                <div className="flex gap-4"><span className="w-24 text-[#999]">결제 제공사</span><span>{order.payment.provider || '-'}</span></div>
+                <div className="flex gap-4"><span className="w-24 text-[#999]">결제 수단</span><span>{order.payment.method || '-'}</span></div>
+                <div className="flex gap-4"><span className="w-24 text-[#999]">승인 금액</span><span>{formatPrice(order.payment.amount || 0)}</span></div>
+                {order.payment.approvedAt && <div className="flex gap-4"><span className="w-24 text-[#999]">승인 일시</span><span>{formatDateTime(order.payment.approvedAt)}</span></div>}
+                {order.payment.failureMessage && <div className="flex gap-4 text-red-600"><span className="w-24">실패 사유</span><span>{order.payment.failureMessage}</span></div>}
+              </>}
             </div>
           </section>
 

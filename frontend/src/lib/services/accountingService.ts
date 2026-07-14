@@ -18,6 +18,23 @@ export interface ApiAccountingSummary {
   netSales: number;
 }
 
+export type ApiPaymentStatus = 'READY' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
+
+export interface ApiAdminPayment {
+  paymentId: number;
+  orderId: number;
+  orderNumber: string;
+  userId: number;
+  userName: string;
+  paymentMethod: string;
+  paymentStatus: ApiPaymentStatus;
+  paidAmount: number | null;
+  transactionId: string | null;
+  provider: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ApiAccountingLedgerStatus = 'OPEN' | 'CLOSED' | 'CANCELLED';
 export type ApiAccountingTransactionType =
   | 'SALES'
@@ -170,6 +187,14 @@ export interface ApiAccountingConsistencyReport {
 }
 
 export const accountingService = {
+  getPayments: (params: { status?: ApiPaymentStatus | 'ALL'; keyword?: string; page?: number; size?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.status && params.status !== 'ALL') qs.set('status', params.status);
+    if (params.keyword) qs.set('keyword', params.keyword);
+    qs.set('page', String(params.page ?? 0));
+    qs.set('size', String(params.size ?? 20));
+    return apiClient<PageResponse<ApiAdminPayment>>(`/admin/payments?${qs.toString()}`);
+  },
   getSummary: () => apiClient<ApiAccountingSummary>('/admin/accounting/summary'),
 
   getConsistencyReport: (limit = 20) =>

@@ -341,7 +341,8 @@ public class AiOperationsService {
         double discountRate = totalPrice <= 0 ? 0 : (double) discountAmount / totalPrice;
         boolean highAmount = totalPrice >= 1_000_000;
         boolean highDiscount = discountRate >= 0.5;
-        boolean statusMismatch = order.getStatus() == OrderStatus.CANCELLED && order.getPaymentStatus() == PaymentStatus.PAID;
+        boolean statusMismatch = order.getStatus() == OrderStatus.CANCELLED
+                && (order.getPaymentStatus() == PaymentStatus.PAID || order.getPaymentStatus() == PaymentStatus.DONE);
         double score = Math.min(0.99,
                 0.2
                         + (highAmount ? 0.25 : 0)

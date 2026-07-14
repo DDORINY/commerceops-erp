@@ -29,6 +29,15 @@ export interface ApiOrderDetail {
   totalPrice: number;
   status: string;
   paymentStatus: string;
+  payment: {
+    provider: string | null;
+    status: string;
+    method: string | null;
+    amount: number | null;
+    approvedAt: string | null;
+    failureCode: string | null;
+    failureMessage: string | null;
+  } | null;
   items: ApiOrderItem[];
   createdAt: string;
 }
@@ -60,6 +69,11 @@ export interface ApiAdminOrder {
   totalPrice: number;
   status: string;
   paymentStatus: string;
+  paymentProvider: string | null;
+  paymentMethod: string | null;
+  approvedAmount: number | null;
+  approvedAt: string | null;
+  paymentFailure: string | null;
   itemCount: number;
   createdAt: string;
 }

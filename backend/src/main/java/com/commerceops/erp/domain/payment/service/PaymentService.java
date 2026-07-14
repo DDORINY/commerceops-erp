@@ -69,7 +69,7 @@ public class PaymentService {
 
         validateOrderOwner(order, user);
 
-        if (order.getStatus() != OrderStatus.PENDING) {
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.PENDING_PAYMENT) {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
 
@@ -145,7 +145,7 @@ public class PaymentService {
     }
 
     private void validateCancelable(Order order) {
-        if (order.getStatus() != OrderStatus.PENDING
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.PENDING_PAYMENT
                 && order.getStatus() != OrderStatus.PAID
                 && order.getStatus() != OrderStatus.PREPARING) {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);

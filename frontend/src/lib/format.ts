@@ -35,6 +35,8 @@ export function formatDateTime(dateString: string): string {
 }
 
 export const ORDER_STATUS_LABEL: Record<string, string> = {
+  PENDING_PAYMENT: '결제 대기',
+  PAYMENT_FAILED: '결제 실패',
   PENDING: '결제 대기',
   PAID: '결제 완료',
   PREPARING: '상품 준비중',

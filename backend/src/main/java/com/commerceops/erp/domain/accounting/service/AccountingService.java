@@ -684,7 +684,7 @@ public class AccountingService {
     }
 
     private void validateRevenueRecognizable(Order order) {
-        if (order.getPaymentStatus() != PaymentStatus.PAID) {
+        if (order.getPaymentStatus() != PaymentStatus.PAID && order.getPaymentStatus() != PaymentStatus.DONE) {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
         if (order.getStatus() != OrderStatus.PAID

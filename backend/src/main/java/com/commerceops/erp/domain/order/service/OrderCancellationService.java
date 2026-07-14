@@ -41,7 +41,8 @@ public class OrderCancellationService {
     public void cancel(Order order, User actor) {
         Payment payment = paymentRepository.findByOrder(order)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
-        boolean paid = payment.getPaymentStatus() == PaymentStatus.PAID;
+        boolean paid = payment.getPaymentStatus() == PaymentStatus.PAID
+                || payment.getPaymentStatus() == PaymentStatus.DONE;
 
         if (paid) {
             warehouseFulfillmentService.releaseOrder(order);

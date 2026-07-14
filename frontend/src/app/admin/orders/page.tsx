@@ -12,7 +12,8 @@ type StatusFilter = string;
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: 'ALL', label: '전체' },
-  { value: 'PENDING', label: '결제 대기' },
+  { value: 'PENDING_PAYMENT', label: '결제 대기' },
+  { value: 'PAYMENT_FAILED', label: '결제 실패' },
   { value: 'PAID', label: '결제 완료' },
   { value: 'PREPARING', label: '상품 준비중' },
   { value: 'SHIPPING', label: '배송중' },
@@ -24,6 +25,9 @@ const PAGE_SIZE = 10;
 
 const PAYMENT_STATUS_LABEL: Record<string, string> = {
   READY: '결제 대기',
+  IN_PROGRESS: '승인 중',
+  DONE: '결제 완료',
+  ABORTED: '승인 실패',
   PAID: '결제 완료',
   FAILED: '결제 실패',
   CANCELLED: '결제 취소',
@@ -32,6 +36,9 @@ const PAYMENT_STATUS_LABEL: Record<string, string> = {
 
 const PAYMENT_STATUS_COLOR: Record<string, string> = {
   READY: 'bg-gray-100 text-gray-600',
+  IN_PROGRESS: 'bg-blue-50 text-blue-700',
+  DONE: 'bg-green-50 text-green-700',
+  ABORTED: 'bg-red-100 text-red-700',
   PAID: 'bg-green-50 text-green-700',
   FAILED: 'bg-red-100 text-red-700',
   CANCELLED: 'bg-gray-100 text-gray-500',
@@ -39,7 +46,8 @@ const PAYMENT_STATUS_COLOR: Record<string, string> = {
 };
 
 const NEXT_STATUSES: Record<string, { value: string; label: string }[]> = {
-  PENDING: [{ value: 'CANCELLED', label: '주문 취소' }],
+  PENDING_PAYMENT: [{ value: 'CANCELLED', label: '주문 취소' }],
+  PAYMENT_FAILED: [{ value: 'CANCELLED', label: '주문 취소' }],
   PAID: [
     { value: 'PREPARING', label: '상품 준비' },
     { value: 'CANCELLED', label: '취소/환불' },
@@ -230,6 +238,13 @@ export default function AdminOrdersPage() {
                 </span>
               ),
             },
+            {
+              key: 'paymentProvider', header: '결제 정보', render: (row) => (
+                <div className="text-xs"><p>{row.paymentProvider || '-'}</p><p className="text-[#999]">{row.paymentMethod || '-'}</p>{row.paymentFailure && <p className="text-red-600">실패</p>}</div>
+              ),
+            },
+            { key: 'approvedAmount', header: '승인 금액', render: (row) => row.approvedAmount == null ? '-' : formatPrice(row.approvedAmount) },
+            { key: 'approvedAt', header: '승인 일시', render: (row) => row.approvedAt ? formatDateTime(row.approvedAt) : '-' },
             {
               key: 'createdAt',
               header: '주문일시',

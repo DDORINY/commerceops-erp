@@ -12,10 +12,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
+import com.commerceops.erp.domain.payment.client.TossPaymentClientException;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(TossPaymentClientException.class)
+    protected ResponseEntity<ErrorResponse> handleTossPaymentException(TossPaymentClientException e) {
+        log.warn("Toss payment approval failed: code={}, status={}", e.getCode(), e.getHttpStatus());
+        return ResponseEntity.status(e.getHttpStatus())
+                .body(ErrorResponse.of(e.getHttpStatus(), e.getCode(), e.getMessage()));
+    }
 
     // 비즈니스 예외 처리
     @ExceptionHandler(BusinessException.class)

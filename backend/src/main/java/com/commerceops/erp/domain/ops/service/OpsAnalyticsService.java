@@ -42,7 +42,8 @@ public class OpsAnalyticsService {
         long paidOrders = orderRepository.countByStatus(OrderStatus.PAID);
         long cancelledOrders = orderRepository.countByStatus(OrderStatus.CANCELLED);
         long refundedOrders = orderRepository.countByStatus(OrderStatus.REFUNDED);
-        long totalRevenue = paymentRepository.sumPaidAmountByStatus(PaymentStatus.PAID).orElse(0L);
+        long totalRevenue = paymentRepository.sumPaidAmountByStatus(PaymentStatus.PAID).orElse(0L)
+                + paymentRepository.sumPaidAmountByStatus(PaymentStatus.DONE).orElse(0L);
         long averagePaidOrderAmount = paidOrders == 0 ? 0 : totalRevenue / paidOrders;
         Map<String, Long> orderStatusCounts = Arrays.stream(OrderStatus.values())
                 .collect(Collectors.toMap(Enum::name, orderRepository::countByStatus));

@@ -2,10 +2,10 @@ import Link from 'next/link';
 
 export default function ShopFooter() {
   return (
-    <footer className="border-t border-[#e5e5e5] bg-white mt-20">
-      <div className="max-w-[1200px] mx-auto px-4 py-12">
+    <footer className="border-t border-[#e5e5e5] bg-white mt-12 sm:mt-20">
+      <div className="max-w-[1200px] mx-auto px-4 py-8 sm:py-12">
         {/* 링크 섹션 */}
-        <div className="flex flex-wrap gap-8 mb-8 justify-center text-sm text-[#555]">
+        <div className="flex flex-wrap gap-x-5 gap-y-3 sm:gap-8 mb-8 justify-center text-xs sm:text-sm text-[#555]">
           <Link href="#" className="hover:text-[#222] transition-colors">이용약관</Link>
           <Link href="#" className="font-medium hover:text-[#222] transition-colors">개인정보처리방침</Link>
           <Link href="#" className="hover:text-[#222] transition-colors">입점/제휴 문의</Link>

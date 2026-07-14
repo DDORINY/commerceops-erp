@@ -13,6 +13,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     Page<Notification> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
+    Page<Notification> findByReadAtIsNull(Pageable pageable);
+
     long countByUserAndReadAtIsNull(User user);
 
     @Modifying

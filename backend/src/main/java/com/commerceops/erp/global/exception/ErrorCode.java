@@ -51,6 +51,8 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND(404, "PAYMENT_001", "결제 정보를 찾을 수 없습니다."),
     ALREADY_PAID(409, "PAYMENT_002", "이미 결제된 주문입니다."),
     PAYMENT_FAILED(400, "PAYMENT_003", "결제에 실패했습니다."),
+    PAYMENT_AMOUNT_MISMATCH(400, "PAYMENT_004", "결제 금액이 주문 금액과 일치하지 않습니다."),
+    DUPLICATE_PAYMENT_KEY(409, "PAYMENT_005", "이미 다른 결제에 사용된 결제 키입니다."),
 
     // 배송 (shipment)
     SHIPMENT_NOT_FOUND(404, "SHIPMENT_001", "배송 정보를 찾을 수 없습니다."),
