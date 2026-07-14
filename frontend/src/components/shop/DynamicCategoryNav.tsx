@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { categoryService, flattenCategoryTree, type ApiCategoryNode } from '@/lib/services/categoryService';
 
@@ -11,15 +11,13 @@ const FALLBACK_CATEGORIES = [
 
 export default function DynamicCategoryNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [categories, setCategories] = useState<ApiCategoryNode[]>([]);
-  const [currentCategory, setCurrentCategory] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const currentCategory = searchParams.get('category');
 
   useEffect(() => {
     let mounted = true;
-    queueMicrotask(() => {
-      if (mounted) setCurrentCategory(new URLSearchParams(window.location.search).get('category'));
-    });
     categoryService
       .getNavigationCategories()
       .then((nodes) => {
@@ -37,12 +35,6 @@ export default function DynamicCategoryNav() {
       mounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      setCurrentCategory(new URLSearchParams(window.location.search).get('category'));
-    });
-  }, [pathname]);
 
   const navItems = failed || categories.length === 0
     ? FALLBACK_CATEGORIES

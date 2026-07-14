@@ -4,12 +4,14 @@ import java.util.List;
 
 public record CartResponse(
         List<CartItemResponse> items,
-        Integer totalPrice
+        Integer totalPrice,
+        Integer totalQuantity
 ) {
     public static CartResponse of(List<CartItemResponse> items) {
         int totalPrice = items.stream()
                 .mapToInt(CartItemResponse::subtotal)
                 .sum();
-        return new CartResponse(items, totalPrice);
+        int totalQuantity = items.stream().mapToInt(CartItemResponse::quantity).sum();
+        return new CartResponse(items, totalPrice, totalQuantity);
     }
 }

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { paymentService } from '@/lib/services/paymentService';
+import { notifyCartChanged } from '@/contexts/CartContext';
 
 const confirmations = new Map<string, Promise<number>>();
 
@@ -25,7 +26,7 @@ function SuccessContent() {
       request = paymentService.confirmToss(paymentKey, orderId, amount).then((result) => result.orderId);
       confirmations.set(key, request);
     }
-    request.then((numericOrderId) => router.replace(`/orders/${numericOrderId}?payment=success`))
+    request.then((numericOrderId) => { notifyCartChanged(); sessionStorage.removeItem('buy_now_item'); sessionStorage.removeItem('checkout_cart_ids'); router.replace(`/orders/${numericOrderId}?payment=success`); })
       .catch((reason) => {
         confirmations.delete(key);
         setError(reason instanceof Error ? reason.message : '결제 승인에 실패했습니다.');

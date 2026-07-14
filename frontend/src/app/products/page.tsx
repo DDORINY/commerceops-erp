@@ -1,6 +1,7 @@
 ﻿'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ShopHeader from '@/components/shop/ShopHeader';
 import ShopFooter from '@/components/shop/ShopFooter';
 import ProductGrid from '@/components/shop/ProductGrid';
@@ -17,7 +18,8 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 12;
 
-export default function ProductsPage() {
+function ProductsContent() {
+  const searchParams = useSearchParams();
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -42,15 +44,14 @@ export default function ProductsPage() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const query = new URLSearchParams(window.location.search);
-      const category = query.get('category');
-      const queryKeyword = query.get('keyword');
+      const category = searchParams.get('category');
+      const queryKeyword = searchParams.get('keyword');
       setSelectedCategory(category || 'ALL');
       setKeyword(queryKeyword || '');
       setSearchInput(queryKeyword || '');
       setPage(1);
     });
-  }, []);
+  }, [searchParams]);
 
   const fetchProducts = useCallback(() => {
     setLoading(true);
@@ -242,5 +243,13 @@ export default function ProductsPage() {
 
       <ShopFooter />
     </>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-sm text-[#aaa]">상품 목록을 불러오는 중...</div>}>
+      <ProductsContent />
+    </Suspense>
   );
 }

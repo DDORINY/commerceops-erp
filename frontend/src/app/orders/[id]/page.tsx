@@ -112,21 +112,30 @@ export default function OrderDetailPage({
           </span>
         </div>
 
-        {['PENDING', 'PAID', 'PREPARING'].includes(order.status) && (
-          <div className="flex justify-end mb-5">
+        {['PENDING_PAYMENT', 'PAYMENT_FAILED', 'PENDING', 'PAID', 'PREPARING'].includes(order.status) && (
+          <div className="flex justify-end gap-2 mb-5">
+            {['PENDING_PAYMENT', 'PAYMENT_FAILED', 'PENDING'].includes(order.status) && (
+              <Link
+                href={`/payments/retry?orderId=${order.orderId}`}
+                className="inline-flex items-center justify-center bg-[#222] px-4 py-2 text-xs font-medium text-white hover:bg-black"
+              >
+                {order.status === 'PAYMENT_FAILED' ? '결제 다시 시도' : '결제 계속하기'}
+              </Link>
+            )}
             <Button
               variant="danger"
               size="sm"
               disabled={cancelling}
               onClick={async () => {
-                const message = order.status === 'PENDING'
+                const message = ['PENDING_PAYMENT', 'PAYMENT_FAILED', 'PENDING'].includes(order.status)
                   ? '이 주문을 취소하시겠습니까?'
                   : '결제 환불과 재고 복구를 포함해 주문을 취소하시겠습니까?';
                 if (!confirm(message)) return;
                 try {
                   setCancelling(true);
                   await orderService.cancelOrder(order.orderId);
-                  setOrder({ ...order, status: 'CANCELLED', paymentStatus: order.status === 'PENDING' ? 'CANCELLED' : 'REFUNDED' });
+                  const awaitingPayment = ['PENDING_PAYMENT', 'PAYMENT_FAILED', 'PENDING'].includes(order.status);
+                  setOrder({ ...order, status: 'CANCELLED', paymentStatus: awaitingPayment ? 'CANCELLED' : 'REFUNDED' });
                 } catch (error) {
                   alert(error instanceof Error ? error.message : '주문 취소에 실패했습니다.');
                 } finally {

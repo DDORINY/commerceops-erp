@@ -15,6 +15,7 @@ export interface ApiCartItem {
 export interface ApiCart {
   items: ApiCartItem[];
   totalPrice: number;
+  totalQuantity: number;
 }
 
 export const cartService = {

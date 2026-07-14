@@ -37,6 +37,10 @@ public enum ErrorCode {
     ORDER_ACCESS_DENIED(403, "ORDER_003", "본인 주문만 접근할 수 있습니다."),
     EMPTY_CART(400, "ORDER_004", "주문할 장바구니 항목이 없습니다."),
     INVALID_ORDER_STATUS(400, "ORDER_005", "유효하지 않은 주문 상태입니다."),
+    INVALID_ORDER_TYPE(400, "ORDER_006", "주문 유형 또는 주문 상품 정보가 올바르지 않습니다."),
+    INVALID_SHIPPING_ADDRESS(400, "ORDER_007", "저장 배송지와 신규 배송지 중 하나만 선택해야 합니다."),
+
+    ADDRESS_NOT_FOUND(404, "ADDRESS_001", "배송지를 찾을 수 없거나 접근할 수 없습니다."),
 
     // 장바구니 (cart)
     CART_ITEM_NOT_FOUND(404, "CART_001", "장바구니 항목을 찾을 수 없습니다."),
