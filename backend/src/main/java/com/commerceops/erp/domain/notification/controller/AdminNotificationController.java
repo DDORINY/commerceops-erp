@@ -17,8 +17,9 @@ public class AdminNotificationController {
     @GetMapping
     public ApiResponse<PageResponse<NotificationResponse>> getNotifications(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean unreadOnly
     ) {
-        return ApiResponse.ok(notificationService.getAdminNotifications(page, size));
+        return ApiResponse.ok(notificationService.getAdminNotifications(page, size, unreadOnly));
     }
 }

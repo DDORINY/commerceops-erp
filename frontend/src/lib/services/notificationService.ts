@@ -30,6 +30,8 @@ export const notificationService = {
   markAllRead: () =>
     apiClient<ApiUnreadNotificationCount>('/notifications/read-all', { method: 'PATCH' }),
 
-  getAdminNotifications: (page = 0, size = 20) =>
-    apiClient<PageResponse<ApiNotification>>(`/admin/notifications?page=${page}&size=${size}`),
+  getAdminNotifications: (page = 0, size = 20, unreadOnly = false) =>
+    apiClient<PageResponse<ApiNotification>>(
+      `/admin/notifications?page=${page}&size=${size}&unreadOnly=${unreadOnly}`
+    ),
 };
