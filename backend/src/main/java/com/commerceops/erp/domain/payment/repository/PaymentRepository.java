@@ -21,6 +21,28 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByIdempotencyKey(String idempotencyKey);
 
+    @Query(value = """
+            SELECT p FROM Payment p
+            JOIN FETCH p.order o
+            JOIN FETCH o.user u
+            WHERE (:status IS NULL OR p.paymentStatus = :status)
+              AND (:keyword IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """,
+            countQuery = """
+            SELECT COUNT(p) FROM Payment p
+            JOIN p.order o
+            JOIN o.user u
+            WHERE (:status IS NULL OR p.paymentStatus = :status)
+              AND (:keyword IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                   OR LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            """)
+    Page<Payment> findAllForAdmin(
+            @Param("status") PaymentStatus status,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
     @Query("SELECT SUM(p.paidAmount) FROM Payment p WHERE p.paymentStatus = :status")
     Optional<Long> sumPaidAmountByStatus(@Param("status") PaymentStatus status);
 

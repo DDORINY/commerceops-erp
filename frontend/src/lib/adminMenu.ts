@@ -42,7 +42,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     label: '쇼핑몰 관리',
     items: [
       { menuKey: 'categories', label: '카테고리 관리', href: '/admin/categories', roles: ADMIN_ROLES },
-      { menuKey: 'top-navigation', label: '상단 네비 관리', href: '/admin/categories?focus=navigation', roles: ADMIN_ROLES },
+      { menuKey: 'top-navigation', label: '상단 네비 관리', href: '/admin/categories/navigation', roles: ADMIN_ROLES },
       { menuKey: 'banners', label: '배너 관리', href: '/admin/banners', roles: ADMIN_ROLES },
     ],
   },
@@ -89,9 +89,9 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     items: [
       { menuKey: 'sales', label: '매출 통계', href: '/admin/sales', roles: ALL_ADMIN_ROLES },
       { menuKey: 'accounting', label: '회계 관리', href: '/admin/accounting', roles: ADMIN_ROLES },
-      { menuKey: 'payments', label: '결제 내역', href: '/admin/accounting?focus=payments', roles: ADMIN_ROLES },
-      { menuKey: 'refund-history', label: '환불 내역', href: '/admin/accounting?focus=refunds', roles: ADMIN_ROLES },
-      { menuKey: 'settlements', label: '정산 관리', href: '/admin/accounting?focus=settlements', roles: ADMIN_ROLES },
+      { menuKey: 'payments', label: '결제 내역', href: '/admin/accounting/payments', roles: ADMIN_ROLES },
+      { menuKey: 'refund-history', label: '환불 내역', href: '/admin/accounting/refunds', roles: ADMIN_ROLES },
+      { menuKey: 'settlements', label: '정산 관리', href: '/admin/accounting/settlements', roles: ADMIN_ROLES },
     ],
   },
   {
