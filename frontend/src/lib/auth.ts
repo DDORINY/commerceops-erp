@@ -1,5 +1,6 @@
 import type { User } from '@/features/auth/types';
 import { storage } from './storage';
+const notifyAuthChanged = () => { if (typeof window !== 'undefined') window.dispatchEvent(new Event('auth-changed')); };
 
 export function getAccessToken(): string | null {
   return storage.get('accessToken');
@@ -33,12 +34,14 @@ export function getStoredUser(): User | null {
 
 export function setStoredUser(user: User): void {
   storage.set('user', JSON.stringify(user));
+  notifyAuthChanged();
 }
 
 export function clearAuth(): void {
   storage.remove('accessToken');
   storage.remove('refreshToken');
   storage.remove('user');
+  notifyAuthChanged();
 }
 
 export function isAdmin(): boolean {

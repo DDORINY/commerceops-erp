@@ -24,8 +24,11 @@ export interface ApiOrderDetail {
   orderNumber: string;
   receiverName: string;
   receiverPhone: string;
+  postalCode: string | null;
   address: string;
   detailAddress: string;
+  extraAddress: string | null;
+  deliveryRequest: string | null;
   totalPrice: number;
   status: string;
   paymentStatus: string;
@@ -43,12 +46,14 @@ export interface ApiOrderDetail {
 }
 
 export interface OrderCreateRequest {
-  receiverName: string;
-  receiverPhone: string;
-  address: string;
-  detailAddress?: string;
+  orderType: 'CART' | 'BUY_NOW';
   paymentMethod: string;
-  cartItemIds: number[];
+  cartItemIds?: number[];
+  productId?: number;
+  quantity?: number;
+  selectedOptions?: Record<string,string>;
+  savedAddressId?: number;
+  shippingAddress?: { addressName:string;recipientName:string;phone:string;postalCode:string;roadAddress:string;detailAddress?:string|null;extraAddress?:string|null;deliveryRequest?:string|null;saveAddress:boolean;setAsDefault:boolean };
   couponCode?: string;
 }
 

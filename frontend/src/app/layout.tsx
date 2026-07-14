@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CartProvider } from '@/contexts/CartContext';
 
 export const metadata: Metadata = {
   title: "CommerceOps | 패션 쇼핑몰",
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full">
       <body className="min-h-full flex flex-col bg-white text-[#222] antialiased">
-        {children}
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );

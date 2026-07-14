@@ -8,18 +8,21 @@ import ShopFooter from '@/components/shop/ShopFooter';
 import Button from '@/components/common/Button';
 import { cartService, type ApiCartItem } from '@/lib/services/cartService';
 import { formatPrice } from '@/lib/format';
+import { notifyCartChanged } from '@/contexts/CartContext';
 
 export default function CartPage() {
   const [items, setItems] = useState<ApiCartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [actionMessage, setActionMessage] = useState('');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   useEffect(() => {
     cartService
       .getCart()
       .then((cart) => {
         setItems(cart.items);
+        setSelectedIds(cart.items.map((item) => item.cartId));
         setErrorMessage('');
       })
       .catch(() => {
@@ -32,6 +35,7 @@ export default function CartPage() {
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingFee = totalPrice >= 50000 ? 0 : 3000;
   const finalPrice = totalPrice + shippingFee;
+  const selectedItems = items.filter((item) => selectedIds.includes(item.cartId));
 
   const updateQuantity = async (cartId: number, qty: number) => {
     const clampedQty = Math.max(1, qty);
@@ -43,6 +47,7 @@ export default function CartPage() {
           item.cartId === cartId ? { ...item, quantity: clampedQty } : item
         )
       );
+      notifyCartChanged();
     } catch (err) {
       setActionMessage(err instanceof Error ? err.message : '수량 변경에 실패했습니다.');
     }
@@ -53,6 +58,7 @@ export default function CartPage() {
       setActionMessage('');
       await cartService.removeFromCart(cartId);
       setItems((prev) => prev.filter((item) => item.cartId !== cartId));
+      notifyCartChanged();
     } catch (err) {
       setActionMessage(err instanceof Error ? err.message : '삭제에 실패했습니다.');
     }
@@ -109,6 +115,7 @@ export default function CartPage() {
 
               {items.map((item) => (
                 <div key={item.cartId} className="flex items-center px-4 py-5 border-b border-[#f0f0f0]">
+                  <input type="checkbox" checked={selectedIds.includes(item.cartId)} onChange={(e) => setSelectedIds((prev) => e.target.checked ? [...prev, item.cartId] : prev.filter((id) => id !== item.cartId))} className="mr-3" aria-label={`${item.productName} 선택`} />
                   <div className="relative w-20 h-24 bg-[#f7f7f7] mr-4 flex-shrink-0">
                     <Image
                       src={item.imageUrl}
@@ -182,11 +189,7 @@ export default function CartPage() {
                   <span>결제 예정 금액</span>
                   <span className="text-[#222]">{formatPrice(finalPrice)}</span>
                 </div>
-                <Link href="/orders/checkout">
-                  <Button variant="primary" size="lg" fullWidth>
-                    주문하기
-                  </Button>
-                </Link>
+                <button disabled={selectedItems.length === 0} onClick={() => { sessionStorage.setItem('checkout_cart_ids', JSON.stringify(selectedIds)); window.location.href = '/orders/checkout?mode=cart'; }} className="w-full bg-[#222] py-3 text-sm font-medium text-white disabled:opacity-40">선택 상품 주문하기 ({selectedItems.length})</button>
                 <Link href="/products" className="block text-center text-xs text-[#999] mt-3 hover:text-[#555] transition-colors">
                   쇼핑 계속하기
                 </Link>

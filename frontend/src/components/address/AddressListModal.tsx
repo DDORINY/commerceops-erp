@@ -1,0 +1,3 @@
+'use client';
+import type { Address } from '@/lib/services/addressService'; import AddressCard from './AddressCard';
+export default function AddressListModal({addresses,onSelect,onClose}:{addresses:Address[];onSelect:(a:Address)=>void;onClose:()=>void}) {return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"><div className="max-h-[85vh] w-full max-w-2xl overflow-auto bg-white p-6"><div className="mb-5 flex justify-between"><h2 className="font-bold">배송지 선택</h2><button onClick={onClose}>×</button></div><div className="space-y-3">{addresses.map(a=><AddressCard key={a.addressId} address={a} select={()=>onSelect(a)}/>)}</div></div></div>}

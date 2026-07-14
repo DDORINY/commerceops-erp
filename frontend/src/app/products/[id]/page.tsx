@@ -13,6 +13,8 @@ import { inquiryService, type ApiInquiry } from '@/lib/services/inquiryService';
 import { reviewService, type ApiReview } from '@/lib/services/reviewService';
 import { wishlistService } from '@/lib/services/wishlistService';
 import { formatPrice, formatDateTime, INQUIRY_STATUS_LABEL, INQUIRY_STATUS_COLOR, PRODUCT_SALES_STATUS_LABEL } from '@/lib/format';
+import { notifyCartChanged } from '@/contexts/CartContext';
+import { useRouter } from 'next/navigation';
 
 function parseSpecRows(specJson?: string | null): { label: string; value: string }[] {
   if (!specJson) return [];
@@ -65,6 +67,7 @@ function getPurchaseUnavailableReason(product: ApiProductDetail): string {
 }
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
   const { id } = use(params);
   const [product, setProduct] = useState<ApiProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -175,12 +178,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       setAddingToCart(true);
       const opts = Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined;
       await cartService.addToCart(product.id, quantity, opts);
+      notifyCartChanged();
       setActionMessage(`"${product.name}" 상품을 장바구니에 담았습니다.`);
     } catch (err) {
       setActionMessage(err instanceof Error ? err.message : '장바구니 추가에 실패했습니다. 상품 상태를 확인해주세요.');
     } finally {
       setAddingToCart(false);
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!product || !product.purchasable || quantity < 1 || quantity > product.stockQuantity) { setActionMessage('구매 수량과 재고를 확인해주세요.'); return; }
+    const missing = product.options?.find((group) => !selectedOptions[group.name]);
+    if (missing) { setActionMessage(`"${missing.name}" 옵션을 선택해주세요.`); return; }
+    sessionStorage.setItem('buy_now_item', JSON.stringify({ productId: product.id, quantity, selectedOptions }));
+    router.push('/orders/checkout?mode=buy-now');
   };
 
   const handleTabChange = (tab: 'detail' | 'shipping' | 'review' | 'inquiry') => {
@@ -267,7 +279,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <Button variant="secondary" size="lg" fullWidth disabled={!isPurchasable || addingToCart} onClick={handleAddToCart}>{!isPurchasable ? '구매 불가' : addingToCart ? '추가 중...' : '장바구니 담기'}</Button>
                 <button onClick={handleToggleWishlist} disabled={wishlistLoading} className={['w-12 h-12 flex items-center justify-center border text-xl transition-colors shrink-0', liked ? 'border-[#e05252] text-[#e05252] bg-[#fff5f5]' : 'border-[#ddd] text-[#bbb] hover:border-[#e05252] hover:text-[#e05252]'].join(' ')} aria-label={liked ? '찜 해제' : '찜하기'}>{liked ? '♥' : '♡'}</button>
               </div>
-              {isPurchasable && <Button variant="primary" size="lg" fullWidth>바로 구매하기</Button>}
+              {isPurchasable && <Button variant="primary" size="lg" fullWidth onClick={handleBuyNow}>바로 구매하기</Button>}
             </div>
           </div>
         </div>

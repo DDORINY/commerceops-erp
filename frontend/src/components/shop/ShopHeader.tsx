@@ -1,10 +1,11 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DynamicCategoryNav from './DynamicCategoryNav';
 import { clearAuth, getStoredUser } from '@/lib/auth';
+import CartBadge from '@/components/cart/CartBadge';
 import { authService } from '@/lib/services/authService';
 import type { User } from '@/features/auth/types';
 
@@ -15,9 +16,13 @@ export default function ShopHeader() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    queueMicrotask(() => setUser(getStoredUser()));
+    queueMicrotask(() => {
+      setUser(getStoredUser());
+      setAuthReady(true);
+    });
   }, []);
 
   const handleLogout = async () => {
@@ -59,7 +64,13 @@ export default function ShopHeader() {
             </>
           )}
           <span className="text-[#e0e0e0] text-xs">|</span>
-          <Link href="/orders/guest" className="text-xs text-[#777] hover:text-[#222] transition-colors">주문조회</Link>
+          {authReady ? (
+            <Link href={user ? '/orders' : '/orders/guest'} className="text-xs text-[#777] hover:text-[#222] transition-colors">
+              주문조회
+            </Link>
+          ) : (
+            <span className="text-xs text-[#aaa]">주문조회</span>
+          )}
           <span className="text-[#e0e0e0] text-xs">|</span>
           <Link href="/mypage" className="text-xs text-[#777] hover:text-[#222] transition-colors">마이페이지</Link>
           {canEnterAdmin(user) && (
@@ -103,6 +114,7 @@ export default function ShopHeader() {
             <span className="hidden text-[10px] tracking-wide sm:block">마이페이지</span>
           </Link>
           <Link href="/cart" className="flex flex-col items-center gap-0.5 text-[#555] hover:text-[#222] transition-colors relative">
+            <CartBadge />
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
@@ -111,7 +123,9 @@ export default function ShopHeader() {
         </div>
       </div>
 
-      <DynamicCategoryNav />
+      <Suspense fallback={null}>
+        <DynamicCategoryNav />
+      </Suspense>
     </header>
   );
 }

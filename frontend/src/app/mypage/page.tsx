@@ -133,6 +133,7 @@ export default function MyPage() {
                   </div>
                 ))}
               </div>
+              <Link href="/mypage/addresses" className="mt-5 block border border-[#ddd] px-4 py-2.5 text-center text-sm hover:bg-[#fafafa]">배송지 관리</Link>
             </div>
           </div>
 
