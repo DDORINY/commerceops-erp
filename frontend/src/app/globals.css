@@ -11,6 +11,25 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -21,4 +40,35 @@ body {
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (max-width: 639px) {
+  .admin-content > * {
+    min-width: 0;
+  }
+
+  .admin-content .grid {
+    min-width: 0;
+  }
+
+  .admin-content form.flex,
+  .admin-content > div > .flex,
+  .admin-content > section > .flex {
+    flex-wrap: wrap;
+  }
+
+  .admin-content input[class*="min-w-"],
+  .admin-content select[class*="min-w-"],
+  .admin-content textarea[class*="min-w-"] {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-content .p-6 {
+    padding: 1rem;
+  }
+
+  .admin-content .p-8 {
+    padding: 1rem;
+  }
 }

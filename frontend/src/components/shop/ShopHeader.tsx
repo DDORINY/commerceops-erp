@@ -42,10 +42,10 @@ export default function ShopHeader() {
   return (
     <header className="w-full border-b border-[#e5e5e5] bg-white sticky top-0 z-50">
       <div className="border-b border-[#f0f0f0]">
-        <div className="max-w-[1200px] mx-auto px-4 h-9 flex items-center justify-end gap-4">
+        <div className="max-w-[1200px] mx-auto h-9 flex items-center justify-start sm:justify-end gap-3 overflow-x-auto px-4 scrollbar-none">
           {user ? (
             <>
-              <span className="text-xs text-[#777]">{user.name}님</span>
+              <span className="shrink-0 text-xs text-[#777]">{user.name}님</span>
               <span className="text-[#e0e0e0] text-xs">|</span>
               <button type="button" onClick={handleLogout} className="text-xs text-[#777] hover:text-[#222] transition-colors">
                 로그아웃
@@ -73,19 +73,19 @@ export default function ShopHeader() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-4 h-[72px] flex items-center justify-between gap-6">
+      <div className="max-w-[1200px] mx-auto px-4 py-3 sm:h-[72px] sm:py-0 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 sm:gap-6">
         <Link href="/" className="flex-shrink-0">
-          <span className="text-[22px] font-bold tracking-widest text-[#222] uppercase">CommerceOps</span>
+          <span className="text-lg sm:text-[22px] font-bold tracking-widest text-[#222] uppercase">CommerceOps</span>
         </Link>
 
-        <form onSubmit={handleSearch} className="flex-1 max-w-[420px]">
+        <form onSubmit={handleSearch} className="order-3 w-full sm:order-none sm:flex-1 sm:max-w-[420px]">
           <div className="flex border border-[#222] h-10">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="상품명을 검색하세요"
-              className="flex-1 px-4 text-sm outline-none bg-white text-[#222] placeholder:text-[#bbb]"
+              className="min-w-0 flex-1 px-3 sm:px-4 text-sm outline-none bg-white text-[#222] placeholder:text-[#bbb]"
             />
             <button type="submit" className="w-11 bg-[#222] flex items-center justify-center text-white hover:bg-[#444] transition-colors" aria-label="상품 검색">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,18 +95,18 @@ export default function ShopHeader() {
           </div>
         </form>
 
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <Link href="/mypage" className="flex flex-col items-center gap-0.5 text-[#555] hover:text-[#222] transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-[10px] tracking-wide">마이페이지</span>
+            <span className="hidden text-[10px] tracking-wide sm:block">마이페이지</span>
           </Link>
           <Link href="/cart" className="flex flex-col items-center gap-0.5 text-[#555] hover:text-[#222] transition-colors relative">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            <span className="text-[10px] tracking-wide">장바구니</span>
+            <span className="hidden text-[10px] tracking-wide sm:block">장바구니</span>
           </Link>
         </div>
       </div>

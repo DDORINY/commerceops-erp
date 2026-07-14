@@ -21,15 +21,15 @@ export default function DataTable<T extends object>({
   emptyMessage = '데이터가 없습니다.',
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-x-auto border border-[#e8eaf0] bg-white">
-      <table className="w-full text-sm">
+    <div className="max-w-full overflow-x-auto overscroll-x-contain border border-[#e8eaf0] bg-white" role="region" aria-label="데이터 표" tabIndex={0}>
+      <table className="w-full min-w-max text-sm">
         <thead>
           <tr className="bg-[#f8f9fb] border-b border-[#e8eaf0]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={[
-                  'px-4 py-3 text-left text-xs font-semibold text-[#8a9bb5] tracking-wide uppercase whitespace-nowrap',
+                  'px-3 sm:px-4 py-3 text-left text-xs font-semibold text-[#8a9bb5] tracking-wide uppercase whitespace-nowrap',
                   col.className || '',
                 ].join(' ')}
               >
@@ -58,7 +58,7 @@ export default function DataTable<T extends object>({
                   <td
                     key={col.key}
                     className={[
-                      'px-4 py-3.5 text-[#333] whitespace-nowrap',
+                      'px-3 sm:px-4 py-3.5 text-[#333] whitespace-nowrap',
                       col.className || '',
                     ].join(' ')}
                   >

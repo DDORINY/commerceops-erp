@@ -39,6 +39,11 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
   const pathname = usePathname();
   const [status, setStatus] = useState<GuardStatus>('checking');
   const [fallbackMode, setFallbackMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => setMobileMenuOpen(false));
+  }, [pathname]);
 
   useEffect(() => {
     let mounted = true;
@@ -118,10 +123,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-[#f4f5f9]">
-      <AdminSidebarV2 />
+      <AdminSidebarV2 open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <AdminTopbar title={title} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <AdminTopbar title={title} onMenuOpen={() => setMobileMenuOpen(true)} />
+        <main className="admin-content flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

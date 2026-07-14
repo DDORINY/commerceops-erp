@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
 import { clearAuth, getStoredUser } from '@/lib/auth';
 
-export default function AdminTopbar({ title }: { title: string }) {
+export default function AdminTopbar({ title, onMenuOpen }: { title: string; onMenuOpen?: () => void }) {
   const router = useRouter();
   const user = getStoredUser();
 
@@ -21,9 +21,14 @@ export default function AdminTopbar({ title }: { title: string }) {
   };
 
   return (
-    <header className="h-[60px] bg-white border-b border-[#e8eaf0] flex items-center justify-between px-6 flex-shrink-0">
-      <h1 className="text-base font-semibold text-[#1a1f2e]">{title}</h1>
-      <div className="flex items-center gap-4">
+    <header className="h-[60px] bg-white border-b border-[#e8eaf0] flex items-center justify-between gap-2 px-3 sm:px-4 lg:px-6 flex-shrink-0">
+      <div className="flex min-w-0 items-center gap-2">
+        <button type="button" onClick={onMenuOpen} aria-label="관리자 메뉴 열기" className="-ml-1 grid h-10 w-10 shrink-0 place-items-center text-[#5f6b7a] lg:hidden">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        <h1 className="truncate text-sm font-semibold text-[#1a1f2e] sm:text-base">{title}</h1>
+      </div>
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
         {/* 알림 */}
         <button className="relative text-[#8a9bb5] hover:text-[#1a1f2e] transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +38,7 @@ export default function AdminTopbar({ title }: { title: string }) {
         </button>
 
         {/* 관리자 프로필 */}
-        <div className="flex items-center gap-2.5">
+        <div className="hidden items-center gap-2.5 sm:flex">
           <div className="w-8 h-8 bg-[#1a1f2e] rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-medium">관</span>
           </div>
@@ -45,7 +50,7 @@ export default function AdminTopbar({ title }: { title: string }) {
         <button
           type="button"
           onClick={handleLogout}
-          className="h-8 px-3 border border-[#d8dde8] text-xs text-[#5f6b7a] hover:border-[#aeb8c8] hover:text-[#1a1f2e] transition-colors"
+          className="h-8 px-2 sm:px-3 border border-[#d8dde8] text-[11px] sm:text-xs text-[#5f6b7a] hover:border-[#aeb8c8] hover:text-[#1a1f2e] transition-colors"
         >
           로그아웃
         </button>

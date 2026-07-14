@@ -58,7 +58,7 @@ export default function DynamicCategoryNav() {
   return (
     <nav className="border-t border-[#f0f0f0]">
       <div className="max-w-[1200px] mx-auto px-4">
-        <ul className="flex items-center justify-center overflow-x-auto scrollbar-none">
+        <ul className="flex items-center justify-start md:justify-center overflow-x-auto scrollbar-none">
           {navItems.map((cat) => {
             const isAll = cat.href === '/products';
             const isActive = pathname === '/products' && (isAll ? !currentCategory : currentCategory === cat.name);
@@ -68,7 +68,7 @@ export default function DynamicCategoryNav() {
                 <Link
                   href={cat.href}
                   className={[
-                    'block px-5 py-3.5 text-sm tracking-wide whitespace-nowrap transition-colors',
+                    'block px-4 sm:px-5 py-3 text-sm tracking-wide whitespace-nowrap transition-colors',
                     isActive ? 'border-b-2 border-[#222] font-semibold text-[#222]' : 'text-[#444] hover:text-[#222]',
                   ].join(' ')}
                 >
